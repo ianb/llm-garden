@@ -17,7 +17,7 @@ export async function loadStoryData(filename) {
 
 let story;
 
-export function loadStory(data, io) {
+export function createStory(data, io) {
   data = data;
   story = new JSZM(data);
   story.io = io;

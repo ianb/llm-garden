@@ -25,6 +25,12 @@
 	font-size: 100%;
 }
 
+.header .status {
+  color: #FFF;
+	display: inline-block;
+	line-height: 56px;  
+}
+
 .header nav a {
 	display: inline-block;
 	height: 56px;

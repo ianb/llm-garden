@@ -1,6 +1,9 @@
 import { h } from 'preact';
 import style from './style.css';
 import { signal } from "@preact/signals";
+import { useEffect, useRef } from 'preact/hooks';
+import { loadStoryData, createStory, stories } from "./storyloader";
+import Header from "../../components/header";
 
 let runnerPromise = null;
 
@@ -13,16 +16,20 @@ const Story = ({filename}) => {
   if (runnerPromise === null) {
     startRunner(filename);
   }
-  return <div class={style.home}>
-    <StatusLine text={statusText} summary={statusSummary} />
-    <Console text={text} onSubmit={io.onInput.bind(io)} inputEnabled={inputEnabled} />
-  </div>;
+  let status = [statusText.value, statusSummary.value].filter(x=>x).join(" ");
+  return <>
+    <Header title={stories[filename].title} status={status} />
+    <div class={style.home}>
+      <StatusLine text={statusText} summary={statusSummary} />
+      <Console text={text} onSubmit={io.onInput.bind(io)} inputEnabled={inputEnabled} />
+    </div>;
+  </>;
 };
 
 function startRunner(filename) {
   runnerPromise = (async function () {
-    const data = await loadStory(filename);
-    const runner = runFile(data, io);
+    const data = await loadStoryData(filename);
+    const runner = createStory(data, io);
     console.log("got runner", runner);
     let generator = runner.run();
     setInterval(() => {
