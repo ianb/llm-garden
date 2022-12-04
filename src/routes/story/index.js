@@ -4,6 +4,8 @@ import { signal } from "@preact/signals";
 import { useEffect, useRef } from 'preact/hooks';
 import { loadStoryData, createStory, stories } from "./storyloader";
 import Header from "../../components/header";
+import { getGptCompletion } from "../../gpt";
+import { holder } from "../../key";
 
 let runnerPromise = null;
 
@@ -19,6 +21,9 @@ const Story = ({filename}) => {
   let status = [statusText.value, statusSummary.value].filter(x=>x).join(" ");
   return <>
     <Header title={stories[filename].title} status={status} />
+    <Sidebar>
+      <Completer />
+    </Sidebar>
     <div class={style.home}>
       <StatusLine text={statusText} summary={statusSummary} />
       <Console text={text} onSubmit={io.onInput.bind(io)} inputEnabled={inputEnabled} />
@@ -45,8 +50,11 @@ const StatusLine = ({text, summary}) => (
   </div>
 );
 
+let inputElRef;
+
 const Console = ({text, inputEnabled, onSubmit}) => {
-  let inputEl = useRef(null);
+  const inputEl = useRef(null);
+  inputElRef = inputEl;
   useEffect(() => {
     if (inputEl.current) {
       inputEl.current.focus();
@@ -77,16 +85,121 @@ const Console = ({text, inputEnabled, onSubmit}) => {
 
 export default Story;
 
+const Sidebar = ({children}) => (
+  <div class="sidebar">{children}</div>
+);
+
+const completionText = signal("");
+
+const Completer = () => {
+  const number = useRef(null);
+  function doMany() {
+    let num = number.current ? number.current.value : 1;
+    fillInMany(num);
+  }
+  return <div>
+    <button onClick={fillIn}>Fill in input</button> <br />
+    <button onClick={fillInAndComplete}>Fill & Submit input</button> <br />
+    <input type="number" defaultValue="10" ref={number} /> <button onClick={doMany}>Do many steps</button>
+    <br />
+    <pre>{completionText.value}</pre>
+  </div>;
+};
+
+function fillIn() {
+  doFill(false, 1);
+}
+
+function fillInAndComplete() {
+  doFill(true, 1);
+}
+
+function fillInMany(num) {
+  doFill(true, num);
+}
+
+async function doFill(complete, num=1) {
+  if (num <= 0) {
+    return;
+  }
+  let text = constructPrompt();
+  completionText.value = text;
+  console.log("Doing request for", text);
+  let resp = await getGptCompletion({
+    model: "text-davinci-002",
+    temperature: 0.2,
+    max_tokens: 40,
+    prompt: text,
+    frequency_penalty: 0,
+    temperature: 1.0,
+  }, holder.getKey());
+  let completion = resp.choices[0].text.trim().split("\n")[0];
+  console.log("Got response:", resp, completion);
+  completionText.value = text + "//=> " + completion;
+  if (inputElRef.current) {
+    inputElRef.current.value = completion;
+  }
+  if (complete) {
+    io.onInput(completion);
+  }
+  return doFill(complete, num - 1);
+}
+
+function constructPrompt() {
+  let history = 20;
+  let result = filterChunks(io.chunks, history);
+  return `Playing a text adventure:\n\n${result.trimEnd()}`;
+}
+
+function filterChunks(chunks, count) {
+  let originalCount = count;
+  chunks = [...chunks];
+  let result = [];
+  while (count > 0) {
+    if (chunks.length == 0) {
+      break;
+    }
+    let last = chunks.length - 1;
+    if (count != originalCount && 
+        chunks.length >= 2 && 
+        chunks[last].type == "output" && 
+        badResponse(chunks[last].value) && 
+        chunks[last-1].type == "input") {
+      console.log("Ignoring:", chunks[last].value)
+      chunks.pop();
+      chunks.pop();
+      continue;
+    }
+    let v = chunks[last].value;
+    if (chunks[last].type == "input") {
+      v += "\n";
+    }
+    result.unshift(v);
+    chunks.pop();
+    count--;
+  }
+  return result.join("");
+}
+
+function badResponse(output) {
+  return /I don't know the word|You can't go that way/i.test(output);
+}
 
 class IO {
   constructor() {
     this.history = [];
+    this.chunks = [];
     this.historyIndex = -1;
     this.historyInProgress = "";
   }
   
   print(msg) {
     text.value = text.value + msg;
+    if (this.chunks.length > 0 && this.chunks[this.chunks.length-1].type == "output") {
+      this.chunks[this.chunks.length-1].value += msg;
+    } else {
+      this.chunks.push({type: "output", value: msg});
+    }
   }
 
   enableRead() {
@@ -94,6 +207,10 @@ class IO {
   }
 
   onInput(t) {
+    if (!t) {
+      console.warn("Got onInput(empty)");
+      return;
+    }
     if (this.onReadOnce) {
       this.onReadOnce(t);
       this.onReadOnce = null;
@@ -101,6 +218,7 @@ class IO {
       console.warn("Got text without onReadOnce:", t);
     }
     text.value = text.value + t + "\n";
+    this.chunks.push({type: "input", value: t});
     this.history.push(t);
     this.historyIndex = -1;
     this.historyInProgress = "";

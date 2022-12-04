@@ -34,7 +34,6 @@ const methods = {
     this.io.enableRead();
     let result;
     this.io.onReadOnce = (text) => {
-      console.log("got read text", text);
       result = text;
     };
     while (!result) {

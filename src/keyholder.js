@@ -16,7 +16,7 @@ export default class KeyHolder {
   }
 
   getKey() {
-    if (!hasKey) {
+    if (!this.hasKey()) {
       throw new Error(`Key not found`);
     }
     return localStorage.getItem(this.storageName);

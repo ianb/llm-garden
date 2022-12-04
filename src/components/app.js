@@ -1,6 +1,5 @@
 import { h } from 'preact';
 import { Router } from 'preact-router';
-import style from '../routes/home/style.css';
 import Header from './header';
 import Story from '../routes/story/index';
 import { stories } from '../routes/story/storyloader';
@@ -31,7 +30,7 @@ const App = () => {
 };
 
 const Intro = () => {
-  return <div class={style.home}>
+  return <div class="home">
     <h1>Choose a game to play:</h1>
     <ul>
       {Object.keys(stories).map(key => (
