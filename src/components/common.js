@@ -77,6 +77,13 @@ export const TextArea = (props) => {
     props
   );
   const textRef = useRef();
+  let setterRef = textRef;
+  if (props.textareaRef) {
+    setterRef = (element) => {
+      props.textareaRef.current = element;
+      textRef.current = element;
+    };
+  }
   function onKeyUp(event) {
     if (event.key === "Up" && !event.target.value.trim()) {
       if (props.onGoBackInHistory) {
@@ -122,7 +129,7 @@ export const TextArea = (props) => {
   return (
     <textarea
       {...newProps}
-      ref={textRef}
+      ref={setterRef}
       onKeyUp={onKeyUp}
       onKeyDown={onKeyDown}
     />

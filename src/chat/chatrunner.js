@@ -59,9 +59,9 @@ export class ChatRunner {
     if (names.length < 2) {
       return { user: "Human", robot: "AI" };
     } else if (this.humanFirst) {
-      return { user: names[names.length - 2], robot: names[names.length - 1] };
+      return { user: names[0], robot: names[1] };
     }
-    return { user: names[names.length - 1], robot: names[names.length - 2] };
+    return { user: names[1], robot: names[0] };
   }
 
   constructPrompt() {
