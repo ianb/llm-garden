@@ -1,0 +1,37 @@
+env:
+  browser: true
+  es6: true
+
+parserOptions:
+  ecmaFeatures:
+    jsx: true
+  ecmaVersion: 2021
+  sourceType: module
+
+extends:
+  - eslint:recommended
+  - plugin:mozilla/recommended
+  - prettier
+
+plugins:
+  - mozilla
+  - react-hooks
+  - prettier
+
+rules:
+  eqeqeq: error
+  no-console: "off" # TODO: Set back to "warn"
+  no-unused-vars: [error, { vars: all, args: none, ignoreRestSiblings: false }]
+  no-var: error
+  no-warning-comments: off
+  prefer-const: error
+  mozilla/no-import-into-var-and-global: off
+  comma-dangle: off
+  react-hooks/rules-of-hooks: error
+  react-hooks/exhaustive-deps: warn
+  prettier/prettier:
+    - error
+    - fileInfoOptions:
+        ignorePath: ".gitignore"
+
+  jsx-a11y/no-onchange: off

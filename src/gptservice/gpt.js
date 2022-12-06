@@ -1,37 +1,39 @@
 export async function getGptCompletion(prompt, key) {
-  let url = "https://api.openai.com/v1/completions";
-  if (typeof prompt == "string") {
-    prompt = {prompt};
+  const url = "https://api.openai.com/v1/completions";
+  if (typeof prompt === "string") {
+    prompt = { prompt };
   }
-  let body = Object.assign({}, defaultBody, prompt);
-  console.log("Sending GPT request:", body);
-  let resp = await fetch(url, {
+  const body = Object.assign({}, defaultBody, prompt);
+  console.log("Sending GPT request:", body.prompt, body);
+  const resp = await fetch(url, {
     method: "POST",
     mode: "cors",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${key}`,
+      Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify(body),
   });
   if (!resp.ok) {
-    let body = await resp.json();
+    const body = await resp.json();
     console.error("Error from GPT:", body);
-    let exc = new Error(`GPT request failed: ${resp.status} ${resp.statusText}: ${body.error.message}`);
+    const exc = new Error(
+      `GPT request failed: ${resp.status} ${resp.statusText}: ${body.error.message}`
+    );
     exc.request = resp;
     exc.errorData = body;
     throw exc;
   }
-  let data = await resp.json();
+  const data = await resp.json();
   console.log("Got GPT response:", data);
   addTokens(data.usage.total_tokens);
   return data;
 }
 
-const defaultBody = {
-  "model": "text-davinci-003",
-  "temperature": 0.2,
-  "max_tokens": 40,
+export const defaultBody = {
+  model: "text-davinci-003",
+  temperature: 0.2,
+  max_tokens: 40,
 };
 
 let sessionTokens = 0;

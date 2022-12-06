@@ -1,4 +1,4 @@
-import { encrypt, decrypt } from "./encryption";
+import { decrypt } from "../vendor/encryption";
 
 export default class KeyHolder {
   constructor(name, encrypted, validator) {
@@ -24,12 +24,16 @@ export default class KeyHolder {
 
   setKey(value) {
     localStorage.setItem(this.storageName, value);
-    console.log(`To get an encrypted version of this key, run: testEncrypt({JSON.stringify(value)}, "password")`);
+    console.log(
+      `To get an encrypted version of this key, run: testEncrypt(${JSON.stringify(
+        value
+      )}, "password")`
+    );
   }
 
   setKeyFromText(textInput) {
-    for (let e of this.encrypted) {
-      let v = decrypt(e, textInput);
+    for (const e of this.encrypted) {
+      const v = decrypt(e, textInput);
       if (this.validator(v)) {
         this.setKey(v);
         return true;
@@ -41,9 +45,9 @@ export default class KeyHolder {
     }
     return false;
   }
-  
+
   loadFromPassword(encrypted, password) {
-    let v = decrypt(encrypted, password);
+    const v = decrypt(encrypted, password);
     if (v) {
       localStorage.setItem(this.storageName, v);
       return v;
