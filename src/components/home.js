@@ -18,6 +18,12 @@ export const Home = () => {
           <P></P>
         </Card>
       </a>
+      <a href="/adventure-chooser">
+        <Card>
+          <H1>Adventure Chooser Authoring</H1>
+          <P></P>
+        </Card>
+      </a>
     </PageContainer>
   );
 };

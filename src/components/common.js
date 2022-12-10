@@ -1,18 +1,11 @@
 import { useEffect, useRef } from "preact/hooks";
 import { twMerge } from "tailwind-merge";
 
-export const mergeProps = (defaultProps, props, special) => {
-  special = special || [];
+export const mergeProps = (defaultProps, props) => {
   const newProps = Object.assign({}, defaultProps);
-  if (special.length) {
-    newProps.special = {};
-  }
   for (const id in props) {
     if (id === "class" && newProps.class) {
       continue;
-    }
-    if (special.includes(id)) {
-      newProps.special[id] = props[id];
     }
     newProps[id] = props[id];
   }
@@ -59,12 +52,12 @@ export const TextInput = (props) => {
       class:
         "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline",
     },
-    props,
-    ["errored"]
+    props
   );
-  if (newProps.special.errored) {
+  if (newProps.errored) {
     newProps.class += " border-red-500";
   }
+  delete newProps.errored;
   return <input {...newProps} />;
 };
 
@@ -165,4 +158,15 @@ export const PageContainer = ({ children }) => {
 export const Pre = (props) => {
   const p = mergeProps({ class: "whitespace-pre-wrap" }, props);
   return <pre {...p}>{props.children}</pre>;
+};
+
+export const Button = (props) => {
+  const p = mergeProps(
+    {
+      class:
+        "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-5",
+    },
+    props
+  );
+  return <button {...p}>{props.children}</button>;
 };

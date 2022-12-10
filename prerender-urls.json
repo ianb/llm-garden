@@ -10,5 +10,9 @@
   {
     "url": "/chat",
     "title": "Chat"
+  },
+  {
+    "url": "/adventure-chooser",
+    "title": "Adventure Chooser Authoring"
   }
 }

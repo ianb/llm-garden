@@ -55,7 +55,6 @@ export class ChatRunner {
         names.push(parts[0].trim());
       }
     }
-    console.log("prompts", names);
     if (names.length < 2) {
       return { user: "Human", robot: "AI" };
     } else if (this.humanFirst) {

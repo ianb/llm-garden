@@ -5,8 +5,8 @@ module.exports = (config, env, helpers) => {
     const plugins = loader.options.postcssOptions.plugins;
 
     // Add tailwind css at the top.
-    console.log("ok", plugins, loader.options);
     plugins.unshift(require("tailwindcss"));
+    plugins.unshift(require("tailwindcss/nesting"));
   });
   return config;
 };

@@ -1,48 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-
-html, body {
-	height: 100%;
-	width: 100%;
-	padding: 0;
-	margin: 0;
-	background: #FAFAFA;
-	font-family: 'Helvetica Neue', arial, sans-serif;
-	font-weight: 400;
-	color: #444;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-}
-
-* {
-	box-sizing: border-box;
-}
-
-#app {
-	height: 100%;
-}
-
-.home {
-	padding: 56px 20px;
-	min-height: 100%;
-	width: 100%;
-}
-
-.sidebar {
-  margin-top: 80px;
-  padding: 20px 20px 20px 20px;
-  position: relative;
-  float: right;
-  border: 2px solid #000;
-  border-radius: 4px;
-  width: 40em;
-  max-width: 40%;
-}
-
-.unreset {
-	/**
+/**
  * Unreset CSS
  *
  * Copyright (C) 2016 Kite (ixkaito@gmail.com)
@@ -331,6 +287,4 @@ ruby {
 
 iframe {
 	border: 2px inset;
-}
-
 }

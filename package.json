@@ -37,6 +37,7 @@
     "@preact/signals": "^1.1.2",
     "eslint-plugin-html": "^7.1.0",
     "jszm": "github:DLehenbauer/jszm",
+    "marked": "^4.2.4",
     "preact": "^10.3.2",
     "preact-render-to-string": "^5.1.4",
     "preact-router": "^3.2.1",
