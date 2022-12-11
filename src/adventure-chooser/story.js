@@ -9,6 +9,8 @@ export class ChooserStory {
     this.title = new Property(this, "title", "Title");
     this.theme = new Property(this, "theme", "Theme");
     this.mainCharacter = new Property(this, "mainCharacter", "Main Character");
+    this.introPassage = new Property(this, "introPassage", "Introduction");
+    this.passages = [this.introPassage];
     this.queryLog = [];
     this._updates = [];
   }
@@ -267,14 +269,18 @@ export const prompts = {
   Describe and name the main character: their motivations, and their personality. Ask if I'd like to make changes. Repeat the character description after each change.
   `,
   mainCharacterContext: `
-  The main character is $value.
+  $value.
   `,
   mainCharacterSingle: true,
   mainCharacterFixup: `
   Character: $value
 
-  Create a character description, referring to the character as "you" and including your name
+  Create a character description, referring to the character as "you"
   `,
+  introPassage: `
+  Compose the first passage of the story. Describe the setting and the main character. Repeat the passage after each change.
+  `,
+  introPassageSingle: true,
   general: `
 * Keep responses short, concise, and easy to understand.
 * Do not get ahead of yourself.

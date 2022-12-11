@@ -14,7 +14,7 @@ export const Header = ({ title, trackerPaths, links, buttons }) => {
     document.title = title;
   }, [title]);
   return (
-    <nav class="flex items-center justify-between flex-wrap bg-teal-500 p-6 sticky top-0 z-50">
+    <nav class="flex items-center justify-between flex-wrap bg-blue-complement pr-6 pl-6 pt-2 pb-2 sticky top-0 z-50">
       <div class="flex items-center flex-shrink-0 text-white mr-6">
         <span class="font-semibold text-xl tracking-tight">{title}</span>
       </div>
@@ -31,7 +31,7 @@ export const Header = ({ title, trackerPaths, links, buttons }) => {
         </button>
       </div>
       <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
-        <div class="text-sm lg:flex-grow">
+        <div class="text-sm text-gray-100 ml-3 lg:flex-grow">
           {tokenCostTracker.summarizePaths(trackerPaths)}
         </div>
         <div class="text-sm lg:flex-grow">{links}</div>

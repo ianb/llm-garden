@@ -23,6 +23,40 @@ export const Card = ({ children }) => (
   </div>
 );
 
+export const Card2 = ({ title, children, buttons, class: _class }) => {
+  let buttonContainer = null;
+  if (buttons && buttons.length) {
+    buttonContainer = <div class="flex justify-end">{buttons}</div>;
+  }
+  _class = twMerge("relative w-72 p-2", _class);
+  return (
+    <div class={_class}>
+      <div class="rounded drop-shadow-l w-full">
+        <div class="bg-magenta p-1 rounded-t">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg pl-2 font-semibold text-magenta-lighter">
+              {title}
+            </h3>
+            {buttonContainer}
+          </div>
+        </div>
+        <div class="p-1 bg-white rounded-b">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+export const CardButton = (props) => {
+  const p = mergeProps(
+    {
+      class:
+        "text-white bg-magenta hover:bg-magenta-light rounded-lg p-2 hover:bg-magenta-light border border-magenta-light m-1",
+    },
+    props
+  );
+  return <button {...p}>{props.children}</button>;
+};
+
 export const H1 = ({ children }) => (
   <div class="text-xl font-medium text-black">{children}</div>
 );
@@ -152,7 +186,9 @@ export const Alert = ({ title, children }) => {
 };
 
 export const PageContainer = ({ children }) => {
-  return <div id="container mx-auto flex">{children}</div>;
+  return (
+    <div class="mx-auto bg-blue-complement-light min-h-screen">{children}</div>
+  );
 };
 
 export const Pre = (props) => {
@@ -163,8 +199,7 @@ export const Pre = (props) => {
 export const Button = (props) => {
   const p = mergeProps(
     {
-      class:
-        "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-5",
+      class: "bg-magenta hover:bg-blue-700 text-white py-2 px-4 rounded-lg m-5",
     },
     props
   );

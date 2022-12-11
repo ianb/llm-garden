@@ -3,20 +3,22 @@ import { Header } from "../components/header";
 import {
   PageContainer,
   Pre,
-  Card,
-  P,
+  Card2,
+  CardButton,
   Button,
-  H1,
   TextArea,
   mergeProps,
 } from "../components/common";
 import Sidebar from "../components/sidebar";
+import { signal } from "@preact/signals";
 import { useState, useEffect, useRef } from "preact/hooks";
 import { markdownToElement, elementToPreact } from "../converthtml";
+import * as icons from "../components/icons";
 
 export function StoryView({ story }) {
   const log = [...story.queryLog];
   log.reverse();
+  const dummyProp = { value: true };
   return (
     <PageContainer>
       <Header
@@ -27,38 +29,54 @@ export function StoryView({ story }) {
         ]}
       />
       <Sidebar>
-        <Pre>
-          {log.map((l) => (
-            <LogItem log={l} />
-          ))}
-        </Pre>
+        {log.map((l, index) => (
+          <LogItem log={l} defaultOpen={index === 0} />
+        ))}
       </Sidebar>
-      <PropertyView property={story.genre} />
-      <PropertyView property={story.title} />
-      <PropertyView property={story.theme} />
-      <PropertyView property={story.mainCharacter} />
+      <div class="flex flex-wrap w-2/3">
+        <PropertyView property={story.genre} prev={dummyProp} class="w-1/3" />
+        <PropertyView property={story.title} prev={story.genre} class="w-1/3" />
+        <PropertyView property={story.theme} prev={story.title} class="w-1/3" />
+        <PropertyView
+          property={story.mainCharacter}
+          prev={story.theme}
+          class="w-1/2"
+        />
+        <PropertyView
+          property={story.introPassage}
+          prev={story.mainCharacter}
+          class="w-1/2"
+        />
+      </div>
     </PageContainer>
   );
 }
 
-function PropertyView({ property }) {
-  const [editing, setEditing] = useState(false);
+function PropertyView({ class: _class, property, prev }) {
+  const [editing, setEditing] = useState(null);
+  let actualEditing = editing;
+  if (editing === null && prev && prev.value && !property.value) {
+    actualEditing = true;
+  }
   const onEdit = () => setEditing(true);
   const onDone = () => setEditing(false);
+  const editButton = <CardButton onClick={onEdit}>Edit</CardButton>;
+  const doneButton = <CardButton onClick={onDone}>Done</CardButton>;
   return (
-    <Card class="max-w-m">
-      <H1>{property.title}</H1>
-      {property.value || !editing ? (
+    <Card2
+      class={_class}
+      title={property.title}
+      buttons={[actualEditing ? doneButton : editButton]}
+    >
+      {property.value || !actualEditing ? (
         <PropertyValue value={property.value} />
       ) : null}
-      {editing ? (
+      {actualEditing ? (
         <PropertyEditor property={property} onDone={onDone} />
       ) : (
-        <div class="content-center">
-          <Button onClick={onEdit}>Edit</Button>
-        </div>
+        <div class="content-center"></div>
       )}
-    </Card>
+    </Card2>
   );
 }
 
@@ -94,7 +112,11 @@ function PropertyEditor({ property, onDone }) {
   function onSubmit(element) {
     const val = element.value;
     element.value = "";
-    property.addUserInput(val);
+    if (val) {
+      property.addUserInput(val);
+    } else {
+      onAccept();
+    }
   }
   function onSelect(val) {
     property.value = val;
@@ -121,9 +143,8 @@ function PropertyEditor({ property, onDone }) {
   }
   return (
     <div>
-      <hr />
+      {property.value ? <hr /> : null}
       <QueryText property={property} onSubmit={onSubmit} onSelect={onSelect} />
-      <Button onClick={onDone}>Done</Button>
       {property.single ? <Button onClick={onAccept}>Accept ^A</Button> : null}
     </div>
   );
@@ -134,6 +155,12 @@ function QueryText({ property, onSubmit, onSelect }) {
   function onClick(event) {
     onSelect(event.target.innerText);
   }
+  const textareaRef = useRef(null);
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
   const text = getQueryText(property);
   let [liElements, markup] = [[], null];
   if (text) {
@@ -172,9 +199,9 @@ function QueryText({ property, onSubmit, onSelect }) {
     };
   });
   return (
-    <div class="unreset">
-      {markup}
-      <TextArea onSubmit={onSubmit} />
+    <div>
+      <div class="unreset">{markup}</div>
+      <TextArea onSubmit={onSubmit} autoFocus="1" textareaRef={textareaRef} />
     </div>
   );
 }
@@ -231,21 +258,39 @@ function QueryResponseListItem({ origAttrs, origChildren, onClick, active }) {
   return <li {...props}>{origChildren}</li>;
 }
 
-function LogItem({ log }) {
+function LogItem({ log, defaultOpen }) {
+  if (!log.expanded) {
+    log.expanded = signal(null);
+  }
+  const open =
+    (log.expanded.value === null && defaultOpen) || log.expanded.value;
+  function onClickHeader() {
+    log.expanded.value = !open;
+  }
   return (
-    <div class="border-gray-200 rounded">
-      <div class="bg-gray-200 p-2 text-xs">
+    <div>
+      <div
+        class="bg-gray-200 p-1 pl-2 mb-2 -mr-3 rounded-l text-xs"
+        onClick={onClickHeader}
+      >
+        {open ? (
+          <icons.MinusCircle class="h-3 w-3 inline-block mr-2" />
+        ) : (
+          <icons.PlusCircle class="h-3 w-3 inline-block mr-2" />
+        )}
         {log.fromCache ? "cached " : null}
         {log && log.time ? (log.time / 1000).toFixed(1) + "s" : null}
       </div>
-      <Pre class="text-xs">
-        {log.prompt}
-        {log.response ? (
-          <span class="text-red-800">{log.response}</span>
-        ) : (
-          <span class="text-red-300">...</span>
-        )}
-      </Pre>
+      {open ? (
+        <Pre class="text-xs">
+          {log.prompt}
+          {log.response ? (
+            <span class="text-red-800">{log.response}</span>
+          ) : (
+            <span class="text-red-300">...</span>
+          )}
+        </Pre>
+      ) : null}
     </div>
   );
 }
