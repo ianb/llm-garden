@@ -8,6 +8,7 @@ export class ChooserStory {
     this.genre = new Property(this, "genre", "Genre");
     this.title = new Property(this, "title", "Title");
     this.theme = new Property(this, "theme", "Theme");
+    this.characterName = new Property(this, "characterName", "Character Name");
     this.mainCharacter = new Property(this, "mainCharacter", "Main Character");
     this.introPassage = new Property(this, "introPassage", "Introduction");
     this.passages = [this.introPassage];
@@ -21,6 +22,7 @@ export class ChooserStory {
       this.genre,
       this.title,
       this.theme,
+      this.characterName,
       this.mainCharacter,
     ]) {
       const v = prop.describeAsContext();
@@ -29,11 +31,6 @@ export class ChooserStory {
       }
     }
     return results.join(" ");
-  }
-
-  setGenre(genre) {
-    this.genre = genre;
-    this.fireOnUpdate();
   }
 
   addOnUpdate(func) {
@@ -103,6 +100,9 @@ class Property {
     this._value = null;
     this.single = !!prompts[type + "Single"];
     this.fixupPrompt = prompts[type + "Fixup"];
+    if (this.hasChoices) {
+      this.choices = [];
+    }
   }
 
   get value() {
@@ -112,6 +112,30 @@ class Property {
   set value(v) {
     this._value = v;
     this.story.fireOnUpdate();
+  }
+
+  get hasChoices() {
+    return this.type === "introPassage" || this.type === "passage";
+  }
+
+  addChoice(choice) {
+    this.choices.push(choice);
+    this.story.fireOnUpdate();
+  }
+
+  removeChoice(choice) {
+    this.choices = this.choices.filter((x) => x !== choice);
+    this.story.fireOnUpdate();
+  }
+
+  hasChoice(choice) {
+    return this.choices.includes(choice);
+  }
+
+  async suggestChoices() {
+    this.queries = [];
+    this.story.fireOnUpdate();
+    return this.launchQuery("choices");
   }
 
   async fixupValue(v) {
@@ -138,8 +162,8 @@ class Property {
     return t;
   }
 
-  async launchQuery() {
-    const query = this.initialQuery();
+  async launchQuery(promptName = null) {
+    const query = this.initialQuery(promptName);
     const ob = { text: query, type: "init" };
     this.queries = [ob];
     this.story.fireOnUpdate();
@@ -214,14 +238,24 @@ class Property {
     return result.join("\n");
   }
 
-  initialQuery() {
-    const basic = prompts[this.type];
+  initialQuery(promptName = null) {
+    promptName = promptName || this.type;
+    const basic = prompts[promptName];
+    let existingChoices = null;
+    if (promptName === "choices" && this.choices && this.choices.length) {
+      existingChoices = ["These choices already exist:"];
+      for (const choice of this.choices) {
+        existingChoices.push(`* ${choice}`);
+      }
+      existingChoices = existingChoices.join("\n");
+    }
     const result = [];
     for (let s of [
       prompts.assistantIntro,
       prompts.general,
       this.story.storyContext(),
       basic,
+      existingChoices,
       "Edward says:",
     ]) {
       s = s && s.trim();
@@ -265,8 +299,14 @@ export const prompts = {
   themeContext: `
   The theme of the story is $value.
   `,
+  characterName: `
+  Choose a name for the main character or let me propose my own options. Present alternative names with a numbered list with emojis. Include interesting and unusual names.
+  `,
+  characterNameContext: `
+  You are the main character. Your name is $value.
+  `,
   mainCharacter: `
-  Describe and name the main character: their motivations, and their personality. Ask if I'd like to make changes. Repeat the character description after each change.
+  Describe the main character: their age, their motivations, and their personality. Ask if I'd like to make changes. Repeat the character description after each change.
   `,
   mainCharacterContext: `
   $value.
@@ -297,5 +337,8 @@ export const prompts = {
   `,
   assistantIntro: `
   You are Edward, a Choose Your Own Adventure creation assistant. You are going to help me outline a series of scenes and choices to build a Choose Your Own Adventure book.
+  `,
+  choices: `
+  Offer at least 8 new choices for what to do next. Present alternatives as a numbered list with emojis or let me propose my own option.
   `,
 };

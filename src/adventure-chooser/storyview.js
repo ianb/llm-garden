@@ -34,12 +34,17 @@ export function StoryView({ story }) {
         ))}
       </Sidebar>
       <div class="flex flex-wrap w-2/3">
-        <PropertyView property={story.genre} prev={dummyProp} class="w-1/3" />
-        <PropertyView property={story.title} prev={story.genre} class="w-1/3" />
-        <PropertyView property={story.theme} prev={story.title} class="w-1/3" />
+        <PropertyView property={story.genre} prev={dummyProp} class="w-1/4" />
+        <PropertyView property={story.title} prev={story.genre} class="w-1/4" />
+        <PropertyView property={story.theme} prev={story.title} class="w-1/4" />
+        <PropertyView
+          property={story.characterName}
+          prev={story.theme}
+          class="w-1/4"
+        />
         <PropertyView
           property={story.mainCharacter}
-          prev={story.theme}
+          prev={story.characterName}
           class="w-1/2"
         />
         <PropertyView
@@ -54,28 +59,53 @@ export function StoryView({ story }) {
 
 function PropertyView({ class: _class, property, prev }) {
   const [editing, setEditing] = useState(null);
+  const [addingChoice, setAddingChoice] = useState(false);
   let actualEditing = editing;
   if (editing === null && prev && prev.value && !property.value) {
     actualEditing = true;
   }
   const onEdit = () => setEditing(true);
-  const onDone = () => setEditing(false);
+  const onDone = () => {
+    setEditing(false);
+    setAddingChoice(false);
+  };
   const editButton = <CardButton onClick={onEdit}>Edit</CardButton>;
   const doneButton = <CardButton onClick={onDone}>Done</CardButton>;
+  let addChoiceButton = null;
+  function onAddChoice() {
+    property.queries = [];
+    setAddingChoice(true);
+  }
+  if (property.hasChoices && !addingChoice && !actualEditing) {
+    addChoiceButton = <CardButton onClick={onAddChoice}>Add Choice</CardButton>;
+  }
+  let choices = null;
+  if (property.hasChoices && property.choices.length) {
+    choices = <Choices property={property} />;
+  }
   return (
     <Card2
       class={_class}
       title={property.title}
-      buttons={[actualEditing ? doneButton : editButton]}
+      buttons={[
+        addChoiceButton,
+        actualEditing || addingChoice ? doneButton : editButton,
+      ]}
     >
       {property.value || !actualEditing ? (
         <PropertyValue value={property.value} />
       ) : null}
       {actualEditing ? (
         <PropertyEditor property={property} onDone={onDone} />
-      ) : (
-        <div class="content-center"></div>
-      )}
+      ) : null}
+      {choices}
+      {addingChoice ? (
+        <PropertyEditor
+          property={property}
+          promptName="choices"
+          onDone={() => setAddingChoice(false)}
+        />
+      ) : null}
     </Card2>
   );
 }
@@ -87,16 +117,32 @@ function PropertyValue({ value }) {
   return <div class="p-1 m-3 text-gray-500">(unset)</div>;
 }
 
-function PropertyEditor({ property, onDone }) {
+function Choices({ property }) {
+  function onTrash(choice) {
+    property.removeChoice(choice);
+  }
+  return (
+    <ol class="list-decimal pl-4">
+      {property.choices.map((c) => (
+        <li>
+          {c}
+          <button class="float-right" onClick={onTrash.bind(null, c)}>
+            <icons.Trash class="h-3 w-3" />
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function PropertyEditor({ property, promptName, onDone }) {
   useEffect(() => {
     if (!property.queries.length) {
-      property.launchQuery();
+      property.launchQuery(promptName);
     }
-  });
+  }, [property, promptName]);
   const onKeyDown = (event) => {
-    console.log("the event", event);
     if (event.key === "a" && event.ctrlKey) {
-      console.log("got onAccept");
       onAccept();
       event.preventDefault();
       return false;
@@ -114,20 +160,27 @@ function PropertyEditor({ property, onDone }) {
     element.value = "";
     if (val) {
       property.addUserInput(val);
+    } else if (promptName === "choices") {
+      onDone();
     } else {
       onAccept();
     }
   }
   function onSelect(val) {
-    property.value = val;
-    onDone();
+    if (promptName === "choices") {
+      console.log("prop is", property, property.hasChoice);
+      if (!property.hasChoice(val)) {
+        property.addChoice(val);
+      }
+    } else {
+      property.value = val;
+      onDone();
+    }
   }
   async function onAccept() {
-    console.log("checking queries", property.queries);
     let pos = property.queries.length - 1;
     while (pos >= 0) {
       const query = property.queries[pos];
-      console.log("check query", query);
       if (query.type === "init") {
         const val = await property.fixupValue(query.response);
         onSelect(val);
@@ -141,16 +194,22 @@ function PropertyEditor({ property, onDone }) {
       pos -= 1;
     }
   }
+  let ignoreElement = null;
+  if (promptName === "choices") {
+    ignoreElement = (el) => property.hasChoice(el.innerText);
+  }
   return (
     <div>
-      {property.value ? <hr /> : null}
+      {property.value || promptName ? <hr /> : null}
       <QueryText property={property} onSubmit={onSubmit} onSelect={onSelect} />
-      {property.single ? <Button onClick={onAccept}>Accept ^A</Button> : null}
+      {!promptName && property.single ? (
+        <Button onClick={onAccept}>Accept ^A</Button>
+      ) : null}
     </div>
   );
 }
 
-function QueryText({ property, onSubmit, onSelect }) {
+function QueryText({ property, onSubmit, onSelect, ignoreElement }) {
   const [selected, setSelected] = useState(-1);
   function onClick(event) {
     onSelect(event.target.innerText);
@@ -165,8 +224,14 @@ function QueryText({ property, onSubmit, onSelect }) {
   let [liElements, markup] = [[], null];
   if (text) {
     [liElements, markup] = parseQuery(text, onClick, selected);
+    if (ignoreElement) {
+      liElements = liElements.filter((e) => !ignoreElement(e));
+    }
   }
   const onKeyPress = (event) => {
+    if (!liElements.length) {
+      return undefined;
+    }
     if (event.key === "ArrowUp") {
       if (selected === -1) {
         setSelected(liElements.length - 1);
