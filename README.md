@@ -1,8 +1,14 @@
+# LLM Garden
+
+This is my ([Ian's](https://ianbicking.org)) playground for doing stuff with GPT-3.
+
+The site is deployed to
+
 # Preact.js
 
 ## CLI Commands
 
-``` bash
+```bash
 # install dependencies
 npm install
 
