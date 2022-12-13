@@ -1,3 +1,4 @@
+/* eslint no-unused-vars: "off" */
 import { signal } from "@preact/signals";
 import { holder } from "../keymanagement/key";
 import {
@@ -10,6 +11,7 @@ import {
   Alert,
   PageContainer,
 } from "./common";
+import { Header } from "./header";
 
 export const hasKeySignal = signal(holder.hasKey());
 const keyError = signal("");
