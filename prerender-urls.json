@@ -1,4 +1,4 @@
-{
+[
   {
     "url": "/",
     "title": "Large Language Model (GPT-3) Gymnasium"
@@ -15,4 +15,4 @@
     "url": "/adventure-chooser",
     "title": "Adventure Chooser Authoring"
   }
-}
+]

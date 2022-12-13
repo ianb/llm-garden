@@ -2,11 +2,19 @@
 /* globals require, module */
 const colors = require("tailwindcss/colors");
 
+// Avoid warnings about deprecated colors:
+const simpleColors = Object.assign({}, colors);
+delete simpleColors.coolGray;
+delete simpleColors.trueGray;
+delete simpleColors.warmGray;
+delete simpleColors.blueGray;
+delete simpleColors.lightBlue;
+
 module.exports = {
   content: ["./src/**/*.{html,js}"],
   theme: {
     extend: {},
-    colors: Object.assign({}, colors, {
+    colors: Object.assign({}, simpleColors, {
       // From https://www.color-name.com/viva-magenta.color
       magenta: "#BB2649",
       "magenta-darker": "#380B16",
