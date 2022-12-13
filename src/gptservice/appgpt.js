@@ -1,5 +1,5 @@
 import { getGptCompletion, defaultBody } from "./gpt";
-import { holder } from "../keymanagement/key";
+import { holder } from "../key-management/key";
 import { tokenCostTracker } from "./tokencost";
 
 export async function getCompletion(prompt, usagePaths) {

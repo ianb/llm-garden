@@ -1,6 +1,6 @@
 /* eslint no-unused-vars: "off" */
 import { signal } from "@preact/signals";
-import { holder } from "../keymanagement/key";
+import { holder } from "../key-management/key";
 import {
   P,
   Card,
