@@ -1,6 +1,6 @@
 {
-  "name": "my-project",
-  "short_name": "my-project",
+  "name": "Ian's LLM Garden",
+  "short_name": "llm-garden",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
