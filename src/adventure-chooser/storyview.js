@@ -52,6 +52,9 @@ export function StoryView({ story }) {
           prev={story.mainCharacter}
           class="w-1/2"
         />
+        {story.passages.map((p) => (
+          <PropertyView property={p} prev={story.fromPassage} class="w-1/2" />
+        ))}
       </div>
     </PageContainer>
   );
@@ -69,15 +72,25 @@ function PropertyView({ class: _class, property, prev }) {
     setEditing(false);
     setAddingChoice(false);
   };
+  const onDelete = () => {
+    if (confirm("Are you sure?")) {
+      property.delete();
+    }
+  };
   const editButton = <CardButton onClick={onEdit}>Edit</CardButton>;
   const doneButton = <CardButton onClick={onDone}>Done</CardButton>;
+  const deleteButton = (
+    <CardButton onClick={onDelete}>
+      <icons.Trash class="h-3 w-3" />
+    </CardButton>
+  );
   let addChoiceButton = null;
   function onAddChoice() {
     property.queries = [];
     setAddingChoice(true);
   }
   if (property.hasChoices && !addingChoice && !actualEditing) {
-    addChoiceButton = <CardButton onClick={onAddChoice}>Add Choice</CardButton>;
+    addChoiceButton = <CardButton onClick={onAddChoice}>+choice</CardButton>;
   }
   let choices = null;
   if (property.hasChoices && property.choices.length) {
@@ -89,11 +102,18 @@ function PropertyView({ class: _class, property, prev }) {
       title={property.title}
       buttons={[
         addChoiceButton,
+        actualEditing ? deleteButton : null,
         actualEditing || addingChoice ? doneButton : editButton,
       ]}
     >
+      {property.type === "passage" ? (
+        <PropertySource property={property} />
+      ) : null}
       {property.value || !actualEditing ? (
-        <PropertyValue value={property.value} />
+        <PropertyValue
+          value={property.value}
+          onEdit={(v) => (property.value = v)}
+        />
       ) : null}
       {actualEditing ? (
         <PropertyEditor property={property} onDone={onDone} />
@@ -110,28 +130,147 @@ function PropertyView({ class: _class, property, prev }) {
   );
 }
 
-function PropertyValue({ value }) {
-  if (value) {
-    return <div class="p-1 m-3 bg-gray-200">{value}</div>;
+function PropertySource({ property }) {
+  return (
+    <div>
+      From <em>{property.fromPassage.title}</em>: {property.fromChoice}
+    </div>
+  );
+}
+
+function PropertyValue({ value, onEdit }) {
+  const [editing, setEditing] = useState(false);
+  function onSubmit(el) {
+    setEditing(false);
+    onEdit(el.value);
   }
-  return <div class="p-1 m-3 text-gray-500">(unset)</div>;
+  function onClick(event) {
+    if (event.detail >= 2) {
+      setEditing(true);
+    }
+  }
+  function onKeyDown(event) {
+    if (event.key === "Escape") {
+      setEditing(false);
+      event.preventDefault();
+      return false;
+    }
+    return undefined;
+  }
+  useEffect(() => {
+    if (editing) {
+      window.addEventListener("keydown", onKeyDown);
+      return () => window.removeEventListener("keydown", onKeyDown);
+    }
+    return undefined;
+  }, [editing]);
+  if (editing) {
+    return (
+      <div class="p-1 m-3">
+        <TextArea
+          defaultValue={value}
+          onSubmit={onSubmit}
+          autoFocus="1"
+          onBlur={() => setEditing(false)}
+        />
+      </div>
+    );
+  }
+  if (value) {
+    return (
+      <div class="p-1 m-3 bg-gray-200" onClick={onClick}>
+        {value}
+      </div>
+    );
+  }
+  return (
+    <div class="p-1 m-3 text-gray-500" onClick={onClick}>
+      (unset)
+    </div>
+  );
 }
 
 function Choices({ property }) {
-  function onTrash(choice) {
-    property.removeChoice(choice);
-  }
   return (
     <ol class="list-decimal pl-4">
       {property.choices.map((c) => (
         <li>
-          {c}
-          <button class="float-right" onClick={onTrash.bind(null, c)}>
-            <icons.Trash class="h-3 w-3" />
-          </button>
+          <Choice choice={c} property={property} />
         </li>
       ))}
     </ol>
+  );
+}
+
+function Choice({ choice, property }) {
+  const [editing, setEditing] = useState(false);
+  const textRef = useRef(null);
+  function onSubmit(el) {
+    el = el || textRef.current;
+    if (!el) {
+      console.warn("No element to submit");
+      return;
+    }
+    if (el.value === choice) {
+      setEditing(false);
+      return;
+    }
+    property.renameChoice(choice, el.value);
+    setEditing(false);
+  }
+  function onKeyDown(event) {
+    if (editing && event.key === "Escape") {
+      setEditing(false);
+      event.preventDefault();
+      return false;
+    }
+    return undefined;
+  }
+  function onBindPassage() {
+    property.story.addPassage(property.id, choice);
+  }
+  function onTrash() {
+    property.removeChoice(choice);
+  }
+  function onClick(event) {
+    if (event.detail >= 2) {
+      setEditing(true);
+    }
+  }
+  useEffect(() => {
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  });
+  if (editing) {
+    // FIXME; would be nice to have onBlur here but the double-edit is causing problems:
+    return (
+      <div class="p-1 m-3">
+        <TextArea
+          textareaRef={textRef}
+          defaultValue={choice}
+          onSubmit={onSubmit}
+          autoFocus="1"
+        />
+      </div>
+    );
+  }
+  return (
+    <>
+      {property.choiceHasPassage(choice) ? null : (
+        <button
+          class="w-8 bg-magenta-light hover:bg-magenta text-white inline-block rounded m-1"
+          onClick={onBindPassage}
+        >
+          +
+        </button>
+      )}
+      <span onClick={onClick}>{choice}</span>
+      {property.choiceHasPassage(choice) ? null : (
+        <button class="float-right" onClick={onTrash}>
+          <icons.Trash class="h-3 w-3" />
+        </button>
+      )}
+    </>
   );
 }
 
@@ -168,12 +307,11 @@ function PropertyEditor({ property, promptName, onDone }) {
   }
   function onSelect(val) {
     if (promptName === "choices") {
-      console.log("prop is", property, property.hasChoice);
       if (!property.hasChoice(val)) {
         property.addChoice(val);
       }
     } else {
-      property.value = val;
+      property.setValueFromText(val);
       onDone();
     }
   }

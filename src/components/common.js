@@ -34,7 +34,7 @@ export const Card2 = ({ title, children, buttons, class: _class }) => {
       <div class="rounded drop-shadow-l w-full">
         <div class="bg-magenta p-1 rounded-t">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg pl-2 font-semibold text-magenta-lighter">
+            <h3 class="text-lg text-ellipsis truncate whitespace-nowrap pl-2 font-semibold text-magenta-lighter">
               {title}
             </h3>
             {buttonContainer}
@@ -151,6 +151,15 @@ export const TextArea = (props) => {
   useEffect(() => {
     if (textRef.current) {
       fixHeight(textRef.current);
+    }
+  });
+  const autoFocus = newProps.autoFocus;
+  delete newProps.autoFocus;
+  useEffect(() => {
+    if (autoFocus && textRef.current) {
+      textRef.current.focus();
+      const len = textRef.current.value.length;
+      textRef.current.setSelectionRange(len, len);
     }
   });
   return (

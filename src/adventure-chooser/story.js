@@ -1,5 +1,6 @@
 import { getCompletion } from "../gptservice/appgpt";
 import LocalCache from "../localcache";
+import uuid from "../uuid";
 
 const queryCache = new LocalCache("adventure-chooser-queries");
 
@@ -11,9 +12,35 @@ export class ChooserStory {
     this.characterName = new Property(this, "characterName", "Character Name");
     this.mainCharacter = new Property(this, "mainCharacter", "Main Character");
     this.introPassage = new Property(this, "introPassage", "Introduction");
-    this.passages = [this.introPassage];
+    this.passages = [];
     this.queryLog = [];
     this._updates = [];
+  }
+
+  toJSON() {
+    return {
+      genre: this.genre,
+      title: this.title,
+      theme: this.theme,
+      characterName: this.characterName,
+      mainCharacter: this.mainCharacter,
+      introPassage: this.introPassage,
+      passages: this.passages,
+    };
+  }
+
+  updateFromJSON(data) {
+    this.genre.updateFromJSON(data.genre);
+    this.title.updateFromJSON(data.title);
+    this.theme.updateFromJSON(data.theme);
+    this.characterName.updateFromJSON(data.characterName);
+    this.mainCharacter.updateFromJSON(data.mainCharacter);
+    this.introPassage.updateFromJSON(data.introPassage);
+    this.passages = data.passages.map((p) => {
+      const prop = new Property(this);
+      prop.updateFromJSON(p);
+      return prop;
+    });
   }
 
   storyContext() {
@@ -39,6 +66,31 @@ export class ChooserStory {
 
   removeOnUpdate(func) {
     this._updates = this._updates.filter((x) => x !== func);
+  }
+
+  getPassageById(id) {
+    if (id === "introPassage") {
+      return this.introPassage;
+    }
+    const v = this.passages.find((p) => p.id === id);
+    if (!v) {
+      throw new Error(`No passage with id ${id}`);
+    }
+    return v;
+  }
+
+  getPassageByChoice(sourceId, choice) {
+    return this.passages.find(
+      (p) => p.fromPassageId === sourceId && p.fromChoice === choice
+    );
+  }
+
+  addPassage(parentId, choice) {
+    const passage = new Property(this, "passage", choice);
+    passage.fromPassageId = parentId;
+    passage.fromChoice = choice;
+    this.passages.push(passage);
+    this.fireOnUpdate();
   }
 
   fireOnUpdate() {
@@ -100,9 +152,50 @@ class Property {
     this._value = null;
     this.single = !!prompts[type + "Single"];
     this.fixupPrompt = prompts[type + "Fixup"];
+    if (this.type === "passage") {
+      this.id = uuid();
+    } else if (this.type === "introPassage") {
+      this.id = "introPassage";
+    }
+    this.fromChoice = undefined;
+    this.fromPassageId = undefined;
     if (this.hasChoices) {
       this.choices = [];
     }
+  }
+
+  toJSON() {
+    return {
+      type: this.type,
+      title: this.title,
+      value: this.value,
+      choices: this.choices,
+      id: this.id,
+      fromPassageId: this.fromPassageId,
+      fromChoice: this.fromChoice,
+    };
+  }
+
+  delete() {
+    if (this.type === "passage") {
+      this.story.passages = this.story.passages.filter((x) => x !== this);
+      this.story.fireOnUpdate();
+    } else {
+      this.value = undefined;
+    }
+  }
+
+  updateFromJSON(data) {
+    if (this.type && this.type !== data.type) {
+      throw new Error(`Type mismatch: ${this.type} vs ${data.type}`);
+    }
+    this.type = data.type;
+    this.title = data.title;
+    this.value = data.value;
+    this.choices = data.choices;
+    this.id = data.id;
+    this.fromPassageId = data.fromPassageId;
+    this.fromChoice = data.fromChoice;
   }
 
   get value() {
@@ -112,6 +205,27 @@ class Property {
   set value(v) {
     this._value = v;
     this.story.fireOnUpdate();
+  }
+
+  setValueFromText(v) {
+    if (this.type === "passage") {
+      const [title, rest] = this.extractTitle(v);
+      if (title) {
+        this.title = title;
+      }
+      this.value = rest;
+    } else {
+      this.value = v;
+    }
+  }
+
+  extractTitle(v) {
+    const m = v.match(/^Title: (.*)\n/i);
+    if (m) {
+      const rest = v.replace(/^Title: (.*)\n/i, "");
+      return [m[1], rest.trim()];
+    }
+    return [null, v];
   }
 
   get hasChoices() {
@@ -130,6 +244,37 @@ class Property {
 
   hasChoice(choice) {
     return this.choices.includes(choice);
+  }
+
+  renameChoice(oldChoice, newChoice) {
+    if (!this.hasChoice(oldChoice)) {
+      throw new Error(`No such choice: ${oldChoice}`);
+    }
+    if (!newChoice) {
+      throw new Error("New choice cannot be empty");
+    }
+    const passage = this.story.getPassageByChoice(this.id, oldChoice);
+    if (passage) {
+      passage.fromChoice = newChoice;
+    }
+    this.choices = this.choices.map((x) => (x === oldChoice ? newChoice : x));
+    this.story.fireOnUpdate();
+  }
+
+  choiceHasPassage(choice) {
+    for (const p of this.story.passages) {
+      if (p.fromChoice === choice && p.fromPassageId === this.id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get fromPassage() {
+    if (!this.fromPassageId) {
+      throw new Error("This property does not come from a passage");
+    }
+    return this.story.getPassageById(this.fromPassageId);
   }
 
   async suggestChoices() {
@@ -254,6 +399,7 @@ class Property {
       prompts.assistantIntro,
       prompts.general,
       this.story.storyContext(),
+      this.passageContext(),
       basic,
       existingChoices,
       "Edward says:",
@@ -265,8 +411,28 @@ class Property {
     }
     return result.join("\n\n") + "\n\n";
   }
+
+  passageContext() {
+    if (this.type !== "passage") {
+      return null;
+    }
+    const p = [];
+    let current = this;
+    while (current.fromPassageId) {
+      current = current.fromPassage;
+      p.push(current.value);
+    }
+    p.reverse();
+    p.push(this.fromChoice);
+    if (this.value) {
+      // FIXME: this is right for choices, but seems wrong for editing the passage
+      p.push(this.value);
+    }
+    return p.join("\n\n");
+  }
 }
 
+// Every so often (not that often) it returns these emoji instead of 1./2. etc:
 function fixResponseText(text) {
   let t = text.trim();
   t = t.replace("1️⃣", "1. ");
@@ -321,6 +487,10 @@ export const prompts = {
   Compose the first passage of the story. Describe the setting and the main character. Repeat the passage after each change.
   `,
   introPassageSingle: true,
+  passage: `
+  Compose a passage of the story. Give the passage a title. Repeat the passage after each change.
+  `,
+  passageSingle: true,
   general: `
 * Keep responses short, concise, and easy to understand.
 * Do not get ahead of yourself.
