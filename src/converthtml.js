@@ -40,3 +40,8 @@ export function markdownToElement(markdown) {
   const el = parseHtml(rendered);
   return el;
 }
+
+export function markdownToPreact(markdown) {
+  const el = markdownToElement(markdown);
+  return elementToPreact(el);
+}

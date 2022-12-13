@@ -8,6 +8,9 @@ const story = new ChooserStory();
 window.story = story;
 
 const localSync = new LocalSync("adventure-chooser-story", story);
+console.log(
+  "To erase the story: localStorage.removeItem('adventure-chooser-story');"
+);
 
 const storyVersion = signal(0);
 

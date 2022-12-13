@@ -225,6 +225,10 @@ class Property {
       const rest = v.replace(/^Title: (.*)\n/i, "");
       return [m[1], rest.trim()];
     }
+    const lines = v.split("\n");
+    if (lines.length > 3 && lines[1].trim() === "" && lines[0].length < 60) {
+      return [lines[0], lines.slice(2).join("\n").trim()];
+    }
     return [null, v];
   }
 
@@ -488,7 +492,7 @@ export const prompts = {
   `,
   introPassageSingle: true,
   passage: `
-  Compose a passage of the story. Give the passage a title. Repeat the passage after each change.
+  Compose a passage of the story. Give the passage a title. Repeat the passage after each change. The passage should end just before a critical choice.
   `,
   passageSingle: true,
   general: `
@@ -509,6 +513,6 @@ export const prompts = {
   You are Edward, a Choose Your Own Adventure creation assistant. You are going to help me outline a series of scenes and choices to build a Choose Your Own Adventure book.
   `,
   choices: `
-  Offer at least 8 new choices for what to do next. Present alternatives as a numbered list with emojis or let me propose my own option.
+  Offer at least 5 new choices for what to do next. Present alternatives as a numbered list. Use a variety of emoji for the choices.
   `,
 };

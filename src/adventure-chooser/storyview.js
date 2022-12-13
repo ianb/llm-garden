@@ -1,5 +1,5 @@
 /* eslint no-unused-vars: "off" */
-import { Header } from "../components/header";
+import { Header, HeaderButton } from "../components/header";
 import {
   PageContainer,
   Pre,
@@ -8,17 +8,25 @@ import {
   Button,
   TextArea,
   mergeProps,
+  Field,
 } from "../components/common";
 import Sidebar from "../components/sidebar";
 import { signal } from "@preact/signals";
 import { useState, useEffect, useRef } from "preact/hooks";
-import { markdownToElement, elementToPreact } from "../converthtml";
+import {
+  markdownToElement,
+  elementToPreact,
+  markdownToPreact,
+} from "../converthtml";
 import * as icons from "../components/icons";
 
 export function StoryView({ story }) {
+  const [massEditing, setMassEditing] = useState(false);
   const log = [...story.queryLog];
   log.reverse();
-  const dummyProp = { value: true };
+  function onToggleMassEditing() {
+    setMassEditing(!massEditing);
+  }
   return (
     <PageContainer>
       <Header
@@ -27,36 +35,53 @@ export function StoryView({ story }) {
           "adventure-chooser",
           `adventure-chooser/${story.title.value || "default"}`,
         ]}
+        buttons={[
+          <HeaderButton onClick={onToggleMassEditing}>
+            {massEditing ? "Regular" : "Mass Edit"}
+          </HeaderButton>,
+        ]}
+        menu={<ImportExportMenu story={story} />}
       />
       <Sidebar>
         {log.map((l, index) => (
           <LogItem log={l} defaultOpen={index === 0} />
         ))}
       </Sidebar>
-      <div class="flex flex-wrap w-2/3">
-        <PropertyView property={story.genre} prev={dummyProp} class="w-1/4" />
-        <PropertyView property={story.title} prev={story.genre} class="w-1/4" />
-        <PropertyView property={story.theme} prev={story.title} class="w-1/4" />
-        <PropertyView
-          property={story.characterName}
-          prev={story.theme}
-          class="w-1/4"
-        />
-        <PropertyView
-          property={story.mainCharacter}
-          prev={story.characterName}
-          class="w-1/2"
-        />
-        <PropertyView
-          property={story.introPassage}
-          prev={story.mainCharacter}
-          class="w-1/2"
-        />
-        {story.passages.map((p) => (
-          <PropertyView property={p} prev={story.fromPassage} class="w-1/2" />
-        ))}
-      </div>
+      {massEditing ? (
+        <MassEditor story={story} />
+      ) : (
+        <RegularEditor story={story} />
+      )}
     </PageContainer>
+  );
+}
+
+function RegularEditor({ story }) {
+  const dummyProp = { value: true };
+  return (
+    <div class="flex flex-wrap w-2/3">
+      <PropertyView property={story.genre} prev={dummyProp} class="w-1/4" />
+      <PropertyView property={story.title} prev={story.genre} class="w-1/4" />
+      <PropertyView property={story.theme} prev={story.title} class="w-1/4" />
+      <PropertyView
+        property={story.characterName}
+        prev={story.theme}
+        class="w-1/4"
+      />
+      <PropertyView
+        property={story.mainCharacter}
+        prev={story.characterName}
+        class="w-1/2"
+      />
+      <PropertyView
+        property={story.introPassage}
+        prev={story.mainCharacter}
+        class="w-1/2"
+      />
+      {story.passages.map((p) => (
+        <PropertyView property={p} prev={story.fromPassage} class="w-1/2" />
+      ))}
+    </div>
   );
 }
 
@@ -179,7 +204,7 @@ function PropertyValue({ value, onEdit }) {
   if (value) {
     return (
       <div class="p-1 m-3 bg-gray-200" onClick={onClick}>
-        {value}
+        <Markdown text={value} />
       </div>
     );
   }
@@ -498,8 +523,71 @@ function LogItem({ log, defaultOpen }) {
   );
 }
 
-function Title({ story }) {}
+function Markdown({ text }) {
+  const c = markdownToPreact(text);
+  return <div class="unreset">{c}</div>;
+}
 
-function Theme({ story }) {}
+function ImportExportMenu({ story }) {
+  function onExport(event) {
+    const data = JSON.stringify(story, null, "  ");
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    event.target.href = url;
+  }
+  function onImport(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = e.target.result;
+      const storyJson = JSON.parse(data);
+      story.updateFromJSON(storyJson);
+    };
+    reader.readAsText(file);
+  }
+  return (
+    <div>
+      <Field>
+        Import
+        <input type="file" onChange={onImport} />
+      </Field>
+      <a
+        class="bg-magenta hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
+        href="#"
+        onClick={onExport}
+        download={story.title.value}
+      >
+        Export/download
+        <icons.Download class="h-4 w-4 inline-block ml-1" />
+      </a>
+    </div>
+  );
+}
 
-function MainCharacter({ story }) {}
+function MassEditor({ story }) {
+  <div class="flex flex-wrap w-2/3">
+    <ul>
+      <MassProperty property={story.genre} />
+      <MassProperty property={story.title} />
+      <MassProperty property={story.theme} />
+      <MassProperty property={story.characterName} />
+      <MassProperty property={story.mainCharacter} />
+      <MassProperty property={story.introPassage} />
+      {story.passages.map((p) => (
+        <MassProperty property={p} />
+      ))}
+    </ul>
+  </div>;
+}
+
+function MassProperty({ property }) {
+  return (
+    <li>
+      <input type="checkbox" value={editing} onChange={onChange} />
+      <div class="block text-gray-700 text-sm font-bold mb-2">
+        {property.title}
+      </div>
+      <div>{property.value}</div>
+    </li>
+  );
+}
