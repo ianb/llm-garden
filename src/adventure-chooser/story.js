@@ -101,6 +101,7 @@ export class ChooserStory {
 
   async getCompletion(prompt) {
     let val;
+    let body;
     if (typeof prompt === "string") {
       val = queryCache.get(prompt);
     }
@@ -121,7 +122,6 @@ export class ChooserStory {
     const start = Date.now();
     const logItem = { prompt: body.prompt, start };
     this.queryLog.push(logItem);
-    let body;
     const resp = await getCompletion(body, [
       "adventure-chooser",
       `adventure-chooser/${this.title.value || "default"}`,

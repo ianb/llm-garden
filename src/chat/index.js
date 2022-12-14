@@ -24,7 +24,7 @@ const Intro = () => {
       <ul>
         {Object.keys(prompts).map((key) => (
           <li key={key}>
-            <a href={`./?persona=${encodeURIComponent(key)}`}>
+            <a href={`/chat/?persona=${encodeURIComponent(key)}`}>
               <Card>
                 <H1>{key}</H1>
               </Card>
