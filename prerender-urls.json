@@ -14,5 +14,9 @@
   {
     "url": "/adventure-chooser",
     "title": "Adventure Chooser Authoring"
+  },
+  {
+    "url": "/key-management",
+    "title": "Add your key"
   }
 ]

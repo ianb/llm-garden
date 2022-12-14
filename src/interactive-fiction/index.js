@@ -24,7 +24,7 @@ const Intro = () => {
       <ul>
         {Object.keys(stories).map((key) => (
           <li key={key}>
-            <a href={`./?story=${key}`}>
+            <a href={`/interactive-fiction/?story=${key}`}>
               <Card>
                 <H1>{stories[key].title}</H1>
               </Card>

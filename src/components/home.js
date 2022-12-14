@@ -27,3 +27,15 @@ export const Home = () => {
     </PageContainer>
   );
 };
+
+export const NotFound = () => {
+  return (
+    <PageContainer>
+      <Header title="Not Found" />
+      <Card>
+        <H1>404 Not Found</H1>
+        <P>Page not found</P>
+      </Card>
+    </PageContainer>
+  );
+};

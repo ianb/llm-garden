@@ -2,6 +2,8 @@ import { signal } from "@preact/signals";
 import { tokenCostTracker } from "../gptservice/tokencost";
 import { useEffect } from "preact/hooks";
 import { useState, useRef } from "preact/hooks";
+// eslint-disable-next-line no-unused-vars
+import * as icons from "./icons";
 
 const tokenCost = signal(tokenCostTracker);
 
@@ -35,6 +37,9 @@ export const Header = ({ title, trackerPaths, links, buttons, menu }) => {
   return (
     <nav class="flex items-center justify-between flex-wrap bg-blue-complement pr-6 pl-6 pt-2 pb-2 sticky top-0 z-50">
       <div class="flex items-center flex-shrink-0 text-white mr-6">
+        <a href="/">
+          <icons.Home class="h-5 w-5 mr-2" />
+        </a>
         <span class="font-semibold text-xl tracking-tight">{title}</span>
       </div>
       <div class="block">

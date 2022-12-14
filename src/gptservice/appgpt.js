@@ -3,6 +3,12 @@ import { holder } from "../key-management/key";
 import { tokenCostTracker } from "./tokencost";
 
 export async function getCompletion(prompt, usagePaths) {
+  if (!holder.hasKey()) {
+    if (window.confirm("No GPT API key is set. Set one now?")) {
+      window.location = "/key-management";
+    }
+    throw new Error("No GPT API key is set");
+  }
   if (typeof prompt === "string") {
     prompt = { prompt };
   }

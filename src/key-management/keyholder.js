@@ -5,10 +5,23 @@ export default class KeyHolder {
     this.name = name;
     this.encrypted = encrypted;
     this.validator = validator || ((v) => !!v);
+    this._onUpdate = [];
+  }
+
+  addOnUpdate(func) {
+    this._onUpdate.push(func);
+  }
+
+  removeOnUpdate(func) {
+    this._onUpdate = this._onUpdate.filter((f) => f !== func);
+  }
+
+  fireOnUpdate() {
+    this._onUpdate.forEach((f) => f());
   }
 
   get storageName() {
-    return `key_${name}`;
+    return `key_${this.name}`;
   }
 
   hasKey() {
@@ -29,11 +42,25 @@ export default class KeyHolder {
         value
       )}, "password")`
     );
+    this.fireOnUpdate();
   }
 
-  setKeyFromText(textInput) {
+  removeKey() {
+    localStorage.removeItem(this.storageName);
+    this.fireOnUpdate();
+  }
+
+  async setKeyFromText(textInput) {
     for (const e of this.encrypted) {
-      const v = decrypt(e, textInput);
+      let v;
+      try {
+        v = await decrypt(e, textInput);
+      } catch (e) {
+        continue;
+      }
+      if (!v) {
+        continue;
+      }
       if (this.validator(v)) {
         this.setKey(v);
         return true;

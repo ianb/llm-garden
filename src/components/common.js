@@ -15,7 +15,24 @@ export const mergeProps = (defaultProps, props) => {
   return newProps;
 };
 
-export const P = ({ children }) => <p class="">{children}</p>;
+export const P = ({ children, class: _class }) => {
+  _class = twMerge("py-1", _class);
+  return <div class={_class}>{children}</div>;
+};
+
+export const Code = ({ children, class: _class }) => {
+  _class = twMerge("bg-gray-200 font-mono p-x-1", _class);
+  return <code class={_class}>{children}</code>;
+};
+
+export const A = ({ children, class: _class, ...props }) => {
+  _class = twMerge("text-blue-500 underline hover:text-blue-700", _class);
+  return (
+    <a class={_class} {...props}>
+      {children}
+    </a>
+  );
+};
 
 export const Card = ({ children }) => (
   <div class="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg items-center m-2">
