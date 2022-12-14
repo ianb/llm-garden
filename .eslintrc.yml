@@ -10,11 +10,13 @@ parserOptions:
 
 extends:
   - eslint:recommended
-  - plugin:mozilla/recommended
+  # FIXME: Having a hard time installing this now:
+  # - plugin:mozilla/recommended
   - prettier
 
 plugins:
-  - mozilla
+  # FIXME: disabled due to installation problem
+  # - mozilla
   - react-hooks
   - prettier
 
@@ -25,7 +27,8 @@ rules:
   no-var: error
   no-warning-comments: off
   prefer-const: error
-  mozilla/no-import-into-var-and-global: off
+  # FIXME: disabled because the plugin is not working well:
+  # mozilla/no-import-into-var-and-global: off
   comma-dangle: off
   react-hooks/rules-of-hooks: error
   react-hooks/exhaustive-deps: warn
