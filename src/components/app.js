@@ -5,7 +5,6 @@ import { AdventureChooserIndex } from "../adventure-chooser/index";
 import { RequestKeyPage } from "../key-management/index";
 import { Home, NotFound } from "./home";
 import Router from "preact-router";
-import AsyncRoute from "preact-async-route";
 
 const App = () => {
   return (

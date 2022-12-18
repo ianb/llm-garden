@@ -231,3 +231,9 @@ export const Button = (props) => {
   );
   return <button {...p}>{props.children}</button>;
 };
+
+export const Date = ({ timestamp, class: _class }) => {
+  const date = new Date(timestamp);
+  const dateString = date.toLocaleString();
+  return <span class={_class}>{dateString}</span>;
+};

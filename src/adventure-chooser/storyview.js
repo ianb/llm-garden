@@ -20,7 +20,16 @@ import {
 } from "../converthtml";
 import * as icons from "../components/icons";
 
-export function StoryView({ story }) {
+export function StoryView({ model }) {
+  window.myModel = model;
+  const story = model.domain;
+  if (!story) {
+    throw new Error("StoryView: no story");
+  }
+  const [storyVersion, setStoryVersion] = useState(0);
+  model.addOnUpdate(() => {
+    setStoryVersion(storyVersion + 1);
+  });
   const [massEditing, setMassEditing] = useState(false);
   const log = [...story.queryLog];
   log.reverse();
@@ -33,7 +42,7 @@ export function StoryView({ story }) {
         title={story.title.value || "?"}
         trackerPaths={[
           "adventure-chooser",
-          `adventure-chooser/${story.title.value || "default"}`,
+          `adventure-chooser/${model.slug || "default"}`,
         ]}
         buttons={[
           <HeaderButton onClick={onToggleMassEditing}>

@@ -5,7 +5,7 @@ import uuid from "../uuid";
 const queryCache = new LocalCache("adventure-chooser-queries");
 
 export class ChooserStory {
-  constructor() {
+  constructor(props) {
     this.genre = new Property(this, "genre", "Genre");
     this.title = new Property(this, "title", "Title");
     this.theme = new Property(this, "theme", "Theme");
@@ -15,6 +15,9 @@ export class ChooserStory {
     this.passages = [];
     this.queryLog = [];
     this._updates = [];
+    if (props) {
+      this.updateFromJSON(props);
+    }
   }
 
   toJSON() {
@@ -96,6 +99,9 @@ export class ChooserStory {
   fireOnUpdate() {
     for (const func of this._updates) {
       func(this);
+    }
+    if (this.envelope) {
+      this.envelope.updated();
     }
   }
 
@@ -191,7 +197,20 @@ class Property {
     }
     this.type = data.type;
     this.title = data.title;
-    this.value = data.value;
+    if (
+      typeof data.value !== "string" &&
+      data.value !== undefined &&
+      data.value !== null
+    ) {
+      console.warn(
+        "Bad property data for prop",
+        this.type,
+        this.title,
+        data.value
+      );
+    } else {
+      this.value = data.value;
+    }
     this.choices = data.choices;
     this.id = data.id;
     this.fromPassageId = data.fromPassageId;
