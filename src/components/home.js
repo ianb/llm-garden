@@ -24,6 +24,12 @@ export const Home = () => {
           <P></P>
         </Card>
       </a>
+      <a href="/tone-changer">
+        <Card>
+          <H1>Tone Changer</H1>
+          <P></P>
+        </Card>
+      </a>
     </PageContainer>
   );
 };

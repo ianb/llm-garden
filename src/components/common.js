@@ -170,6 +170,12 @@ export const TextArea = (props) => {
       fixHeight(textRef.current);
     }
   });
+  useEffect(() => {
+    if (textRef.current) {
+      fixHeight(textRef.current);
+    }
+  }, [textRef.current]);
+  // FIXME: also need some onInput fixHeight thing because paste doesn't trigger it currently
   const autoFocus = newProps.autoFocus;
   delete newProps.autoFocus;
   useEffect(() => {
@@ -187,6 +193,29 @@ export const TextArea = (props) => {
       onKeyDown={onKeyDown}
     />
   );
+};
+
+export const Select = (props) => {
+  const newProps = mergeProps(
+    {
+      class:
+        "bg-white border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline",
+    },
+    props
+  );
+  const options = newProps.options;
+  delete newProps.options;
+  let children;
+  if (Array.isArray(options)) {
+    children = options.map((option) => (
+      <option value={option}>{option}</option>
+    ));
+  } else {
+    children = Object.keys(options).map((key) => (
+      <option value={key}>{options[key]}</option>
+    ));
+  }
+  return <select {...newProps}>{children}</select>;
 };
 
 export const Form = ({ children, onSubmit }) => {
@@ -232,7 +261,10 @@ export const Button = (props) => {
   return <button {...p}>{props.children}</button>;
 };
 
-export const Date = ({ timestamp, class: _class }) => {
+export const DateView = ({ timestamp, class: _class }) => {
+  if (!timestamp) {
+    return null;
+  }
   const date = new Date(timestamp);
   const dateString = date.toLocaleString();
   return <span class={_class}>{dateString}</span>;

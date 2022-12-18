@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 import { signal } from "@preact/signals";
 import { useState } from "preact/hooks";
-import { Button, Card2, P, Date } from "./common";
+import { Button, Card2, P, DateView, PageContainer } from "./common";
+import { Header } from "./header";
 
 export const ModelIndex = ({ store, onSelect, onAdd }) => {
   const [includeArchive, setIncludeArchive] = useState(false);
@@ -56,17 +57,25 @@ const ConcreteIndex = ({
 };
 
 const Model = ({ model, onSelect }) => {
+  function onClick(event) {
+    event.preventDefault();
+    onSelect(model);
+    return false;
+  }
   return (
-    <Card2 title={model.title} onClick={() => onSelect(model)}>
-      <P>{model.description}</P>
-      {model.builtin ? (
-        <P>Built-in</P>
-      ) : (
-        <P>
-          Updated: <Date timestamp={model.dateUpdated} />
-        </P>
-      )}
-    </Card2>
+    <a href={makeLink(model)} onClick={onClick}>
+      <Card2 title={model.title}>
+        <P>{model.description}</P>
+        {model.builtin ? (
+          <P>Built-in</P>
+        ) : (
+          <P>
+            Updated:{" "}
+            <DateView timestamp={model.dateUpdated || model.dateCreated} />
+          </P>
+        )}
+      </Card2>
+    </a>
   );
 };
 
@@ -97,3 +106,47 @@ export const ModelLoader = ({ model, viewer, children }) => {
   // return <viewer model={loadedModel} />;
   return viewer({ model: loadedModel });
 };
+
+export const ModelIndexPage = ({ title, store, viewer }) => {
+  const u = new URL(location.href).searchParams;
+  if (u.get("name") || u.get("id")) {
+    let model;
+    if (u.get("id")) {
+      model = store.getById(u.get("id"));
+    } else {
+      model = store.getBySlug(u.get("name"));
+    }
+    return (
+      <ModelLoader model={model} viewer={viewer}>
+        Loading...
+      </ModelLoader>
+    );
+  }
+  async function onAdd() {
+    const model = await store.create();
+    await model.saveToDb();
+    window.location = makeLink(model);
+  }
+  function onSelect(story) {
+    window.location = makeLink(model);
+  }
+  return (
+    <PageContainer>
+      <Header title={title} />
+      <ModelIndex store={store} onSelect={onSelect} onAdd={onAdd} />
+    </PageContainer>
+  );
+};
+
+function makeLink(model) {
+  const u = new URL(location.href);
+  let base = u.pathname;
+  if (!base.endsWith("/")) {
+    base = base + "/";
+  }
+  if (model.slug && false) {
+    return `${base}?name=${encodeURIComponent(model.slug)}`;
+  } else {
+    return `${base}?id=${encodeURIComponent(model.id)}`;
+  }
+}
