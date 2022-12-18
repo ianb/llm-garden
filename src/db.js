@@ -46,15 +46,18 @@ export class Model {
     this._dateCreated = dateCreated;
     this._dateUpdated = dateUpdated;
     this._dateImported = dateImported;
-    if (domain) {
-      if (!(domain instanceof domainClass)) {
-        domain = new domainClass(domain);
+    if (domainClass) {
+      // This is instantiated without domainClass during indexing/preview
+      if (domain) {
+        if (!(domain instanceof domainClass)) {
+          domain = new domainClass(domain);
+        }
+        domain.envelope = this;
+        this._domain = domain;
+      } else {
+        this._domain = new domainClass();
+        this._domain.envelope = this;
       }
-      domain.envelope = this;
-      this._domain = domain;
-    } else {
-      this._domain = new domainClass();
-      this._domain.envelope = this;
     }
     this._onUpdates = [];
     this._dirty = false;
@@ -253,7 +256,10 @@ export class Model {
       if (index) {
         slug += "-" + index;
       }
-      const existing = db.models.get({ typeSlug: `${this.type}_${slug}` });
+      const existing = await db.models.get({
+        typeSlug: `${this.type}_${slug}`,
+      });
+      console.log("trying slug", index, slug, existing);
       if (!existing) {
         return slug;
       }
@@ -350,22 +356,26 @@ export class ModelTypeStore {
   }
 }
 
-function recursiveToJSON(o) {
+function recursiveToJSON(o, limit = 10) {
+  if (limit <= 0) {
+    console.warn("Depth too far trying to deserialize object", o);
+    throw new Error("toJSON recursion limit exceeded");
+  }
   if (o && typeof o === "object" && o.toJSON) {
     const subobj = o.toJSON();
     if (subobj.toJSON) {
       console.warn("toJSON inside toJSON in", o);
       return {};
     }
-    return recursiveToJSON(subobj);
+    return recursiveToJSON(subobj, limit - 1);
   }
   if (Array.isArray(o)) {
-    return o.map((v) => recursiveToJSON(v));
+    return o.map((v) => recursiveToJSON(v, limit - 1));
   }
   if (o && typeof o === "object") {
     const o2 = {};
     for (const k in o) {
-      o2[k] = recursiveToJSON(o[k]);
+      o2[k] = recursiveToJSON(o[k], limit - 1);
     }
     return o2;
   }
