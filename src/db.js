@@ -248,7 +248,11 @@ export class Model {
     }
     let index = 0;
     for (;;) {
-      let slug = this.title.toLowerCase().replace(/[^a-z0-9]/g, "-");
+      let slug = makeSlug(this.title);
+      if (this.builtin) {
+        // No duplicate test for builtins
+        return slug;
+      }
       if (index) {
         slug += "-" + index;
       }
@@ -264,6 +268,14 @@ export class Model {
   }
 }
 
+function makeSlug(text) {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "-")
+    .replace(/-+/g, "-");
+}
+
 export class ModelTypeStore {
   constructor(type, cls, builtins) {
     this.type = type;
@@ -271,8 +283,11 @@ export class ModelTypeStore {
     this.builtins = builtins;
     this.builtinsBySlug = new Map();
     for (const model of builtins) {
-      this.builtinsBySlug.set(model.slug, model);
       model.builtin = true;
+      if (!model.slug) {
+        model.slug = `builtin_${makeSlug(model.title)}`;
+      }
+      this.builtinsBySlug.set(model.slug, model);
     }
   }
 

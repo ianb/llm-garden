@@ -1,10 +1,11 @@
 /* eslint no-unused-vars: "off" */
 import { signal } from "@preact/signals";
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { loadStoryData, createStory, stories } from "./storyloader";
 import { Header } from "../components/header";
 import { getCompletion } from "../gptservice/appgpt";
-import { PageContainer } from "../components/common";
+import { PageContainer, Button, TextInput } from "../components/common";
+import Sidebar from "../components/sidebar";
 
 let runnerPromise = null;
 
@@ -13,20 +14,26 @@ const inputEnabled = signal(false);
 const statusText = signal("");
 const statusSummary = signal("");
 
-export const Story = ({ filename }) => {
-  if (runnerPromise === null) {
-    startRunner(filename);
-  }
+export const InteractiveFictionView = ({ model }) => {
+  const [version, setVersion] = useState(0);
+  model.addOnUpdate(() => {
+    setVersion(version + 1);
+  });
+  useEffect(() => {
+    if (runnerPromise === null) {
+      startRunner(model.domain.z5url);
+    }
+  });
   const status = [statusText.value, statusSummary.value]
     .filter((x) => x)
     .join(" ");
   return (
     <PageContainer>
-      <Header title={stories[filename].title} status={status} />
+      <Header title={model.title} status={status} />
       <Sidebar>
         <Completer />
       </Sidebar>
-      <div>
+      <div class="py-1 px-3">
         <StatusLine text={statusText} summary={statusSummary} />
         <Console
           text={text}
@@ -106,10 +113,6 @@ const Console = ({ text, inputEnabled, onSubmit }) => {
   );
 };
 
-export default Story;
-
-const Sidebar = ({ children }) => <div class="sidebar">{children}</div>;
-
 const completionText = signal("");
 
 const Completer = () => {
@@ -120,11 +123,12 @@ const Completer = () => {
   }
   return (
     <div>
-      <button onClick={fillIn}>Fill in input</button> <br />
-      <button onClick={fillInAndComplete}>Fill & Submit input</button> <br />
-      <input type="number" defaultValue="10" ref={number} />{" "}
-      <button onClick={doMany}>Do many steps</button>
-      <br />
+      <Button onClick={fillIn}>Fill in input</Button>
+      <Button onClick={fillInAndComplete}>Fill & Submit input</Button>
+      <div>
+        <TextInput class="w-24" type="number" defaultValue="10" ref={number} />
+        <Button onClick={doMany}>Do many steps</Button>
+      </div>
       <pre>{completionText.value}</pre>
     </div>
   );

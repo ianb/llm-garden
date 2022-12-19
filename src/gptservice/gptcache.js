@@ -22,6 +22,7 @@ export class GptCache {
   async getCompletion(prompt, usagePaths) {
     usagePaths = usagePaths || [];
     usagePaths = [...this.basePaths, ...usagePaths];
+    usagePaths = this.resolvePaths(usagePaths);
     let val;
     if (typeof prompt === "string") {
       val = this.queryCache.get(prompt);
@@ -60,5 +61,16 @@ export class GptCache {
     logItem.time = Date.now() - start;
     resp.text = this.responseFixer(resp.choices[0].text);
     return resp;
+  }
+
+  resolvePaths(paths) {
+    return paths
+      .map((p) => {
+        if (typeof p === "function") {
+          return p();
+        }
+        return p;
+      })
+      .filter((x) => x);
   }
 }

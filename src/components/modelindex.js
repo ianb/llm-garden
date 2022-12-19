@@ -50,7 +50,7 @@ const ConcreteIndex = ({
         <Card2 title="No models yet!">
           <P>Click the button below to add a new model.</P>
         </Card2>
-        <Adder onAdd={onAdd} />
+        {onAdd ? <Adder onAdd={onAdd} /> : null}
       </div>
     );
   }
@@ -59,7 +59,7 @@ const ConcreteIndex = ({
       {models.value.map((m) => (
         <Model model={m} onSelect={onSelect} />
       ))}
-      <Adder onAdd={onAdd} />
+      {onAdd ? <Adder onAdd={onAdd} /> : null}
     </div>
   );
 };
@@ -135,7 +135,7 @@ export const ModelLoader = ({ model, viewer, children }) => {
   return viewer({ model: loadedModel });
 };
 
-export const ModelIndexPage = ({ title, store, viewer }) => {
+export const ModelIndexPage = ({ title, store, viewer, noAdd }) => {
   const u = new URL(location.href).searchParams;
   if (u.get("name") || u.get("id")) {
     let model;
@@ -158,7 +158,7 @@ export const ModelIndexPage = ({ title, store, viewer }) => {
   return (
     <PageContainer>
       <Header title={title} />
-      <ModelIndex store={store} onAdd={onAdd} />
+      <ModelIndex store={store} onAdd={noAdd ? null : onAdd} />
     </PageContainer>
   );
 };
