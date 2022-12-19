@@ -157,6 +157,16 @@ export const TextArea = (props) => {
     });
     return undefined;
   }
+  const prevOnInput = props.onInput;
+  delete props.onInput;
+  function onInput(event) {
+    setTimeout(() => {
+      fixHeight(event.target);
+    });
+    if (prevOnInput) {
+      prevOnInput(event);
+    }
+  }
   function fixHeight(el) {
     const prevLength = el.getAttribute("data-prev-length");
     if (!prevLength || parseInt(prevLength, 10) > el.value.length) {
@@ -174,8 +184,8 @@ export const TextArea = (props) => {
     if (textRef.current) {
       fixHeight(textRef.current);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textRef.current]);
-  // FIXME: also need some onInput fixHeight thing because paste doesn't trigger it currently
   const autoFocus = newProps.autoFocus;
   delete newProps.autoFocus;
   useEffect(() => {
@@ -191,6 +201,7 @@ export const TextArea = (props) => {
       ref={setterRef}
       onKeyUp={onKeyUp}
       onKeyDown={onKeyDown}
+      onInput={onInput}
     />
   );
 };
