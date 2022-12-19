@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "preact/hooks";
 import { twMerge } from "tailwind-merge";
+import { Header } from "./header";
+import Sidebar from "./sidebar";
 
 export const mergeProps = (defaultProps, props) => {
   const newProps = Object.assign({}, defaultProps);
@@ -48,7 +50,7 @@ export const Card2 = ({ title, children, buttons, class: _class }) => {
   _class = twMerge("relative w-72 p-2", _class);
   return (
     <div class={_class}>
-      <div class="rounded drop-shadow-l w-full">
+      <div class="rounded drop-shadow-lg w-full">
         <div class="bg-magenta p-1 rounded-t">
           <div class="flex items-center justify-between">
             <h3 class="text-lg text-ellipsis truncate whitespace-nowrap pl-2 font-semibold text-magenta-lighter">
@@ -252,8 +254,19 @@ export const Alert = ({ title, children }) => {
 };
 
 export const PageContainer = ({ children }) => {
+  const header = children.find((child) => child.type === Header);
+  const sidebar = children.find((child) => child.type === Sidebar);
+  const rest = children.filter(
+    (child) => child.type !== Header && child.type !== Sidebar
+  );
   return (
-    <div class="mx-auto bg-blue-complement-light min-h-screen">{children}</div>
+    <div class="flex flex-col bg-blue-complement-light min-h-screen">
+      <div class="shrink-0">{header}</div>
+      <div class="flex grow flex-row w-full">
+        <div class="flex-2">{rest}</div>
+        <div class="flex-1">{sidebar}</div>
+      </div>
+    </div>
   );
 };
 

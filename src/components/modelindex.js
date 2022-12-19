@@ -67,7 +67,9 @@ const ConcreteIndex = ({
 const Model = ({ model, onSelect }) => {
   function onClick(event) {
     event.preventDefault();
-    onSelect(model);
+    if (onSelect) {
+      onSelect(model);
+    }
     return false;
   }
   function onClickDelete(event) {

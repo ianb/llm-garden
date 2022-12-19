@@ -40,6 +40,8 @@ export function StoryView({ model }) {
     <PageContainer>
       <Header
         title={story.title.value || "?"}
+        section="Adventure Chooser"
+        sectionLink="/adventure-chooser/"
         trackerPaths={[
           "adventure-chooser",
           `adventure-chooser/${model.slug || "default"}`,
@@ -68,7 +70,7 @@ export function StoryView({ model }) {
 function RegularEditor({ story }) {
   const dummyProp = { value: true };
   return (
-    <div class="flex flex-wrap w-2/3">
+    <div class="flex flex-wrap">
       <PropertyView property={story.genre} prev={dummyProp} class="w-1/4" />
       <PropertyView property={story.title} prev={story.genre} class="w-1/4" />
       <PropertyView property={story.theme} prev={story.title} class="w-1/4" />

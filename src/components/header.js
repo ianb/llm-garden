@@ -47,13 +47,14 @@ export const Header = ({
     if (sectionLink) {
       sectionTag = (
         <>
-          <a href={sectionLink}>{section}</a> {" > "}
+          <a href={sectionLink}>{section}</a>{" "}
+          <icons.ChevronRight class="h-4 w-4 inline-block" />
         </>
       );
     } else {
       sectionTag = (
         <>
-          {section} {" > "}
+          {section} <icons.ChevronRight class="h-4 w-4 inline-block" />
         </>
       );
     }

@@ -13,7 +13,9 @@ delete simpleColors.lightBlue;
 module.exports = {
   content: ["./src/**/*.{html,js}"],
   theme: {
-    extend: {},
+    extend: {
+      flex: { 2: "2 1 0%" },
+    },
     colors: Object.assign({}, simpleColors, {
       // From https://www.color-name.com/viva-magenta.color
       magenta: "#BB2649",
