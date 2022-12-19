@@ -5,7 +5,7 @@ import { Header } from "./header";
 export const Home = () => {
   return (
     <PageContainer>
-      <Header title="Large Language Model (GPT-3) Gymnasium" />
+      <Header title="Large Language Model (GPT-3) Garden" />
       <a href="/interactive-fiction">
         <Card>
           <H1>Interactive Fiction</H1>
