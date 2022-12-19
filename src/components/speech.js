@@ -1,15 +1,30 @@
+/* eslint-disable no-unused-vars */
 /* globals webkitSpeechRecognition */
 import { useState, useEffect } from "preact/hooks";
+import * as icons from "./icons";
+import { signal } from "@preact/signals";
 
 let recognition;
 
 export const SpeechButton = ({ onSpeech, onUtterance, syncToRef }) => {
   const [listening, setListening] = useState(false);
+  const [paused, setPaused] = useState(false);
   function onClick() {
+    setPaused(false);
     setListening(!listening);
   }
+  const isSpeaking = speaking.value;
   useEffect(() => {
-    if (listening && recognition !== null) {
+    if (listening && recognition && isSpeaking && !paused) {
+      console.log("pausing recognition");
+      recognition.stop();
+      setPaused(true);
+    } else if (listening && recognition && !isSpeaking && paused) {
+      console.log("resuming recognition");
+      recognition.start();
+      setPaused(false);
+    } else if (listening && !recognition) {
+      console.log("starting recognition");
       recognition = new webkitSpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
@@ -37,20 +52,28 @@ export const SpeechButton = ({ onSpeech, onUtterance, syncToRef }) => {
         }
       };
       recognition.start();
-    }
-    if (!listening && recognition) {
+    } else if (!listening && recognition) {
+      console.log("stopping recognition");
       recognition.stop();
       recognition = null;
     }
-  }, [listening, onSpeech, onUtterance, syncToRef]);
-  if (listening) {
-    // tailwind HTML for a stop mic button
+  }, [listening, paused, onSpeech, onUtterance, syncToRef, isSpeaking]);
+  if (listening && !paused) {
     return (
       <button
         class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
         onClick={onClick}
       >
-        wavy mic
+        <icons.Stop class="w-6 h-6" />
+      </button>
+    );
+  } else if (listening && paused) {
+    return (
+      <button
+        class="bg-blue-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        onClick={onClick}
+      >
+        <icons.Pause class="w-6 h-6" />
       </button>
     );
   }
@@ -59,7 +82,56 @@ export const SpeechButton = ({ onSpeech, onUtterance, syncToRef }) => {
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
       onClick={onClick}
     >
-      mic
+      <icons.Mic class="w-6 h-6" />
     </button>
   );
 };
+
+export const voicesSignal = signal([]);
+voicesSignal.value = speechSynthesis.getVoices();
+speechSynthesis.addEventListener("voiceschanged", () => {
+  voicesSignal.value = speechSynthesis.getVoices();
+});
+
+export const speak = async (text, voice, lang = "en-US") => {
+  if (!text) {
+    throw new Error("No text to speak");
+  }
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = lang;
+  utt.voice = speechSynthesis.getVoices().find((v) => v.name === voice);
+  let resolve, reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  utt.onend = () => {
+    resolve();
+    checkVoice();
+  };
+  utt.onerror = (err) => {
+    console.log("Error for speech:", err);
+    reject(err);
+    checkVoice();
+  };
+  speechSynthesis.speak(utt);
+  speaking.value = true;
+  return promise;
+};
+
+export const speaking = signal(false);
+
+function checkVoice(checkAgain = true) {
+  const isSpeaking =
+    speechSynthesis.speaking ||
+    speechSynthesis.pending ||
+    speechSynthesis.paused;
+  if (isSpeaking !== speaking.value) {
+    speaking.value = isSpeaking;
+  }
+  if (checkAgain) {
+    setTimeout(() => {
+      checkVoice(false);
+    }, 100);
+  }
+}

@@ -1,26 +1,20 @@
-import { Header, HeaderButton } from "../components/header";
+/* eslint-disable no-unused-vars */
+import { Header } from "../components/header";
 import {
   PageContainer,
-  Pre,
-  Card2,
-  CardButton,
-  Button,
   TextArea,
   TextInput,
-  mergeProps,
   Field,
   Select,
+  A,
 } from "../components/common";
 import Sidebar from "../components/sidebar";
 import { signal } from "@preact/signals";
-import { useState, useEffect, useRef } from "preact/hooks";
-import {
-  markdownToElement,
-  elementToPreact,
-  markdownToPreact,
-} from "../converthtml";
-import * as icons from "../components/icons";
+import { useState, useRef } from "preact/hooks";
 import { QueryLog } from "../components/querylog";
+import * as icons from "../components/icons";
+import { SpeechButton } from "../components/speech";
+import { ImportExportMenu } from "../components/modelmenu";
 
 export const ToneView = ({ model }) => {
   const [version, setVersion] = useState(0);
@@ -31,10 +25,10 @@ export const ToneView = ({ model }) => {
     <PageContainer>
       <Header
         title={model.title || "? Tone ?"}
-        trackerPaths={[
-          "tone-changer",
-          `tone-changer/${model.slug || "default"}`,
-        ]}
+        section="Tone Changer"
+        sectionLink="/tone-changer/"
+        trackerPaths={["tone-changer"]}
+        menu={<ImportExportMenu model={model} />}
       />
       <Sidebar>
         <PromptEditor model={model} />
@@ -52,10 +46,23 @@ function ToneList({ model }) {
     model.domain.translate(textarea.value);
     textarea.value = "";
   }
+  function onUtterance(text) {
+    model.domain.translate(text);
+    if (textRef.current) {
+      textRef.current.value = "";
+    }
+  }
+  const textRef = useRef();
   return (
     <>
       <UtteranceTable utterances={model.domain.utterances} />
-      <TextArea onSubmit={onSubmit} />
+      <Field>
+        <span>You say:</span>
+        <div>
+          <TextArea onSubmit={onSubmit} textareaRef={textRef} class="w-3/4" />
+          <SpeechButton syncToRef={textRef} onUtterance={onUtterance} />
+        </div>
+      </Field>
     </>
   );
 }
@@ -81,8 +88,8 @@ function UtteranceTable({ utterances }) {
 function UtteranceRow({ utterance }) {
   return (
     <tr>
-      <td>{utterance.input}</td>
-      <td>{utterance.output}</td>
+      <td class="border border-slate-300 w-1/2">{utterance.input}</td>
+      <td class="border border-slate-300 w-1/2">{utterance.output}</td>
     </tr>
   );
 }
@@ -134,7 +141,15 @@ function PromptEditor({ model }) {
         />
       </Field>
       <Field>
-        <span>Output language:</span>
+        <span>
+          Output language:{" "}
+          <A
+            href="https://en.wikipedia.org/wiki/IETF_language_tag"
+            target="_blank"
+          >
+            <icons.Info class="h-4 w-4 inline-block" />
+          </A>
+        </span>
         <TextInput
           onInput={onChangeLanguage}
           defaultValue={model.domain.outputLanguage}

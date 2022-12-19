@@ -1,10 +1,11 @@
 import { ModelTypeStore } from "../db";
 import { GptCache } from "../gptservice/gptcache";
+import { speak } from "../components/speech";
 
 class Tone {
   constructor(props) {
     props = props || {};
-    this.prompt = props.prompt;
+    this.prompt = props.prompt || defaultPrompt;
     this.voice = props.voice;
     this.outputLanguage = props.outputLanguage || "en-US";
     this.gpt = new GptCache({
@@ -29,10 +30,10 @@ class Tone {
   }
 
   speak(text) {
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = this.outputLanguage;
-    utt.voice = speechSynthesis.getVoices().find((v) => v.name === this.voice);
-    speechSynthesis.speak(utt);
+    if (!text) {
+      throw new Error("No text to speak");
+    }
+    return speak(text, this.outputLanguage, this.voice);
   }
 
   toJSON() {
@@ -78,12 +79,25 @@ class Tone {
   }
 }
 
+const defaultPrompt = `
+Change speech to sound like [description]
+
+Input:
+Output:
+
+Input: $input
+Output:`.trim();
+
 const builtins = [
   {
-    title: "Fancy",
+    slug: "posh-english-lady",
+    title: "Posh English lady",
     domain: {
-      prompt: "Make this fancy",
-      voice: "Alex",
+      prompt:
+        "Change speech to sound like a posh and sophisticated English woman. Use fancy words and English colloquialisms.\n\nInput: bye\nOutput: Cheerio\n\nInput: $input\nOutput:",
+      voice: "Google UK English Female",
+      utterances: [],
+      outputLanguage: "en-UK",
     },
   },
 ];

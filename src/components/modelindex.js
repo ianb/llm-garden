@@ -1,8 +1,16 @@
 /* eslint-disable no-unused-vars */
 import { signal } from "@preact/signals";
 import { useState } from "preact/hooks";
-import { Button, Card2, P, DateView, PageContainer } from "./common";
+import {
+  Button,
+  CardButton,
+  Card2,
+  P,
+  DateView,
+  PageContainer,
+} from "./common";
 import { Header } from "./header";
+import * as icons from "./icons";
 
 export const ModelIndex = ({ store, onSelect, onAdd }) => {
   const [includeArchive, setIncludeArchive] = useState(false);
@@ -62,9 +70,27 @@ const Model = ({ model, onSelect }) => {
     onSelect(model);
     return false;
   }
+  function onClickDelete(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (confirm("Really delete this model?")) {
+      model.delete().then(() => {
+        window.location.reload();
+      });
+    }
+    return false;
+  }
+  const button = (
+    <CardButton onClick={onClickDelete}>
+      <icons.Trash class="h-4 w-4" />
+    </CardButton>
+  );
   return (
     <a href={makeLink(model)} onClick={onClick}>
-      <Card2 title={model.title}>
+      <Card2
+        title={model.title || "?"}
+        buttons={[model.builtin ? null : button]}
+      >
         <P>{model.description}</P>
         {model.builtin ? (
           <P>Built-in</P>
@@ -127,13 +153,10 @@ export const ModelIndexPage = ({ title, store, viewer }) => {
     await model.saveToDb();
     window.location = makeLink(model);
   }
-  function onSelect(story) {
-    window.location = makeLink(model);
-  }
   return (
     <PageContainer>
       <Header title={title} />
-      <ModelIndex store={store} onSelect={onSelect} onAdd={onAdd} />
+      <ModelIndex store={store} onAdd={onAdd} />
     </PageContainer>
   );
 };
@@ -144,7 +167,7 @@ function makeLink(model) {
   if (!base.endsWith("/")) {
     base = base + "/";
   }
-  if (model.slug && false) {
+  if (model.slug) {
     return `${base}?name=${encodeURIComponent(model.slug)}`;
   } else {
     return `${base}?id=${encodeURIComponent(model.id)}`;

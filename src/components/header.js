@@ -11,7 +11,15 @@ tokenCostTracker.addOnUpdate((tracker) => {
   tokenCost.value = tracker;
 });
 
-export const Header = ({ title, trackerPaths, links, buttons, menu }) => {
+export const Header = ({
+  title,
+  section,
+  sectionLink,
+  trackerPaths,
+  links,
+  buttons,
+  menu,
+}) => {
   trackerPaths = trackerPaths || "all";
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -34,13 +42,32 @@ export const Header = ({ title, trackerPaths, links, buttons, menu }) => {
       document.removeEventListener("click", onBackgroundClick);
     };
   });
+  let sectionTag;
+  if (section) {
+    if (sectionLink) {
+      sectionTag = (
+        <>
+          <a href={sectionLink}>{section}</a> {" > "}
+        </>
+      );
+    } else {
+      sectionTag = (
+        <>
+          {section} {" > "}
+        </>
+      );
+    }
+  }
   return (
     <nav class="flex items-center justify-between flex-wrap bg-blue-complement pr-6 pl-6 pt-2 pb-2 sticky top-0 z-50">
       <div class="flex items-center flex-shrink-0 text-white mr-6">
         <a href="/">
           <icons.Home class="h-5 w-5 mr-2" />
         </a>
-        <span class="font-semibold text-xl tracking-tight">{title}</span>
+        <span class="font-semibold text-xl tracking-tight">
+          {sectionTag}
+          {title}
+        </span>
       </div>
       <div class="block">
         <div class="flex items-center">

@@ -32,6 +32,8 @@ export class GptCache {
         fromCache: true,
         response: this.responseFixer(val.choices[0].text),
       });
+      val = Object.assign({}, val);
+      val.text = this.responseFixer(val.choices[0].text);
       return val;
     }
     let requestBody;

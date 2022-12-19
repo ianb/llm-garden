@@ -205,22 +205,15 @@ export class Model {
       this._id = uuid();
       this._builtin = false;
     }
-    if (!this.slug && this.title) {
-      this._slug = await this.generateSlug();
-    }
+    this._slug = await this.generateSlug();
     const o = recursiveToJSON(this);
-    // if (o.domain.title) {
-    //   let t = o.domain.title;
-    //   if (t.value) {
-    //     t = t.value;
-    //   }
-    //   if (typeof t === "string" && this._title !== t) {
-    //     // FIXME: this causes an infinite loop for some reason
-    //     // this._title = t;
-    //   }
-    // }
     this._dirty = false;
+    console.log("saving", o);
     await db.models.put(o, this.id);
+  }
+
+  async delete() {
+    await db.models.delete(this.id);
   }
 
   toJSON() {
@@ -237,6 +230,7 @@ export class Model {
     } else {
       console.warn("No .domain for model");
     }
+    o.typeSlug = this.typeSlug;
     return o;
   }
 
@@ -249,7 +243,9 @@ export class Model {
   }
 
   async generateSlug() {
-    // FIXME: this doesn't ensure the slug is unique
+    if (!this.title) {
+      return null;
+    }
     let index = 0;
     for (;;) {
       let slug = this.title.toLowerCase().replace(/[^a-z0-9]/g, "-");
@@ -260,7 +256,7 @@ export class Model {
         typeSlug: `${this.type}_${slug}`,
       });
       console.log("trying slug", index, slug, existing);
-      if (!existing) {
+      if (!existing || existing.id === this.id) {
         return slug;
       }
       index++;
@@ -276,6 +272,7 @@ export class ModelTypeStore {
     this.builtinsBySlug = new Map();
     for (const model of builtins) {
       this.builtinsBySlug.set(model.slug, model);
+      model.builtin = true;
     }
   }
 
@@ -328,8 +325,10 @@ export class ModelTypeStore {
 
   async getDataBySlug(slug) {
     if (slug.startsWith("builtin_")) {
-      const data = this.builtinsBySlug.get(slug.slice("builtin_".length));
-      data.builtin = true;
+      const data = this.builtinsBySlug.get(slug);
+      if (!data) {
+        throw new Error(`No builtin ${this.type} found with slug ${slug}`);
+      }
       return data;
     }
     const model = await db.models.get({ typeSlug: `${this.type}_${slug}` });
