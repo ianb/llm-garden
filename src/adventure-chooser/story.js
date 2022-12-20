@@ -100,6 +100,13 @@ export class ChooserStory {
     for (const func of this._updates) {
       func(this);
     }
+    if (
+      this.title.value &&
+      this.envelope &&
+      this.title.value !== this.envelope.title
+    ) {
+      this.envelope.title = this.title.value;
+    }
     if (this.envelope) {
       this.envelope.updated();
     }
