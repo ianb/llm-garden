@@ -55,7 +55,7 @@ const ConcreteIndex = ({
     );
   }
   return (
-    <div>
+    <div class="flex flex-wrap">
       {models.value.map((m) => (
         <Model model={m} onSelect={onSelect} />
       ))}
