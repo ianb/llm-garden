@@ -80,7 +80,7 @@ export const H1 = ({ children }) => (
   <div class="text-xl font-medium text-black">{children}</div>
 );
 
-export const Field = ({ children }) => {
+export const Field = ({ sideBySide, children }) => {
   if (children.length !== 2) {
     throw new Error(
       `Expected exactly two children to <Field>, not {children.length}`
@@ -88,10 +88,14 @@ export const Field = ({ children }) => {
   }
   const label = children[0];
   const input = children[1];
+  let divClass = "block text-gray-700 text-sm font-bold mb-2";
+  if (sideBySide) {
+    divClass += " inline pr-2";
+  }
   return (
     <div class="mb-4">
       <label>
-        <div class="block text-gray-700 text-sm font-bold mb-2">{label}</div>
+        <div class={divClass}>{label}</div>
         {input}
       </label>
     </div>
@@ -109,6 +113,10 @@ export const TextInput = (props) => {
   );
   if (newProps.errored) {
     newProps.class += " border-red-500";
+  }
+  if (newProps.inputRef) {
+    newProps.ref = newProps.inputRef;
+    delete newProps.inputRef;
   }
   delete newProps.errored;
   return <input {...newProps} />;
