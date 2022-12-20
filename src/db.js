@@ -196,6 +196,10 @@ export class Model {
   }
 
   async saveToDb() {
+    if (this.builtin) {
+      // FIXME: need some way to explicitly fork, but otherwise a builtin shouldn't be updated
+      return;
+    }
     this._dateUpdated = Date.now();
     if (!this._dateCreated) {
       this._dateCreated = this._dateUpdated;
