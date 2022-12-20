@@ -32,7 +32,7 @@ export const ToneView = ({ model }) => {
       />
       <Sidebar>
         <PromptEditor model={model} />
-        <QueryLog log={model.domain.gpt.log} />
+        <QueryLog gptcache={model.domain.gpt} />
       </Sidebar>
       <div class="w-2/3 p-2">
         <ToneList model={model} />

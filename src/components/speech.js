@@ -3,10 +3,16 @@
 import { useState, useEffect } from "preact/hooks";
 import * as icons from "./icons";
 import { signal } from "@preact/signals";
+import { twMerge } from "tailwind-merge";
 
 let recognition;
 
-export const SpeechButton = ({ onSpeech, onUtterance, syncToRef }) => {
+export const SpeechButton = ({
+  onSpeech,
+  onUtterance,
+  syncToRef,
+  class: className,
+}) => {
   const [listening, setListening] = useState(false);
   const [paused, setPaused] = useState(false);
   function onClick() {
@@ -61,7 +67,10 @@ export const SpeechButton = ({ onSpeech, onUtterance, syncToRef }) => {
   if (listening && !paused) {
     return (
       <button
-        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        class={twMerge(
+          "bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded",
+          className
+        )}
         onClick={onClick}
       >
         <icons.Stop class="w-6 h-6" />
@@ -70,7 +79,10 @@ export const SpeechButton = ({ onSpeech, onUtterance, syncToRef }) => {
   } else if (listening && paused) {
     return (
       <button
-        class="bg-blue-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        class={twMerge(
+          "bg-blue-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded",
+          className
+        )}
         onClick={onClick}
       >
         <icons.Pause class="w-6 h-6" />
@@ -79,7 +91,10 @@ export const SpeechButton = ({ onSpeech, onUtterance, syncToRef }) => {
   }
   return (
     <button
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      class={twMerge(
+        "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded",
+        className
+      )}
       onClick={onClick}
     >
       <icons.Mic class="w-6 h-6" />

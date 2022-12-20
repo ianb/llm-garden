@@ -2,16 +2,27 @@
 import { signal } from "@preact/signals";
 import * as icons from "./icons";
 import { Pre } from "./common";
+import { useState } from "preact/hooks";
 
-export const QueryLog = ({ log }) => {
+export const QueryLog = ({ gptcache }) => {
+  const [version, setVersion] = useState(0);
+  gptcache.addOnLogUpdate(() => {
+    setVersion(version + 1);
+  });
   return (
     <>
-      {log.map((l, index) => (
+      {reversed(gptcache.log).map((l, index) => (
         <LogItem log={l} defaultOpen={index === 0} />
       ))}
     </>
   );
 };
+
+function reversed(array) {
+  const result = [...array];
+  result.reverse();
+  return result;
+}
 
 // eslint-disable-next-line no-unused-vars
 function LogItem({ log, defaultOpen }) {

@@ -17,6 +17,7 @@ export class GptCache {
     this.log = [];
     // FIXME: should change to IndexedDB/Dexie:
     this.queryCache = new LocalCache(`${storageName}-queries`);
+    this._onLogUpdates = [];
   }
 
   async getCompletion(prompt, usagePaths) {
@@ -35,6 +36,7 @@ export class GptCache {
       });
       val = Object.assign({}, val);
       val.text = this.responseFixer(val.choices[0].text);
+      this.updated();
       return val;
     }
     let requestBody;
@@ -47,6 +49,7 @@ export class GptCache {
     const start = Date.now();
     const logItem = { prompt: requestBody.prompt, start };
     this.log.push(logItem);
+    this.updated();
     const resp = await getCompletion(requestBody, usagePaths);
     console.log(
       "GPT response",
@@ -60,6 +63,7 @@ export class GptCache {
     logItem.response = this.responseFixer(resp.choices[0].text);
     logItem.time = Date.now() - start;
     resp.text = this.responseFixer(resp.choices[0].text);
+    this.updated();
     return resp;
   }
 
@@ -72,5 +76,17 @@ export class GptCache {
         return p;
       })
       .filter((x) => x);
+  }
+
+  addOnLogUpdate(func) {
+    this._onLogUpdates.push(func);
+  }
+
+  removeOnLogUpdate(func) {
+    this._onLogUpdates = this._onLogUpdates.filter((f) => f !== func);
+  }
+
+  updated() {
+    this._onLogUpdates.forEach((f) => f());
   }
 }
