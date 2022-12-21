@@ -3,6 +3,6 @@ import { ModelTypeStore } from "../db";
 
 const builtins = [];
 
-const storyDb = new ModelTypeStore("adventure-chooser", ChooserStory, builtins);
+const storyDb = new ModelTypeStore("myoa", ChooserStory, builtins);
 
 export default storyDb;

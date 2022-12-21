@@ -136,8 +136,8 @@ export class ChooserStory {
     const logItem = { prompt: body.prompt, start };
     this.queryLog.push(logItem);
     const resp = await getCompletion(body, [
-      "adventure-chooser",
-      `adventure-chooser/${this.title.value || "default"}`,
+      "myoa",
+      `myoa/${this.envelope.slug || "default"}`,
     ]);
     console.log(
       "GPT response",

@@ -39,13 +39,10 @@ export function StoryView({ model }) {
   return (
     <PageContainer>
       <Header
-        title={story.title.value || "?"}
-        section="Adventure Chooser"
-        sectionLink="/adventure-chooser/"
-        trackerPaths={[
-          "adventure-chooser",
-          `adventure-chooser/${model.slug || "default"}`,
-        ]}
+        title={story.title.value || "? Story ?"}
+        section="Make Your Own Adventure"
+        sectionLink="/myoa/"
+        trackerPaths={["myoa", `myoa/${model.slug || "default"}`]}
         buttons={[
           <HeaderButton onClick={onToggleMassEditing}>
             {massEditing ? "Regular" : "Mass Edit"}

@@ -18,9 +18,9 @@ export const Home = () => {
           <P></P>
         </Card>
       </a>
-      <a href="/adventure-chooser">
+      <a href="/myoa">
         <Card>
-          <H1>Adventure Chooser Authoring</H1>
+          <H1>Make Your Own Adventure</H1>
           <P></P>
         </Card>
       </a>

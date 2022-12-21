@@ -3,10 +3,10 @@ import { StoryView } from "./storyview";
 import { ModelIndexPage } from "../components/modelindex";
 import storyDb from "./storydb";
 
-export const AdventureChooserIndex = () => {
+export const AdventureIndex = () => {
   return (
     <ModelIndexPage
-      title="Adventure Chooser"
+      title="Make Your Own Adventure"
       store={storyDb}
       viewer={StoryView}
     />

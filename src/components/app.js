@@ -1,7 +1,7 @@
 /* eslint no-unused-vars: "off" */
 import { StoryIndex } from "../interactive-fiction/index";
 import { ChatIndex } from "../chat/index";
-import { AdventureChooserIndex } from "../adventure-chooser/index";
+import { AdventureIndex } from "../myoa/index";
 import { RequestKeyPage } from "../key-management/index";
 import { Home, NotFound } from "./home";
 import { ToneChangerIndex } from "../tone-changer/index";
@@ -14,7 +14,7 @@ const App = () => {
       <RequestKeyPage path="/key-management" />
       <StoryIndex path="/interactive-fiction" />
       <ChatIndex path="/chat" />
-      <AdventureChooserIndex path="/adventure-chooser" />
+      <AdventureIndex path="/myoa" />
       <ToneChangerIndex path="/tone-changer" />
       <NotFound default />
     </Router>
