@@ -45,3 +45,12 @@ export function markdownToPreact(markdown) {
   const el = markdownToElement(markdown);
   return elementToPreact(el);
 }
+
+export function Markdown(props) {
+  const text = props.text;
+  if (!text) {
+    return null;
+  }
+  delete props.text;
+  return <div {...props}>{markdownToPreact(text)}</div>;
+}

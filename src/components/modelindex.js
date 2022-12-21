@@ -8,9 +8,13 @@ import {
   P,
   DateView,
   PageContainer,
+  Field,
+  TextInput,
+  TextArea,
 } from "./common";
 import { Header } from "./header";
 import * as icons from "./icons";
+import { Markdown } from "../converthtml";
 
 export const ModelIndex = ({ store, onSelect, onAdd }) => {
   const [includeArchive, setIncludeArchive] = useState(false);
@@ -55,7 +59,7 @@ const ConcreteIndex = ({
     );
   }
   return (
-    <div class="flex flex-wrap">
+    <div class="flex flex-wrap justify-between">
       {models.value.map((m) => (
         <Model model={m} onSelect={onSelect} />
       ))}
@@ -93,7 +97,7 @@ const Model = ({ model, onSelect }) => {
         title={model.title || "?"}
         buttons={[model.builtin ? null : button]}
       >
-        <P>{model.description}</P>
+        <Markdown class="p-2" text={model.description} />
         {model.builtin ? (
           <P>Built-in</P>
         ) : (
@@ -174,4 +178,38 @@ function makeLink(model) {
   } else {
     return `${base}?id=${encodeURIComponent(model.id)}`;
   }
+}
+
+export function ModelTitleDescriptionEditor({ model }) {
+  const [collapsed, setCollapsed] = useState(true);
+  function onTitle(event) {
+    model.title = event.target.value;
+  }
+  function onDescription(event) {
+    model.description = event.target.value;
+  }
+  function onCollapseToggle(event) {
+    setCollapsed(!collapsed);
+  }
+  return (
+    <>
+      <Field>
+        <span>Title:</span>
+        <TextInput onInput={onTitle} defaultValue={model.title} />
+      </Field>
+      <Field>
+        <span onClick={onCollapseToggle}>
+          Description:{" "}
+          {collapsed ? (
+            <icons.PlusCircle class="h-3 w-3 inline-block" />
+          ) : (
+            <icons.MinusCircle class="h-3 w-3 inline-block" />
+          )}
+        </span>
+        {collapsed ? null : (
+          <TextArea onInput={onDescription} defaultValue={model.description} />
+        )}
+      </Field>
+    </>
+  );
 }

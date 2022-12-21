@@ -4,15 +4,10 @@ import { Header } from "../components/header";
 import Sidebar from "../components/sidebar";
 import { QueryLog } from "../components/querylog";
 import { useState, useRef, useEffect } from "preact/hooks";
-import {
-  PageContainer,
-  TextInput,
-  Field,
-  TextArea,
-  Button,
-} from "../components/common";
+import { PageContainer, Field, TextArea, Button } from "../components/common";
 import { SpeechButton, SpeechControlButton } from "../components/speech";
 import * as icons from "../components/icons";
+import { ModelTitleDescriptionEditor } from "../components/modelindex";
 
 export const ChatView = ({ model }) => {
   const [version, setVersion] = useState(0);
@@ -66,10 +61,7 @@ function PromptEditor({ model }) {
   }
   return (
     <div>
-      <Field>
-        <span>Title:</span>
-        <TextInput onInput={onTitle} defaultValue={model.title} />
-      </Field>
+      <ModelTitleDescriptionEditor model={model} />
       <Field>
         <span>Prompt:</span>
         <TextArea onSubmit={onSubmit} defaultValue={model.domain.prompt} />

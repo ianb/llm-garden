@@ -1,7 +1,9 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useRef } from "preact/hooks";
 import { twMerge } from "tailwind-merge";
 import { Header } from "./header";
 import Sidebar from "./sidebar";
+import * as icons from "./icons";
 
 export const mergeProps = (defaultProps, props) => {
   const newProps = Object.assign({}, defaultProps);
@@ -76,8 +78,10 @@ export const CardButton = (props) => {
   return <button {...p}>{props.children}</button>;
 };
 
-export const H1 = ({ children }) => (
-  <div class="text-xl font-medium text-black">{children}</div>
+export const H1 = ({ class: className, children }) => (
+  <div class={twMerge("text-xl font-medium text-black", className)}>
+    {children}
+  </div>
 );
 
 export const Field = ({ sideBySide, children }) => {
@@ -300,4 +304,18 @@ export const DateView = ({ timestamp, class: _class }) => {
   const date = new Date(timestamp);
   const dateString = date.toLocaleString();
   return <span class={_class}>{dateString}</span>;
+};
+
+export const InfoHeader = ({ title, children }) => {
+  return (
+    <div class="w-full">
+      <div class="max-w-2xl mx-auto bg-aqua-dark text-white m-5 rounded drop-shadow-lg p-4">
+        <H1 class="text-aqua-lightest">
+          <icons.Info class="h-6 w-6 inline-block mr-1 mb-1 text-aqua-light" />A
+          {title}
+        </H1>
+        <div class="text-white">{children}</div>
+      </div>
+    </div>
+  );
 };
