@@ -4,6 +4,7 @@ import { useState, useEffect } from "preact/hooks";
 import * as icons from "./icons";
 import { signal } from "@preact/signals";
 import { twMerge } from "tailwind-merge";
+import { Button } from "./common";
 
 let recognition;
 
@@ -66,39 +67,21 @@ export const SpeechButton = ({
   }, [listening, paused, onSpeech, onUtterance, syncToRef, isSpeaking]);
   if (listening && !paused) {
     return (
-      <button
-        class={twMerge(
-          "bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded",
-          className
-        )}
-        onClick={onClick}
-      >
+      <Button class={className} onClick={onClick}>
         <icons.Stop class="w-6 h-6" />
-      </button>
+      </Button>
     );
   } else if (listening && paused) {
     return (
-      <button
-        class={twMerge(
-          "bg-blue-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded",
-          className
-        )}
-        onClick={onClick}
-      >
+      <Button class={className} onClick={onClick}>
         <icons.Pause class="w-6 h-6" />
-      </button>
+      </Button>
     );
   }
   return (
-    <button
-      class={twMerge(
-        "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded",
-        className
-      )}
-      onClick={onClick}
-    >
+    <Button class={className} onClick={onClick}>
       <icons.Mic class="w-6 h-6" />
-    </button>
+    </Button>
   );
 };
 
@@ -150,3 +133,19 @@ function checkVoice(checkAgain = true) {
     }, 100);
   }
 }
+
+export const SpeechControlButton = ({ value, onChange }) => {
+  if (value) {
+    return (
+      <Button onClick={() => onChange(false)}>
+        <icons.SpeakerPlaying class="h-4 w-4" />
+      </Button>
+    );
+  } else {
+    return (
+      <Button onClick={() => onChange(true)}>
+        <icons.SpeakerMute class="h-4 w-4" />
+      </Button>
+    );
+  }
+};

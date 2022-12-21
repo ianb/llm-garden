@@ -37,6 +37,7 @@ export const InteractiveFictionView = ({ model }) => {
         status={status}
         section="IF"
         sectionLink="/interactive-fiction/"
+        model={model}
       />
       <Sidebar>
         <Completer model={model} />

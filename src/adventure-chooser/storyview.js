@@ -52,6 +52,7 @@ export function StoryView({ model }) {
           </HeaderButton>,
         ]}
         menu={<ImportExportMenu story={story} />}
+        model={model}
       />
       <Sidebar>
         {log.map((l, index) => (

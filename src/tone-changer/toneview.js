@@ -29,6 +29,7 @@ export const ToneView = ({ model }) => {
         sectionLink="/tone-changer/"
         trackerPaths={["tone-changer"]}
         menu={<ImportExportMenu model={model} />}
+        model={model}
       />
       <Sidebar>
         <PromptEditor model={model} />

@@ -19,6 +19,7 @@ export const Header = ({
   links,
   buttons,
   menu,
+  model,
 }) => {
   trackerPaths = trackerPaths || "all";
   const [showMenu, setShowMenu] = useState(false);
@@ -58,6 +59,18 @@ export const Header = ({
         </>
       );
     }
+  }
+  async function onSaveBuiltin() {
+    const newModel = await model.saveBuiltin();
+    const url = new URL(location.href);
+    url.search = "?name=" + encodeURIComponent(newModel.slug);
+    location.href = url.toString();
+  }
+  if (model && model.builtin && model._dirty) {
+    buttons = [...(buttons || [])];
+    buttons.unshift(
+      <HeaderButton onClick={onSaveBuiltin}>Save Copy</HeaderButton>
+    );
   }
   return (
     <nav class="flex items-center justify-between flex-wrap bg-blue-complement pr-6 pl-6 pt-2 pb-2 sticky top-0 z-50">

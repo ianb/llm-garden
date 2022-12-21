@@ -11,7 +11,8 @@ import {
   TextArea,
   Button,
 } from "../components/common";
-import { SpeechButton } from "../components/speech";
+import { SpeechButton, SpeechControlButton } from "../components/speech";
+import * as icons from "../components/icons";
 
 export const ChatView = ({ model }) => {
   const [version, setVersion] = useState(0);
@@ -25,6 +26,7 @@ export const ChatView = ({ model }) => {
         section="Chat"
         sectionLink="/chat/"
         trackerPaths={["chat"]}
+        model={model}
         menu={<ImportExportMenu model={model} />}
       />
       <Sidebar>
@@ -50,8 +52,17 @@ function PromptEditor({ model }) {
   function onChangeHumanFirst(event) {
     model.domain.humanFirst = event.target.value;
   }
+  function onChangeSaveHistory(event) {
+    model.domain.saveHistory = event.target.value;
+  }
   function onClearHistory() {
     model.domain.clearHistory();
+  }
+  function onUndo() {
+    model.domain.undo();
+  }
+  function onSubmitIntro(textarea) {
+    model.domain.intro = textarea.value;
   }
   return (
     <div>
@@ -63,6 +74,10 @@ function PromptEditor({ model }) {
         <span>Prompt:</span>
         <TextArea onSubmit={onSubmit} defaultValue={model.domain.prompt} />
       </Field>
+      <Field>
+        <span>Intro:</span>
+        <TextArea onSubmit={onSubmitIntro} defaultValue={model.domain.intro} />
+      </Field>
       <Field sideBySide={true}>
         <span>Human goes first?</span>
         <input
@@ -71,39 +86,57 @@ function PromptEditor({ model }) {
           value={model.domain.humanFirst}
         />
       </Field>
+      <Field sideBySide={true}>
+        <span>Save chat history in model?</span>
+        <input
+          type="checkbox"
+          onChange={onChangeSaveHistory}
+          value={model.domain.saveHistory}
+        />
+      </Field>
       <Button onClick={onClearHistory}>Clear Chat</Button>
+      <Button onClick={onUndo}>Undo last chat</Button>
     </div>
   );
 }
 
+let recentHistoryLength = -1;
+
 function Chat({ model }) {
-  const inputRef = useRef();
-  function onSubmit(event) {
-    event.preventDefault();
-    const text = inputRef.current.value;
-    console.log("ref is", inputRef.current, [text]);
-    model.domain.addUserInput(text);
-    inputRef.current.value = "";
-    return false;
+  const textareaRef = useRef();
+  function onSubmit(element) {
+    model.domain.addUserInput(element.value);
+    element.value = "";
   }
   function onUtterance(text) {
     model.domain.addUserInput(text);
-    if (inputRef.current) {
-      inputRef.current.value = "";
+    if (textareaRef.current) {
+      textareaRef.current.value = "";
     }
   }
+  useEffect(() => {
+    if (
+      textareaRef.current &&
+      model.domain.history.length !== recentHistoryLength
+    ) {
+      recentHistoryLength = model.domain.history.length;
+      textareaRef.current.scrollIntoView(false);
+    }
+  });
   return (
     <>
       <ChatHistory model={model} />
       <div class="flex">
-        <code>{">"}</code>
-        <form onSubmit={onSubmit} class="inline grow">
-          <TextInput inputRef={inputRef} />
-        </form>
+        <icons.ChevronRight class="w-8 h-8 pt-1" />
+        <TextArea textareaRef={textareaRef} onSubmit={onSubmit} />
         <SpeechButton
           class="ml-2"
-          syncToRef={inputRef}
+          syncToRef={textareaRef}
           onUtterance={onUtterance}
+        />
+        <SpeechControlButton
+          value={model.domain.speak}
+          onChange={(value) => (model.domain.speak = value)}
         />
       </div>
     </>
@@ -112,15 +145,9 @@ function Chat({ model }) {
 
 function ChatHistory({ model }) {
   const history = model.domain.history;
-  const divRef = useRef();
-  useEffect(() => {
-    if (divRef.current) {
-      divRef.current.scrollTop = divRef.current.scrollHeight;
-    }
-  });
-  console.log("history is", history.length, history);
   return (
-    <div class="overflow-y-auto h-5/6" ref={divRef}>
+    <div class="overflow-y-auto h-5/6">
+      {model.domain.intro ? <div>{model.domain.intro}</div> : null}
       {history.map((item, i) => {
         if (item.type === "user") {
           return (

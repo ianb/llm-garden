@@ -216,6 +216,13 @@ export class Model {
     await db.models.put(o, this.id);
   }
 
+  async saveBuiltin() {
+    // FIXME: it's not great this is being done in-place by updating and not copying the object
+    this._builtin = false;
+    await this.saveToDb();
+    return this;
+  }
+
   async delete() {
     await db.models.delete(this.id);
   }
@@ -277,7 +284,9 @@ function makeSlug(text) {
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "-")
-    .replace(/-+/g, "-");
+    .replace(/-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
 }
 
 export class ModelTypeStore {

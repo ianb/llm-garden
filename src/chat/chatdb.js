@@ -1,14 +1,10 @@
 import { ModelTypeStore } from "../db";
 import { GptCache } from "../gptservice/gptcache";
-import { signal } from "@preact/signals";
+import { speak } from "../components/speech";
 
 class Chat {
   constructor(props) {
     props = props || {};
-    this.prompt = props.prompt || defaultPrompt;
-    this.intro = props.intro || defaultIntro;
-    this.humanFirst = props.humanFirst || false;
-    this.history = [];
     this.gpt = new GptCache({
       storageName: "chat",
       basePaths: ["chat", () => this.envelope && this.envelope.slug],
@@ -18,6 +14,12 @@ class Chat {
         max_tokens: 120,
       },
     });
+    this.prompt = props.prompt || defaultPrompt;
+    this.intro = props.intro || defaultIntro;
+    this.humanFirst = props.humanFirst || false;
+    this.saveHistory = props.saveHistory || false;
+    this.history = props.history || [];
+    this.speak = props.speak || false;
   }
 
   get prompt() {
@@ -27,6 +29,7 @@ class Chat {
   set prompt(value) {
     this._prompt = value;
     this.promptNames = this.getPromptNames();
+    this.gpt.defaultPromptOptions.stop = [this.promptNames.user];
     this.updated();
   }
 
@@ -48,18 +51,46 @@ class Chat {
     this.updated();
   }
 
+  get saveHistory() {
+    return this._saveHistory;
+  }
+
+  set saveHistory(value) {
+    this._saveHistory = value;
+    this.updated();
+  }
+
+  get speak() {
+    return this._speak;
+  }
+
+  set speak(value) {
+    this._speak = value;
+    this.updated();
+  }
+
   clearHistory() {
     this.history = [];
     this.updated();
   }
 
+  undo() {
+    this.history.pop();
+    this.history.pop();
+    this.updated();
+  }
+
   toJSON() {
-    return {
+    const data = {
       prompt: this.prompt,
       intro: this.intro,
       humanFirst: this.humanFirst,
-      history: this.history,
+      saveHistory: this.saveHistory,
     };
+    if (this.saveHistory) {
+      data.history = this.history;
+    }
+    return data;
   }
 
   updated() {
@@ -82,6 +113,9 @@ class Chat {
     const resp = await this.gpt.getCompletion(prompt);
     const text = resp.text;
     this.history.push({ type: "robot", text });
+    if (this.speak) {
+      speak(text, "Google US English");
+    }
     this.updated();
   }
 
@@ -198,6 +232,20 @@ Con-artist: Yeah, we went to the same elementary school, don't you remember?
 `.trim(),
       intro: "We went to the same elementary school, don't you remember?",
       humanFirst: true,
+    },
+  },
+  {
+    title: "Interviewer",
+    domain: {
+      prompt: `
+The following is a conversation between two people. The first person is an interviewer who is probing the interviewee for stories and information about their personal life.
+
+Interviewer: How are you doing today?
+Interviewee: Wonderful, thank you.
+`.trim(),
+      intro: "Tell me about yourself",
+      humanFirst: false,
+      saveHistory: true,
     },
   },
 ];
