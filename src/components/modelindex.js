@@ -16,7 +16,7 @@ import { Header } from "./header";
 import * as icons from "./icons";
 import { Markdown } from "../converthtml";
 
-export const ModelIndex = ({ store, onSelect, onAdd }) => {
+export const ModelIndex = ({ store, onSelect, onAdd, children }) => {
   const [includeArchive, setIncludeArchive] = useState(false);
   const models = signal(null);
   store.getSummaries(includeArchive).then((m) => {
@@ -34,7 +34,9 @@ export const ModelIndex = ({ store, onSelect, onAdd }) => {
       includeArchive={includeArchive}
       setIncludeArchive={onSetIncludeArchive}
       models={models}
-    />
+    >
+      {children}
+    </ConcreteIndex>
   );
 };
 
@@ -44,6 +46,7 @@ const ConcreteIndex = ({
   includeArchive,
   setIncludeArchive,
   models,
+  children,
 }) => {
   if (!models.value) {
     return <div>Loading...</div>;
@@ -60,6 +63,7 @@ const ConcreteIndex = ({
   }
   return (
     <div class="flex flex-wrap justify-between">
+      {children}
       {models.value.map((m) => (
         <Model model={m} onSelect={onSelect} />
       ))}
@@ -139,7 +143,7 @@ export const ModelLoader = ({ model, viewer, children }) => {
   return viewer({ model: loadedModel });
 };
 
-export const ModelIndexPage = ({ title, store, viewer, noAdd }) => {
+export const ModelIndexPage = ({ title, store, viewer, noAdd, children }) => {
   const u = new URL(location.href).searchParams;
   if (u.get("name") || u.get("id")) {
     let model;
@@ -162,7 +166,9 @@ export const ModelIndexPage = ({ title, store, viewer, noAdd }) => {
   return (
     <PageContainer>
       <Header title={title} />
-      <ModelIndex store={store} onAdd={noAdd ? null : onAdd} />
+      <ModelIndex store={store} onAdd={noAdd ? null : onAdd}>
+        {children}
+      </ModelIndex>
     </PageContainer>
   );
 };

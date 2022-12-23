@@ -48,17 +48,20 @@ export class TokenCostTracker {
         continue;
       }
       seen.add(path);
-      this.mergePaths(this.tracked, path, usage, model);
-      this.mergePaths(this.sessionTracked, path, usage, model);
+      this.mergePaths(this.tracked, path, usage, model, seen);
+      this.mergePaths(this.sessionTracked, path, usage, model, seen);
     }
     this.saveToLocalStorage();
     this.fireOnUpdate();
   }
 
-  mergePaths(tracked, path, usage, model) {
+  mergePaths(tracked, path, usage, model, seen) {
     while (path) {
-      tracked[path] = this.mergeUsage(tracked[path], usage);
-      tracked[path][model] = this.mergeUsage(tracked[path][model], usage);
+      if (!seen.has(path)) {
+        tracked[path] = this.mergeUsage(tracked[path], usage);
+        tracked[path][model] = this.mergeUsage(tracked[path][model], usage);
+      }
+      seen.add(path);
       if (!path.includes("/")) {
         break;
       }

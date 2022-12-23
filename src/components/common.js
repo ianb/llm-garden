@@ -276,7 +276,11 @@ export const PageContainer = ({ children }) => {
       <div class="shrink-0">{header}</div>
       <div class="flex grow flex-row w-full">
         <div class="flex-2">{rest}</div>
-        <div class="flex-1">{sidebar}</div>
+        {sidebar ? <div class="flex-1">{sidebar}</div> : null}
+      </div>
+      <div class="shrink-0 mx-auto opacity-75">
+        LLM Garden by <A href="https://ianbicking.org">Ian Bicking</A> |{" "}
+        <A href="https://github.com/ianb/llm-garden">GitHub</A>
       </div>
     </div>
   );
@@ -311,7 +315,7 @@ export const InfoHeader = ({ title, children }) => {
     <div class="w-full">
       <div class="max-w-2xl mx-auto bg-aqua-dark text-white m-5 rounded drop-shadow-lg p-4">
         <H1 class="text-aqua-lightest">
-          <icons.Info class="h-6 w-6 inline-block mr-1 mb-1 text-aqua-light" />A
+          <icons.Info class="h-6 w-6 inline-block mr-1 mb-1 text-aqua-light" />
           {title}
         </H1>
         <div class="text-white">{children}</div>

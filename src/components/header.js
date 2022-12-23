@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { signal } from "@preact/signals";
 import { tokenCostTracker } from "../gptservice/tokencost";
 import { useEffect } from "preact/hooks";
@@ -85,20 +86,22 @@ export const Header = ({
       </div>
       <div class="block">
         <div class="flex items-center">
-          <button
-            disabled={!menu}
-            class="border rounded px-3 py-2 text-teal-200 border-teal-400 hover:text-white hover:border-white"
-            onClick={onClickMenu}
-          >
-            <svg
-              class="fill-current h-3 w-3"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
+          {menu ? (
+            <button
+              disabled={!menu}
+              class="border rounded px-3 py-2 text-teal-200 border-teal-400 hover:text-white hover:border-white"
+              onClick={onClickMenu}
             >
-              <title>Menu</title>
-              <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
-            </svg>
-          </button>
+              <svg
+                class="fill-current h-3 w-3"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <title>Menu</title>
+                <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
+              </svg>
+            </button>
+          ) : null}
           {showMenu ? (
             <div
               class="z-10 p-1 absolute left-72 top-8 w-64 bg-white rounded-lg shadow-xl"
@@ -117,7 +120,7 @@ export const Header = ({
       </div>
       <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
         <div class="text-sm text-gray-100 ml-3 lg:flex-grow">
-          {tokenCostTracker.summarizePaths(trackerPaths)}
+          <TokenCost paths={trackerPaths} />
         </div>
         <div class="text-sm lg:flex-grow">{links}</div>
         <div>{buttons}</div>
@@ -125,6 +128,47 @@ export const Header = ({
     </nav>
   );
 };
+
+export function TokenCost({ paths }) {
+  paths = paths || "all";
+  if (typeof paths === "string") {
+    paths = [paths];
+  }
+  const result = [];
+  let lastDispPath = "";
+  for (const path of paths) {
+    let dispPath = path;
+    if (dispPath.startsWith(lastDispPath)) {
+      dispPath = dispPath.slice(lastDispPath.length);
+    }
+    lastDispPath = dispPath;
+    let usage = tokenCostTracker.tracked[path];
+    usage = (usage || {}).total_tokens || 0;
+    let today = tokenCostTracker.sessionTracked[path];
+    today = (today || {}).total_tokens || 0;
+    result.push(
+      <span class="mr-1">
+        {dispPath}: <SingleTokenCost tokens={today} name="Session" />/
+        <SingleTokenCost tokens={usage} name="All sessions" />
+      </span>
+    );
+  }
+  return <span>{result}</span>;
+}
+
+function SingleTokenCost({ tokens, name }) {
+  if (tokens === 0) {
+    return (
+      <span title={`${name}: no usage yet`} class="text-gray-500">
+        0
+      </span>
+    );
+  }
+  // This is only the davinci cost:
+  let cost = (tokens / 1000) * 0.02;
+  cost = name + ": $" + cost.toFixed(2);
+  return <span title={cost}>{tokens}</span>;
+}
 
 export const HeaderLink = ({ href, children }) => {
   return (

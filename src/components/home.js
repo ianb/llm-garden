@@ -35,8 +35,18 @@ export const Home = () => {
     <PageContainer>
       <Header title="Large Language Model (GPT-3) Garden" />
       <div class="flex flex-wrap justify-between">
-        <InfoHeader title="A LLM (GPT) Garden">
-          <P>Something.</P>
+        <InfoHeader title="An LLM (GPT) Garden">
+          <P>
+            I have a little time on my hands but it's too hard to garden this
+            time of year. So I'm building a garden of LLMs instead, GPT
+            specifically. (GPT is a specific <em>Large Language Model</em>{" "}
+            service.)
+          </P>
+          <P>
+            Each of these is meant to be a way of exploring some idea or aspect
+            of these technologies. I'm particularly interested in how each of
+            these <em>feel</em>, not just how they perform.
+          </P>
         </InfoHeader>
         {Object.entries(options).map(([title, { link, description }]) => (
           <LinkCard title={title} link={link} description={description} />
