@@ -2,6 +2,7 @@
 import { StoryIndex } from "../interactive-fiction/index";
 import { ChatIndex } from "../chat/index";
 import { AdventureIndex } from "../myoa/index";
+import { StoryPlayerLoader } from "../myoa/player";
 import { RequestKeyPage } from "../key-management/index";
 import { Home, NotFound } from "./home";
 import { ToneChangerIndex } from "../tone-changer/index";
@@ -15,6 +16,7 @@ const App = () => {
       <StoryIndex path="/interactive-fiction" />
       <ChatIndex path="/chat" />
       <AdventureIndex path="/myoa" />
+      <StoryPlayerLoader path="/myoa/play" />
       <ToneChangerIndex path="/tone-changer" />
       <NotFound default />
     </Router>

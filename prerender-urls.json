@@ -16,6 +16,10 @@
     "title": "Make Your Own Adventure"
   },
   {
+    "url": "/myoa/play",
+    "title": "Player"
+  },
+  {
     "url": "/key-management",
     "title": "Add your key"
   }

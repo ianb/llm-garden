@@ -47,6 +47,9 @@ export function StoryView({ model }) {
           <HeaderButton onClick={onToggleMassEditing}>
             {massEditing ? "Regular" : "Mass Edit"}
           </HeaderButton>,
+          <a href={`/myoa/play/?name=${encodeURIComponent(model.slug)}`}>
+            <HeaderButton>Play</HeaderButton>
+          </a>,
         ]}
         menu={<ImportExportMenu story={story} />}
         model={model}

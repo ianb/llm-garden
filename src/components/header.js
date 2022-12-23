@@ -184,7 +184,7 @@ export const HeaderLink = ({ href, children }) => {
 export const HeaderButton = ({ children, onClick }) => {
   return (
     <button
-      class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0"
+      class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0 ml-1"
       onClick={onClick}
     >
       {children}

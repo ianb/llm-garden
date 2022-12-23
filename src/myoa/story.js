@@ -292,12 +292,16 @@ class Property {
   }
 
   choiceHasPassage(choice) {
+    return !!this.choicePassage(choice);
+  }
+
+  choicePassage(choice) {
     for (const p of this.story.passages) {
       if (p.fromChoice === choice && p.fromPassageId === this.id) {
-        return true;
+        return p;
       }
     }
-    return false;
+    return null;
   }
 
   get fromPassage() {
