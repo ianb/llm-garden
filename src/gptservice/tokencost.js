@@ -47,9 +47,9 @@ export class TokenCostTracker {
         );
         continue;
       }
-      seen.add(path);
       this.mergePaths(this.tracked, path, usage, model, seen);
       this.mergePaths(this.sessionTracked, path, usage, model, seen);
+      seen.add(path);
     }
     this.saveToLocalStorage();
     this.fireOnUpdate();

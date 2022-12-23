@@ -376,7 +376,12 @@ function PropertyEditor({ property, promptName, onDone }) {
   return (
     <div>
       {property.value || promptName ? <hr /> : null}
-      <QueryText property={property} onSubmit={onSubmit} onSelect={onSelect} />
+      <QueryText
+        property={property}
+        onSubmit={onSubmit}
+        onSelect={onSelect}
+        ignoreElement={ignoreElement}
+      />
       {!promptName && property.single ? (
         <Button onClick={onAccept}>Accept ^A</Button>
       ) : null}
@@ -398,7 +403,7 @@ function QueryText({ property, onSubmit, onSelect, ignoreElement }) {
   const text = getQueryText(property);
   let [liElements, markup] = [[], null];
   if (text) {
-    [liElements, markup] = parseQuery(text, onClick, selected);
+    [liElements, markup] = parseQuery(text, onClick, selected, ignoreElement);
     if (ignoreElement) {
       liElements = liElements.filter((e) => !ignoreElement(e));
     }
@@ -464,10 +469,13 @@ function getQueryText(property) {
   return result.join("\n");
 }
 
-function parseQuery(text, onClick, selected) {
+function parseQuery(text, onClick, selected, ignoreElement) {
   const element = markdownToElement(text);
   const liElements = [];
   function makeElement(element, tag, attrs, children) {
+    if (ignoreElement && ignoreElement(element)) {
+      return "";
+    }
     if (tag === "li") {
       const index = liElements.length;
       const li = (

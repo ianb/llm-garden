@@ -29,7 +29,9 @@ export function elementToPreact(element, callback) {
   if (callback) {
     repl = callback(element, tag, attrs, children);
   }
-  if (!repl) {
+  if (repl === "") {
+    repl = null;
+  } else if (!repl) {
     repl = h(tag, attrs, children);
   }
   return repl;
