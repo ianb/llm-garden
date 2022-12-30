@@ -3,7 +3,7 @@ import { Header, HeaderButton } from "../components/header";
 import {
   PageContainer,
   Pre,
-  Card2,
+  Card,
   CardButton,
   Button,
   TextArea,
@@ -134,7 +134,7 @@ function PropertyView({ class: _class, property, prev }) {
     choices = <Choices property={property} />;
   }
   return (
-    <Card2
+    <Card
       class={_class}
       title={property.title}
       buttons={[
@@ -163,7 +163,7 @@ function PropertyView({ class: _class, property, prev }) {
           onDone={() => setAddingChoice(false)}
         />
       ) : null}
-    </Card2>
+    </Card>
   );
 }
 

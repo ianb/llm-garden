@@ -4,7 +4,7 @@ import { useState } from "preact/hooks";
 import {
   Button,
   CardButton,
-  Card2,
+  Card,
   P,
   DateView,
   PageContainer,
@@ -54,9 +54,9 @@ const ConcreteIndex = ({
   if (models.value.length === 0) {
     return (
       <div>
-        <Card2 title="No models yet!">
+        <Card title="No models yet!">
           <P>Click the button below to add a new model.</P>
-        </Card2>
+        </Card>
         {onAdd ? <Adder onAdd={onAdd} /> : null}
       </div>
     );
@@ -97,7 +97,7 @@ const Model = ({ model, onSelect }) => {
   );
   return (
     <a href={makeLink(model)} onClick={onClick}>
-      <Card2
+      <Card
         title={model.title || "?"}
         buttons={[model.builtin ? null : button]}
         class="hover:drop-shadow-xl"
@@ -111,7 +111,7 @@ const Model = ({ model, onSelect }) => {
             <DateView timestamp={model.dateUpdated || model.dateCreated} />
           </P>
         )}
-      </Card2>
+      </Card>
     </a>
   );
 };
@@ -124,9 +124,9 @@ const Adder = ({ onAdd }) => {
   }
   return (
     <a href="#" onClick={onAddRaw}>
-      <Card2 title="Add new model">
+      <Card title="Add new model">
         <Button>Click to add a new model.</Button>
-      </Card2>
+      </Card>
     </a>
   );
 };

@@ -4,7 +4,7 @@ import { holder } from "../key-management/key";
 import {
   P,
   A,
-  Card2,
+  Card,
   Code,
   Field,
   TextInput,
@@ -42,7 +42,7 @@ export const RequestKey = () => {
   }
   return (
     <div class="flex items-center justify-center">
-      <Card2 class="w-3/4" title="GPT-3 API key required">
+      <Card class="w-3/4" title="GPT-3 API key required">
         <div class="p-5">
           <P>
             This application requires a GPT-3 key. To use it you must enter one
@@ -69,7 +69,7 @@ export const RequestKey = () => {
             </Form>
           </P>
         </div>
-      </Card2>
+      </Card>
     </div>
   );
 };

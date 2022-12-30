@@ -38,13 +38,7 @@ export const A = ({ children, class: _class, ...props }) => {
   );
 };
 
-export const Card = ({ children }) => (
-  <div class="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-lg items-center m-2">
-    {children}
-  </div>
-);
-
-export const Card2 = ({ title, children, buttons, class: _class }) => {
+export const Card = ({ title, children, buttons, class: _class }) => {
   let buttonContainer = null;
   if (buttons && buttons.length) {
     buttonContainer = <div class="flex justify-end">{buttons}</div>;

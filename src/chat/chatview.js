@@ -41,6 +41,9 @@ function PromptEditor({ model }) {
     model.domain.prompt = textarea.value;
     console.log("updating prompt", textarea.value, model.domain.prompt);
   }
+  function onInput(event) {
+    model.domain.prompt = event.target.value;
+  }
   function onTitle(event) {
     model.title = event.target.value;
   }
@@ -68,7 +71,11 @@ function PromptEditor({ model }) {
       </Field>
       <Field>
         <span>Intro:</span>
-        <TextArea onSubmit={onSubmitIntro} defaultValue={model.domain.intro} />
+        <TextArea
+          onSubmit={onSubmitIntro}
+          onInput={onInput}
+          defaultValue={model.domain.intro}
+        />
       </Field>
       <Field sideBySide={true}>
         <span>Human goes first?</span>

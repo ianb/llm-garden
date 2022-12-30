@@ -1,5 +1,5 @@
 /* eslint no-unused-vars: "off" */
-import { PageContainer, Card2, Card, H1, P, InfoHeader } from "./common";
+import { PageContainer, Card, H1, P, InfoHeader } from "./common";
 import { Header } from "./header";
 import { Markdown } from "../markdown";
 
@@ -61,9 +61,9 @@ export const Home = () => {
 function LinkCard({ title, description, link }) {
   return (
     <a href={link}>
-      <Card2 title={title} class="hover:drop-shadow-xl w-full">
+      <Card title={title} class="hover:drop-shadow-xl w-full">
         <Markdown text={description} class="p-2" />
-      </Card2>
+      </Card>
     </a>
   );
 }
@@ -72,10 +72,10 @@ export const NotFound = () => {
   return (
     <PageContainer>
       <Header title="Not Found" />
-      <Card>
+      <InfoHeader title="Not Found">
         <H1>404 Not Found</H1>
         <P>Page not found</P>
-      </Card>
+      </InfoHeader>
     </PageContainer>
   );
 };

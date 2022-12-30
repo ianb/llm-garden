@@ -15,6 +15,7 @@ import { QueryLog } from "../components/querylog";
 import * as icons from "../components/icons";
 import { SpeechButton } from "../components/speech";
 import { ImportExportMenu } from "../components/modelmenu";
+import { ModelTitleDescriptionEditor } from "../components/modelindex";
 
 export const ToneView = ({ model }) => {
   const [version, setVersion] = useState(0);
@@ -117,6 +118,9 @@ function PromptEditor({ model }) {
     model.domain.prompt = textarea.value;
     console.log("updating prompt", textarea.value, model.domain.prompt);
   }
+  function onInput(event) {
+    model.domain.prompt = event.target.value;
+  }
   function onTitle(event) {
     model.title = event.target.value;
   }
@@ -125,13 +129,14 @@ function PromptEditor({ model }) {
   }
   return (
     <div>
-      <Field>
-        <span>Title:</span>
-        <TextInput onInput={onTitle} defaultValue={model.title} />
-      </Field>
+      <ModelTitleDescriptionEditor model={model} />
       <Field>
         <span>Prompt:</span>
-        <TextArea onSubmit={onSubmit} defaultValue={model.domain.prompt} />
+        <TextArea
+          onInput={onInput}
+          onSubmit={onSubmit}
+          defaultValue={model.domain.prompt}
+        />
       </Field>
       <Field>
         <span>Voice:</span>
