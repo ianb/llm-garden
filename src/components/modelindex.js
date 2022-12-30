@@ -14,7 +14,7 @@ import {
 } from "./common";
 import { Header } from "./header";
 import * as icons from "./icons";
-import { Markdown } from "../converthtml";
+import { Markdown } from "../markdown";
 
 export const ModelIndex = ({ store, onSelect, onAdd, children }) => {
   const [includeArchive, setIncludeArchive] = useState(false);
@@ -100,6 +100,7 @@ const Model = ({ model, onSelect }) => {
       <Card2
         title={model.title || "?"}
         buttons={[model.builtin ? null : button]}
+        class="hover:drop-shadow-xl"
       >
         <Markdown class="p-2" text={model.description} />
         {model.builtin ? (

@@ -54,5 +54,6 @@ export function Markdown(props) {
     return null;
   }
   delete props.text;
+  props.class = (props.class || "") + " unreset";
   return <div {...props}>{markdownToPreact(text)}</div>;
 }

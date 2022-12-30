@@ -2,7 +2,7 @@
 import { InteractiveFictionView } from "./ifview";
 import { ModelIndexPage } from "../components/modelindex";
 import { ifDb } from "./ifdb";
-import { InfoHeader, P } from "../components/common";
+import { InfoHeader, P, A } from "../components/common";
 
 export const StoryIndex = () => {
   return (
@@ -14,10 +14,17 @@ export const StoryIndex = () => {
     >
       <InfoHeader title="Interactive Fiction: Freedom with Constraints">
         <P>
-          In some games like <a href="https://aidungeon.io/">AI Dungeon</a> GPT
-          will do the job of playing "the world" and enforcing the rules of that
-          world. This is perhaps the biggest difficulty is using GPT: it's built
-          to be agreeable and accept hallucinations just as it produces them.
+          In some games like{" "}
+          <A
+            class="text-blue-100 hover:text-blue-200"
+            href="https://aidungeon.io/"
+          >
+            AI Dungeon
+          </A>{" "}
+          GPT will do the job of playing "the world" and enforcing the rules of
+          that world. This is perhaps the biggest difficulty is using GPT: it's
+          built to be agreeable and accept hallucinations just as it produces
+          them.
         </P>
         <P>
           It occurred to me: what if we use GPT as a source of autonomy and

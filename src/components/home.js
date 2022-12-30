@@ -1,7 +1,7 @@
 /* eslint no-unused-vars: "off" */
 import { PageContainer, Card2, Card, H1, P, InfoHeader } from "./common";
 import { Header } from "./header";
-import { Markdown } from "../converthtml";
+import { Markdown } from "../markdown";
 
 const options = {
   "Interactive Fiction": {
@@ -34,8 +34,8 @@ export const Home = () => {
   return (
     <PageContainer>
       <Header title="Large Language Model (GPT-3) Garden" />
-      <div class="flex flex-wrap justify-between">
-        <InfoHeader title="An LLM (GPT) Garden">
+      <div class="flex">
+        <InfoHeader title="An LLM (GPT) Garden" class="w-1/2">
           <P>
             I have a little time on my hands but it's too hard to garden this
             time of year. So I'm building a garden of LLMs instead, GPT
@@ -48,9 +48,11 @@ export const Home = () => {
             these <em>feel</em>, not just how they perform.
           </P>
         </InfoHeader>
-        {Object.entries(options).map(([title, { link, description }]) => (
-          <LinkCard title={title} link={link} description={description} />
-        ))}
+        <div class="w-1/2">
+          {Object.entries(options).map(([title, { link, description }]) => (
+            <LinkCard title={title} link={link} description={description} />
+          ))}
+        </div>
       </div>
     </PageContainer>
   );
@@ -59,8 +61,8 @@ export const Home = () => {
 function LinkCard({ title, description, link }) {
   return (
     <a href={link}>
-      <Card2 title={title}>
-        <Markdown text={description} />
+      <Card2 title={title} class="hover:drop-shadow-xl w-full">
+        <Markdown text={description} class="p-2" />
       </Card2>
     </a>
   );

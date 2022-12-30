@@ -183,9 +183,18 @@ class InteractiveFiction {
 }
 
 const builtins = Object.entries({
-  "zork1.z5": { title: "Zork I" },
-  "zork2.z5": { title: "Zork II" },
-  "zork3.z5": { title: "Zork III" },
+  "zork1.z5": {
+    title: "Zork I",
+    description: "ZORK I: The Great Underground Empire (1980)",
+  },
+  "zork2.z5": {
+    title: "Zork II",
+    description: "ZORK II: The Wizard of Frobozz (1981)",
+  },
+  "zork3.z5": {
+    title: "Zork III",
+    description: "ZORK III: The Dungeon Master (1982)",
+  },
   // None of these are version 3 zcodes, so they aren't supported :(
   // "ztuu.z5": { title: "Zork: The Undiscovered Underground" },
   // "Advent.z5": { title: "Colossal Cave Adventure" },
@@ -193,6 +202,7 @@ const builtins = Object.entries({
 }).map(([z5url, props]) => {
   return {
     title: props.title,
+    description: props.description,
     domain: {
       z5url,
     },

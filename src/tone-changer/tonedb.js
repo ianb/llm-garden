@@ -90,7 +90,6 @@ Output:`.trim();
 
 const builtins = [
   {
-    slug: "posh-english-lady",
     title: "Posh English lady",
     domain: {
       prompt:

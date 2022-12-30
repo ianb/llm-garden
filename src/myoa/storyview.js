@@ -17,7 +17,7 @@ import {
   markdownToElement,
   elementToPreact,
   markdownToPreact,
-} from "../converthtml";
+} from "../markdown";
 import * as icons from "../components/icons";
 
 export function StoryView({ model }) {

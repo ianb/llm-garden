@@ -333,4 +333,13 @@ iframe {
 	border: 2px inset;
 }
 
+a {
+  color: #3b82f6;
+	text-decoration: underline;
+}
+
+a:hover {
+  color: #1d4ed8;
+}
+
 }

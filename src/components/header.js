@@ -84,12 +84,19 @@ export const Header = ({
           {title}
         </span>
       </div>
+      <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
+        <div class="text-sm text-gray-100 ml-3 lg:flex-grow">
+          <TokenCost paths={trackerPaths} />
+        </div>
+        <div class="text-sm lg:flex-grow">{links}</div>
+        <div>{buttons}</div>
+      </div>
       <div class="block">
         <div class="flex items-center">
           {menu ? (
             <button
               disabled={!menu}
-              class="border rounded px-3 py-2 text-teal-200 border-teal-400 hover:text-white hover:border-white"
+              class="border rounded px-3 py-2 text-teal-200 border-teal-400 hover:text-white hover:border-white ml-1"
               onClick={onClickMenu}
             >
               <svg
@@ -104,7 +111,7 @@ export const Header = ({
           ) : null}
           {showMenu ? (
             <div
-              class="z-10 p-1 absolute left-72 top-8 w-64 bg-white rounded-lg shadow-xl"
+              class="z-10 p-1 absolute right-12 top-8 w-64 bg-white rounded-lg shadow-xl"
               ref={menuRef}
             >
               <button
@@ -117,13 +124,6 @@ export const Header = ({
             </div>
           ) : null}
         </div>
-      </div>
-      <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
-        <div class="text-sm text-gray-100 ml-3 lg:flex-grow">
-          <TokenCost paths={trackerPaths} />
-        </div>
-        <div class="text-sm lg:flex-grow">{links}</div>
-        <div>{buttons}</div>
       </div>
     </nav>
   );
