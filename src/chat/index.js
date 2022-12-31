@@ -8,7 +8,8 @@ export const ChatIndex = () => {
   return (
     <ModelIndexPage title="Chat" store={chatDb} viewer={ChatView}>
       <InfoHeader title="Talking with different personalities">
-        <P>Test.</P>
+        <P>These are all examples of more-or-less simple chat interfaces.</P>
+        <P></P>
       </InfoHeader>
     </ModelIndexPage>
   );

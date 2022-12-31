@@ -15,6 +15,10 @@ module.exports = {
   theme: {
     extend: {
       flex: { 2: "2 1 0%" },
+      minHeight: {
+        1: "1em",
+        2: "2em",
+      },
     },
     colors: Object.assign({}, simpleColors, {
       // From https://www.color-name.com/viva-magenta.color

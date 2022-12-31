@@ -7,7 +7,7 @@ class Chat {
     props = props || {};
     this.gpt = new GptCache({
       storageName: "chat",
-      basePaths: ["chat", () => this.envelope && this.envelope.slug],
+      basePaths: ["chat", () => this.envelope && `chat/${this.envelope.slug}`],
       logResults: true,
       defaultPromptOptions: {
         temperature: 0.5,
@@ -15,8 +15,13 @@ class Chat {
       },
     });
     this.prompt = props.prompt || defaultPrompt;
+    this.humanName = props.humanName || defaultHumanName;
+    this.robotName = props.robotName || defaultRobotName;
+    this.exampleInteraction =
+      props.exampleInteraction === null
+        ? defaultExampleInteraction
+        : props.exampleInteraction;
     this.intro = props.intro || defaultIntro;
-    this.humanFirst = props.humanFirst || false;
     this.saveHistory = props.saveHistory || false;
     this.history = props.history || [];
     this.speak = props.speak || false;
@@ -28,8 +33,34 @@ class Chat {
 
   set prompt(value) {
     this._prompt = value;
-    this.promptNames = this.getPromptNames();
-    this.gpt.defaultPromptOptions.stop = [this.promptNames.user];
+    this.updated();
+  }
+
+  get humanName() {
+    return this._humanName;
+  }
+
+  set humanName(value) {
+    this._humanName = value;
+    this.gpt.defaultPromptOptions.stop = [value + ":"];
+    this.updated();
+  }
+
+  get robotName() {
+    return this._robotName;
+  }
+
+  set robotName(value) {
+    this._robotName = value;
+    this.updated();
+  }
+
+  get exampleInteraction() {
+    return this._exampleInteraction;
+  }
+
+  set exampleInteraction(value) {
+    this._exampleInteraction = value;
     this.updated();
   }
 
@@ -37,17 +68,12 @@ class Chat {
     return this._intro;
   }
 
+  get introWithoutName() {
+    return this.intro.replace(/^[a-z0-9]+:\s+/gi, "");
+  }
+
   set intro(value) {
     this._intro = value;
-    this.updated();
-  }
-
-  get humanFirst() {
-    return this._humanFirst;
-  }
-
-  set humanFirst(value) {
-    this._humanFirst = value;
     this.updated();
   }
 
@@ -83,8 +109,10 @@ class Chat {
   toJSON() {
     const data = {
       prompt: this.prompt,
+      humanName: this.humanName,
+      robotName: this.robotName,
+      exampleInteraction: this.exampleInteraction,
       intro: this.intro,
-      humanFirst: this.humanFirst,
       saveHistory: this.saveHistory,
     };
     if (this.saveHistory) {
@@ -102,6 +130,16 @@ class Chat {
   addUserInput(input) {
     if (!input) {
       throw new Error("No user input given");
+    }
+    const command = input.toLowerCase().trim();
+    if (command === "undo") {
+      this.undo();
+      this.updated();
+      return;
+    } else if (command === "restart" || command === "reset") {
+      this.clearHistory();
+      this.updated();
+      return;
     }
     this.history.push({ type: "user", text: input });
     this.fetchChatResponse();
@@ -121,41 +159,32 @@ class Chat {
 
   constructPrompt() {
     const result = [this.prompt.trim(), ""];
-    for (const item of this.history) {
+    if (this.intro.startsWith(this.robotName + ":")) {
+      result.push(this.intro);
+    }
+    const history = [...this.parseExample(), ...this.history];
+    for (const item of history) {
       if (item.type === "user") {
-        if (this.humanFirst) {
-          result.push("");
-        }
-        result.push(`${this.promptNames.user}: ${item.text}`);
+        result.push(`${this.humanName}: ${item.text}`);
       } else {
-        if (!this.humanFirst) {
-          result.push("");
-        }
-        result.push(`${this.promptNames.robot}: ${item.text}`);
+        result.push(`${this.robotName}: ${item.text}`);
       }
     }
-    if (!this.humanFirst) {
-      result.push("");
-    }
-    result.push(`${this.promptNames.robot}:`);
+    result.push(`${this.robotName}:`);
     return result.join("\n");
   }
 
-  getPromptNames() {
-    const names = [];
-    const lines = this.prompt.split("\n");
+  parseExample() {
+    const lines = this.exampleInteraction.split("\n");
+    const result = [];
     for (const line of lines) {
-      const parts = line.split(":", 2);
-      if (parts.length > 1) {
-        names.push(parts[0].trim());
+      if (line.startsWith("> ")) {
+        result.push({ type: "user", text: line.slice(2).trim() });
+      } else if (line.trim()) {
+        result.push({ type: "robot", text: line.trim() });
       }
     }
-    if (names.length < 2) {
-      return { user: "Human", robot: "AI" };
-    } else if (this.humanFirst) {
-      return { user: names[0], robot: names[1] };
-    }
-    return { user: names[1], robot: names[0] };
+    return result;
   }
 
   textHistory() {
@@ -180,71 +209,78 @@ Robot: my name is robbie.
 
 const defaultIntro = "Talk to the robot.";
 
+const defaultHumanName = "Human";
+
+const defaultRobotName = "Robot";
+
+const defaultExampleInteraction = `
+How are you?
+> I'm fine, thanks
+`.trim();
+
 const builtins = [
   {
     title: "AI Assistant",
+    description: "A very simple AI assistant",
     domain: {
       prompt: `
 The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
-
-Human: Hello, how are you?
-AI: I am doing well, thank you.
   `.trim(),
       intro: "Hello.",
-      humanFirst: true,
+      humanName: "Human",
+      robotName: "AI",
     },
   },
   {
     title: "Rogerian Therapist",
+    description: "A Rogerian therapist that listens and offers advice",
     domain: {
       prompt: `
 The following is a conversation between a Rogerian therapist and a patient. The therapist listens closely and offers empathetic and caring advice.
-
-Therapist: I'm very glad you came in today.
-Patient: Thank you, it's nice to see you today.
-
-Therapist: What would you like to talk about today?
 `.trim(),
-      intro: "What would you like to talk about today?",
-      humanFirst: false,
+      intro: "Therapist: What would you like to talk about today?",
+      humanName: "Client",
+      robotName: "Therapist",
     },
   },
   {
     title: "Alien",
+    description: "An alien that wants to learn about humans",
     domain: {
       prompt: `
 The following is a conversation between an alien and a human. The alien is curious about human ways but doesn't understand much.
-
+`.trim(),
+      humanName: "Human",
+      robotName: "Alien",
+      exampleInteraction: `
 Human: Hello, my name is Ian
 Alien: It is nice to meet you. Do all humans have the same name?
 `.trim(),
-      humanFirst: true,
     },
   },
   {
     title: "Con-Artist",
+    description: "A brief attempt to make a bot that will try to scam you.",
     domain: {
       prompt: `
 The following is a conversation between a con-artist and their mark. The con-artist is trying to grift the mark, and steal their money and identity.
-
-Mark: Do I know you?
-Con-artist: Yeah, we went to the same elementary school, don't you remember?
 `.trim(),
-      intro: "We went to the same elementary school, don't you remember?",
-      humanFirst: true,
+      intro:
+        "Con-artist: We went to the same elementary school, don't you remember?",
+      humanName: "Mark",
+      robotName: "Con-artist",
     },
   },
   {
     title: "Interviewer",
+    description: "Have the computer interview you.",
     domain: {
       prompt: `
 The following is a conversation between two people. The first person is an interviewer who is probing the interviewee for stories and information about their personal life.
-
-Interviewer: How are you doing today?
-Interviewee: Wonderful, thank you.
 `.trim(),
-      intro: "Tell me about yourself",
-      humanFirst: false,
+      intro: "Interviewer: Tell me about yourself",
+      humanName: "Interviewee",
+      robotName: "Interviewer",
       saveHistory: true,
     },
   },
@@ -262,13 +298,14 @@ The following is a conversation between an ACT-informed therapist and their clie
 - Values are about things you want to move toward, not what you want to get away from.
 
 Please help me explore a difficult situation in my life and connect it to my values. Feel free to ask clarifying questions but try not to be too repetetive or on the nose. Our conversation will take the form:
-
-Therapist: [inquisitive reflection and questions]
-Client: [description of self]
 `.trim(),
-      intro: "How are you feeling?",
-      humanFirst: false,
-      saveHistory: true,
+      intro: "Therapist: How are you feeling?",
+      humanName: "Client",
+      robotName: "Therapist",
+      exampleInteraction: `
+[inquisitive reflection and questions]
+> [description of self]
+`.trim(),
     },
   },
 ];

@@ -4,7 +4,13 @@ import { Header } from "../components/header";
 import Sidebar from "../components/sidebar";
 import { QueryLog } from "../components/querylog";
 import { useState, useRef, useEffect } from "preact/hooks";
-import { PageContainer, Field, TextArea, Button } from "../components/common";
+import {
+  PageContainer,
+  Field,
+  TextArea,
+  TextInput,
+  Button,
+} from "../components/common";
 import { SpeechButton, SpeechControlButton } from "../components/speech";
 import * as icons from "../components/icons";
 import { ModelTitleDescriptionEditor } from "../components/modelindex";
@@ -28,7 +34,7 @@ export const ChatView = ({ model }) => {
         <PromptEditor model={model} />
         <QueryLog gptcache={model.domain.gpt} />
       </Sidebar>
-      <div class="w-2/3 p-2">
+      <div class="p-2">
         <Chat model={model} />
       </div>
     </PageContainer>
@@ -44,11 +50,14 @@ function PromptEditor({ model }) {
   function onInput(event) {
     model.domain.prompt = event.target.value;
   }
-  function onTitle(event) {
-    model.title = event.target.value;
+  function onUpdateHumanName(event) {
+    model.domain.humanName = event.target.value;
   }
-  function onChangeHumanFirst(event) {
-    model.domain.humanFirst = event.target.value;
+  function onUpdateRobotName(event) {
+    model.domain.robotName = event.target.value;
+  }
+  function onUpdateExampleInteraction(event) {
+    model.domain.exampleInteraction = event.target.value;
   }
   function onChangeSaveHistory(event) {
     model.domain.saveHistory = event.target.value;
@@ -59,31 +68,44 @@ function PromptEditor({ model }) {
   function onUndo() {
     model.domain.undo();
   }
-  function onSubmitIntro(textarea) {
-    model.domain.intro = textarea.value;
+  function onInputIntro(event) {
+    model.domain.intro = event.target.value;
   }
   return (
     <div>
       <ModelTitleDescriptionEditor model={model} />
       <Field>
         <span>Prompt:</span>
-        <TextArea onSubmit={onSubmit} defaultValue={model.domain.prompt} />
+        <TextArea
+          onSubmit={onSubmit}
+          onInput={onInput}
+          defaultValue={model.domain.prompt}
+        />
+      </Field>
+      <Field>
+        <span>Human name:</span>
+        <TextInput
+          onInput={onUpdateHumanName}
+          defaultValue={model.domain.humanName}
+        />
+      </Field>
+      <Field>
+        <span>Robot name:</span>
+        <TextInput
+          onInput={onUpdateRobotName}
+          defaultValue={model.domain.robotName}
+        />
+      </Field>
+      <Field>
+        <span>Example interaction:</span>
+        <TextArea
+          onInput={onUpdateExampleInteraction}
+          defaultValue={model.domain.exampleInteraction}
+        />
       </Field>
       <Field>
         <span>Intro:</span>
-        <TextArea
-          onSubmit={onSubmitIntro}
-          onInput={onInput}
-          defaultValue={model.domain.intro}
-        />
-      </Field>
-      <Field sideBySide={true}>
-        <span>Human goes first?</span>
-        <input
-          type="checkbox"
-          onChange={onChangeHumanFirst}
-          value={model.domain.humanFirst}
-        />
+        <TextArea onInput={onInputIntro} defaultValue={model.domain.intro} />
       </Field>
       <Field sideBySide={true}>
         <span>Save chat history in model?</span>
@@ -146,7 +168,9 @@ function ChatHistory({ model }) {
   const history = model.domain.history;
   return (
     <div class="overflow-y-auto h-5/6">
-      {model.domain.intro ? <div>{model.domain.intro}</div> : null}
+      {model.domain.introWithoutName ? (
+        <div>{model.domain.introWithoutName}</div>
+      ) : null}
       {history.map((item, i) => {
         if (item.type === "user") {
           return (

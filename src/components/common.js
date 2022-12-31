@@ -44,6 +44,15 @@ export const Card = ({ title, children, buttons, class: _class }) => {
     buttonContainer = <div class="flex justify-end">{buttons}</div>;
   }
   _class = twMerge("relative w-72 p-2", _class);
+  const footer = Array.isArray(children)
+    ? children.find((c) => c.type === CardFooter)
+    : null;
+  if (footer) {
+    children = children.filter((c) => c.type !== CardFooter);
+  }
+  const innerClass = footer
+    ? "min-h-2 p-1 bg-white"
+    : "min-h-2 p-1 bg-white rounded-b";
   return (
     <div class={_class}>
       <div class="rounded drop-shadow-lg w-full">
@@ -55,10 +64,19 @@ export const Card = ({ title, children, buttons, class: _class }) => {
             {buttonContainer}
           </div>
         </div>
-        <div class="p-1 bg-white rounded-b">{children}</div>
+        <div class={innerClass}>{children}</div>
+        {footer ? (
+          <div class="bg-magenta-lighter px-1 rounded-b text-magenta">
+            <div class="flex items-center justify-between">{footer}</div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
+};
+
+export const CardFooter = ({ children }) => {
+  return <>{children}</>;
 };
 
 export const CardButton = (props) => {

@@ -5,6 +5,7 @@ import {
   Button,
   CardButton,
   Card,
+  CardFooter,
   P,
   DateView,
   PageContainer,
@@ -103,14 +104,16 @@ const Model = ({ model, onSelect }) => {
         class="hover:drop-shadow-xl"
       >
         <Markdown class="p-2" text={model.description} />
-        {model.builtin ? (
-          <P>Built-in</P>
-        ) : (
-          <P>
-            Updated:{" "}
-            <DateView timestamp={model.dateUpdated || model.dateCreated} />
-          </P>
-        )}
+        <CardFooter>
+          {model.builtin ? (
+            <P>Built-in</P>
+          ) : (
+            <P>
+              Updated:{" "}
+              <DateView timestamp={model.dateUpdated || model.dateCreated} />
+            </P>
+          )}
+        </CardFooter>
       </Card>
     </a>
   );
