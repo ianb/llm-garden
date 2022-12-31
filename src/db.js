@@ -209,7 +209,7 @@ export class Model {
       this._id = uuid();
       this._builtin = false;
     }
-    this._slug = await this.generateSlug();
+    await this.generateSlug();
     const o = recursiveToJSON(this);
     this._dirty = false;
     console.log("saving", o);
@@ -255,7 +255,10 @@ export class Model {
 
   async generateSlug() {
     if (!this.title) {
-      return null;
+      return;
+    }
+    if (this.title === this._slugTitle) {
+      return;
     }
     let index = 0;
     for (;;) {
@@ -270,9 +273,13 @@ export class Model {
       const existing = await db.models.get({
         typeSlug: `${this.type}_${slug}`,
       });
-      console.log("trying slug", index, slug, existing);
       if (!existing || existing.id === this.id) {
-        return slug;
+        console.log(
+          `Changing slug to ${slug} from ${this._slug} for ${this.title}`
+        );
+        this._slug = slug;
+        this._slugTitle = this.title;
+        return;
       }
       index++;
     }
