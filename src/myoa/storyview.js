@@ -111,11 +111,13 @@ function PropertyView({ class: _class, property, prev }) {
       property.delete();
     }
   };
-  const onTitleEdit = (v) => {
-    console.log("got title edit", [v]);
-    property.title = v;
-    property.story.updated();
-  };
+  let onTitleEdit;
+  if (property.type === "passage") {
+    onTitleEdit = (v) => {
+      property.title = v;
+      property.story.updated();
+    };
+  }
   const editButton = <CardButton onClick={onEdit}>Edit</CardButton>;
   const doneButton = <CardButton onClick={onDone}>Done</CardButton>;
   const deleteButton = (
