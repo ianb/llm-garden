@@ -12,7 +12,7 @@ export const QueryLog = ({ gptcache }) => {
   return (
     <>
       {reversed(gptcache.log).map((l, index) => (
-        <LogItem log={l} defaultOpen={index === 0} />
+        <LogItem log={l} version={version} defaultOpen={index === 0} />
       ))}
     </>
   );
