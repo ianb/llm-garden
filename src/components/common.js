@@ -45,7 +45,7 @@ export const Card = ({ title, children, buttons, class: _class }) => {
   }
   _class = twMerge("relative w-72 p-2", _class);
   const footer = Array.isArray(children)
-    ? children.find((c) => c.type === CardFooter)
+    ? children.find((c) => c && c.type === CardFooter)
     : null;
   if (footer) {
     children = children.filter((c) => c.type !== CardFooter);
