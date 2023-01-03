@@ -177,7 +177,7 @@ export class Model {
       try {
         func();
       } catch (e) {
-        console.error(`Error ${this}.fireOnUpdate for ${func}: ${e}`);
+        console.error(`Error ${this}.updated for ${func}: ${e}`);
       }
     }
     this._saveToDbSoon();

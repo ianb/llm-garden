@@ -1,8 +1,5 @@
-import { getCompletion } from "../gptservice/appgpt";
-import LocalCache from "../localcache";
 import uuid from "../uuid";
-
-const queryCache = new LocalCache("adventure-chooser-queries");
+import { GptCache } from "../gptservice/gptcache";
 
 export class ChooserStory {
   constructor(props) {
@@ -18,6 +15,15 @@ export class ChooserStory {
     if (props) {
       this.updateFromJSON(props);
     }
+    this.gpt = new GptCache({
+      storageName: "myoa",
+      basePaths: ["myoa", () => this.envelope && `myoa/${this.envelope.slug}`],
+      logResults: true,
+      defaultPromptOptions: {
+        temperature: 0.5,
+        max_tokens: 240,
+      },
+    });
   }
 
   toJSON() {
@@ -93,10 +99,10 @@ export class ChooserStory {
     passage.fromPassageId = parentId;
     passage.fromChoice = choice;
     this.passages.push(passage);
-    this.fireOnUpdate();
+    this.updated();
   }
 
-  fireOnUpdate() {
+  updated() {
     for (const func of this._updates) {
       func(this);
     }
@@ -110,45 +116,6 @@ export class ChooserStory {
     if (this.envelope) {
       this.envelope.updated();
     }
-  }
-
-  async getCompletion(prompt) {
-    let val;
-    let body;
-    if (typeof prompt === "string") {
-      val = queryCache.get(prompt);
-    }
-    if (val) {
-      this.queryLog.push({
-        prompt,
-        fromCache: true,
-        response: fixResponseText(val.choices[0].text),
-      });
-      return val;
-    }
-    if (typeof prompt === "string") {
-      body = { prompt };
-    } else {
-      body = prompt;
-    }
-    body = Object.assign({ max_tokens: 240 }, body);
-    const start = Date.now();
-    const logItem = { prompt: body.prompt, start };
-    this.queryLog.push(logItem);
-    const resp = await getCompletion(body, [
-      "myoa",
-      `myoa/${this.envelope.slug || "default"}`,
-    ]);
-    console.log(
-      "GPT response",
-      body.prompt + "\n---------------\n" + resp.choices[0].text
-    );
-    const cached = Object.assign({}, resp);
-    cached.fromCache = true;
-    queryCache.set(body.prompt, cached);
-    logItem.response = fixResponseText(resp.choices[0].text);
-    logItem.time = Date.now() - start;
-    return resp;
   }
 
   requiredUpdates() {
@@ -192,7 +159,7 @@ class Property {
   delete() {
     if (this.type === "passage") {
       this.story.passages = this.story.passages.filter((x) => x !== this);
-      this.story.fireOnUpdate();
+      this.story.updated();
     } else {
       this.value = undefined;
     }
@@ -230,7 +197,7 @@ class Property {
 
   set value(v) {
     this._value = v;
-    this.story.fireOnUpdate();
+    this.story.updated();
   }
 
   setValueFromText(v) {
@@ -264,12 +231,12 @@ class Property {
 
   addChoice(choice) {
     this.choices.push(choice);
-    this.story.fireOnUpdate();
+    this.story.updated();
   }
 
   removeChoice(choice) {
     this.choices = this.choices.filter((x) => x !== choice);
-    this.story.fireOnUpdate();
+    this.story.updated();
   }
 
   hasChoice(choice) {
@@ -288,7 +255,7 @@ class Property {
       passage.fromChoice = newChoice;
     }
     this.choices = this.choices.map((x) => (x === oldChoice ? newChoice : x));
-    this.story.fireOnUpdate();
+    this.story.updated();
   }
 
   choiceHasPassage(choice) {
@@ -313,7 +280,7 @@ class Property {
 
   async suggestChoices() {
     this.queries = [];
-    this.story.fireOnUpdate();
+    this.story.updated();
     return this.launchQuery("choices");
   }
 
@@ -325,7 +292,7 @@ class Property {
       return v;
     }
     const prompt = this.fixupPrompt.replace("$value", v);
-    const response = await this.story.getCompletion(prompt);
+    const response = await this.story.gpt.getCompletion(prompt);
     return fixResponseText(response.choices[0].text);
   }
 
@@ -345,10 +312,10 @@ class Property {
     const query = this.initialQuery(promptName);
     const ob = { text: query, type: "init" };
     this.queries = [ob];
-    this.story.fireOnUpdate();
-    const response = await this.story.getCompletion(query);
+    this.story.updated();
+    const response = await this.story.gpt.getCompletion(query);
     ob.response = fixResponseText(response.choices[0].text);
-    this.story.fireOnUpdate();
+    this.story.updated();
   }
 
   async addUserInput(input) {
@@ -356,35 +323,35 @@ class Property {
       return;
     }
     this.queries.push({ text: input, type: "user" });
-    this.story.fireOnUpdate();
+    this.story.updated();
     console.log("trying query", this.queries, this.constructQuery());
-    const response = await this.story.getCompletion(this.constructQuery());
+    const response = await this.story.gpt.getCompletion(this.constructQuery());
     const ob = {
       text: fixResponseText(response.choices[0].text),
       type: "response",
     };
     this.queries.push(ob);
-    this.story.fireOnUpdate();
+    this.story.updated();
   }
 
   async executeSpecialInput(input) {
     const norm = input.trim().toLowerCase();
     if (norm === "reset") {
       this.queries = [];
-      this.story.fireOnUpdate();
+      this.story.updated();
       return true;
     }
     if (norm === "undo") {
       this.queries.pop();
       this.queries.pop();
-      this.story.fireOnUpdate();
+      this.story.updated();
       return true;
     }
     if (norm === "retry") {
       console.log("queries", JSON.stringify(this.queries));
       // FIXME: this doesn't change the log response...
       delete this.queries[this.queries.length - 1].response;
-      const response = await this.story.getCompletion({
+      const response = await this.story.gpt.getCompletion({
         prompt: this.constructQuery(),
         temperature: 1.0,
       });
@@ -393,7 +360,7 @@ class Property {
         type: "response",
       };
       this.queries.push(ob);
-      this.story.fireOnUpdate();
+      this.story.updated();
       return true;
     }
     return false;

@@ -19,6 +19,7 @@ import {
   markdownToPreact,
 } from "../markdown";
 import * as icons from "../components/icons";
+import { QueryLog } from "../components/querylog";
 
 export function StoryView({ model }) {
   window.myModel = model;
@@ -31,8 +32,6 @@ export function StoryView({ model }) {
     setStoryVersion(storyVersion + 1);
   });
   const [massEditing, setMassEditing] = useState(false);
-  const log = [...story.queryLog];
-  log.reverse();
   function onToggleMassEditing() {
     setMassEditing(!massEditing);
   }
@@ -55,9 +54,7 @@ export function StoryView({ model }) {
         model={model}
       />
       <Sidebar>
-        {log.map((l, index) => (
-          <LogItem log={l} defaultOpen={index === 0} />
-        ))}
+        <QueryLog gptcache={model.domain.gpt} />
       </Sidebar>
       {massEditing ? (
         <MassEditor story={story} />
@@ -114,6 +111,11 @@ function PropertyView({ class: _class, property, prev }) {
       property.delete();
     }
   };
+  const onTitleEdit = (v) => {
+    console.log("got title edit", [v]);
+    property.title = v;
+    property.story.updated();
+  };
   const editButton = <CardButton onClick={onEdit}>Edit</CardButton>;
   const doneButton = <CardButton onClick={onDone}>Done</CardButton>;
   const deleteButton = (
@@ -137,6 +139,7 @@ function PropertyView({ class: _class, property, prev }) {
     <Card
       class={_class}
       title={property.title}
+      onTitleEdit={onTitleEdit}
       buttons={[
         addChoiceButton,
         actualEditing ? deleteButton : null,
@@ -334,7 +337,14 @@ function PropertyEditor({ property, promptName, onDone }) {
   function onSubmit(element) {
     const val = element.value;
     element.value = "";
-    if (val) {
+    if (val.startsWith('"') && val.endsWith('"')) {
+      const text = val.slice(1, -1);
+      if (promptName === "choices") {
+        property.addUserInput(text);
+      } else {
+        onSelect(text);
+      }
+    } else if (val) {
       property.addUserInput(val);
     } else if (promptName === "choices") {
       onDone();

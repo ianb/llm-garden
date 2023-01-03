@@ -4,6 +4,7 @@ import { twMerge } from "tailwind-merge";
 import { Header } from "./header";
 import Sidebar from "./sidebar";
 import * as icons from "./icons";
+import { useState } from "preact/hooks";
 
 export const mergeProps = (defaultProps, props) => {
   const newProps = Object.assign({}, defaultProps);
@@ -38,7 +39,14 @@ export const A = ({ children, class: _class, ...props }) => {
   );
 };
 
-export const Card = ({ title, children, buttons, class: _class }) => {
+export const Card = ({
+  title,
+  onTitleEdit,
+  children,
+  buttons,
+  class: _class,
+}) => {
+  const [editingTitle, setEditingTitle] = useState(false);
   let buttonContainer = null;
   if (buttons && buttons.length) {
     buttonContainer = <div class="flex justify-end">{buttons}</div>;
@@ -53,14 +61,39 @@ export const Card = ({ title, children, buttons, class: _class }) => {
   const innerClass = footer
     ? "min-h-2 p-1 bg-white"
     : "min-h-2 p-1 bg-white rounded-b";
+  const onClickTitle = (event) => {
+    if (onTitleEdit && event.detail === 2) {
+      event.stopPropagation();
+      setEditingTitle(true);
+    }
+  };
+  const onSubmitTitle = (element) => {
+    setEditingTitle(false);
+    onTitleEdit(element.value);
+  };
+  const onCancelTitle = () => {
+    setEditingTitle(false);
+  };
   return (
     <div class={_class}>
       <div class="rounded drop-shadow-lg w-full">
         <div class="bg-magenta p-1 rounded-t">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg text-ellipsis truncate whitespace-nowrap pl-2 font-semibold text-magenta-lighter">
-              {title}
-            </h3>
+            {editingTitle ? (
+              <TextInput
+                defaultValue={title}
+                onSubmit={onSubmitTitle}
+                onCancel={onCancelTitle}
+                autoFocus="1"
+              />
+            ) : (
+              <h3
+                class="text-lg text-ellipsis truncate whitespace-nowrap pl-2 font-semibold text-magenta-lighter"
+                onClick={onClickTitle}
+              >
+                {title}
+              </h3>
+            )}
             {buttonContainer}
           </div>
         </div>
@@ -119,11 +152,26 @@ export const Field = ({ sideBySide, children }) => {
 };
 
 export const TextInput = (props) => {
+  let onKeyDown;
+  if (props.onSubmit) {
+    const onSubmit = props.onSubmit;
+    const onCancel = props.onCancel;
+    onKeyDown = (event) => {
+      if (event.key === "Enter") {
+        onSubmit(event.target);
+      } else if (event.key === "Escape" && onCancel) {
+        onCancel(event.target);
+      }
+    };
+    delete props.onSubmit;
+    delete props.onCancel;
+  }
   const newProps = mergeProps(
     {
       type: "text",
       class:
         "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline",
+      onKeyDown,
     },
     props
   );
