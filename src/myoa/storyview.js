@@ -135,7 +135,12 @@ function PropertyView({ class: _class, property, prev }) {
   }
   let choices = null;
   if (property.hasChoices && property.choices.length) {
-    choices = <Choices property={property} />;
+    choices = (
+      <Choices
+        property={property}
+        onCancelChoices={() => setAddingChoice(false)}
+      />
+    );
   }
   return (
     <Card
@@ -232,19 +237,23 @@ function PropertyValue({ value, onEdit }) {
   );
 }
 
-function Choices({ property }) {
+function Choices({ property, onCancelChoices }) {
   return (
     <ol class="list-decimal pl-4">
       {property.choices.map((c) => (
         <li>
-          <Choice choice={c} property={property} />
+          <Choice
+            choice={c}
+            property={property}
+            onCancelChoices={onCancelChoices}
+          />
         </li>
       ))}
     </ol>
   );
 }
 
-function Choice({ choice, property }) {
+function Choice({ choice, property, onCancelChoices }) {
   const [editing, setEditing] = useState(false);
   const textRef = useRef(null);
   function onSubmit(el) {
@@ -269,6 +278,7 @@ function Choice({ choice, property }) {
     return undefined;
   }
   function onBindPassage() {
+    onCancelChoices();
     property.story.addPassage(property.id, choice);
   }
   function onTrash() {
