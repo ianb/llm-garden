@@ -10,6 +10,8 @@ export class ChooserStory {
     this.mainCharacter = new Property(this, "mainCharacter", "Main Character");
     this.introPassage = new Property(this, "introPassage", "Introduction");
     this.passages = [];
+    this.passageSummaryVersion = 1;
+    this.passageSummaries = {};
     this.queryLog = [];
     this._updates = [];
     if (props) {
@@ -35,6 +37,7 @@ export class ChooserStory {
       mainCharacter: this.mainCharacter,
       introPassage: this.introPassage,
       passages: this.passages,
+      passageSummaries: this.passageSummaries,
     };
   }
 
@@ -50,6 +53,122 @@ export class ChooserStory {
       prop.updateFromJSON(p);
       return prop;
     });
+    // FIXME: undo to save these:
+    this.passageSummaries = data.passageSummaries || {};
+    for (const key in this.passageSummaries) {
+      if (
+        !this.passageSummaries[key].version ||
+        this.passageSummaries[key].version < this.passageSummaryVersion
+      ) {
+        delete this.passageSummaries[key];
+      }
+    }
+  }
+
+  async getSummaries(passageIdList) {
+    if (!passageIdList.length) {
+      return "";
+    }
+    passageIdList = [...passageIdList];
+    // We never try to summarize the last passage, it should be included in its entirety:
+    const lastPassage = this.getPassageById(passageIdList.pop());
+    const summary = [];
+    let literals = 0;
+    while (passageIdList.length) {
+      let found = false;
+      for (let i = passageIdList.length; i > 0; i--) {
+        const ids = passageIdList.slice(0, i);
+        const passageSummary = this.getPassageSummary(ids);
+        if (passageSummary) {
+          passageIdList.splice(0, i);
+          summary.push({
+            type: "summary",
+            text: `These things have happened:\n${passageSummary}`,
+          });
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        const first = this.getPassageById(passageIdList[0]);
+        summary.push({
+          type: "literal",
+          id: passageIdList[0],
+          text: this.createPassagePrompt(first),
+        });
+        literals++;
+        passageIdList.splice(0, 1);
+      }
+    }
+    if (literals > 3) {
+      const stretches = [];
+      for (let i = 0; i < summary.length; i++) {
+        const item = summary[i];
+        if (item.type !== "literal") {
+          continue;
+        }
+        let last;
+        if (stretches.length) {
+          last = stretches[stretches.length - 1];
+        }
+        if (last && last.start + last.length === i) {
+          last.length++;
+          last.ids.push(item.id);
+        } else {
+          stretches.push({ start: i, length: 1, ids: [item.id] });
+        }
+      }
+      sortByKey(stretches, (x) => -x.length);
+      await this.summarizeIds(stretches[0].ids);
+      summary.splice(stretches[0].start, stretches[0].length, {
+        type: "summary",
+        text: this.getPassageSummary(stretches[0].ids),
+      });
+    }
+    summary.push({
+      type: "literal",
+      id: lastPassage.id,
+      text: this.createPassagePrompt(lastPassage),
+    });
+    return summary.map((x) => x.text).join("\n\n");
+  }
+
+  getPassageSummary(ids) {
+    const key = ids.join(",");
+    return this.passageSummaries[key] && this.passageSummaries[key].text;
+  }
+
+  purgePassageSummaries(id) {
+    for (const key in this.passageSummaries) {
+      if (key.contains(id)) {
+        delete this.passageSummaries[key];
+      }
+    }
+    this.updated();
+  }
+
+  createPassagePrompt(passage) {
+    if (passage.id === "introPassage") {
+      return passage.value;
+    }
+    return `You choose: ${passage.fromChoice}\n\n# ${passage.title}\n\n${passage.value}`;
+  }
+
+  async summarizeIds(ids) {
+    const key = ids.join(",");
+    const texts = [];
+    for (const id of ids) {
+      const passage = this.getPassageById(id);
+      texts.push(this.createPassagePrompt(passage));
+    }
+    const text = texts.join("\n\n");
+    const prompt = `Summarize the following passages as a list of bullet points:\n\n${text}\n\nBullet points:\n*`;
+    const summary = await this.gpt.getCompletion(prompt);
+    this.passageSummaries[key] = {
+      version: this.passageSummaryVersion,
+      text: "* " + summary.text.trim(),
+    };
+    this.updated();
   }
 
   storyContext() {
@@ -128,7 +247,7 @@ class Property {
     this.queries = [];
     this.story = story;
     this.type = type;
-    this.title = title;
+    this._title = title;
     this._value = null;
     this.single = !!prompts[type + "Single"];
     this.fixupPrompt = prompts[type + "Fixup"];
@@ -197,6 +316,21 @@ class Property {
 
   set value(v) {
     this._value = v;
+    if (this.type === "passage" || this.type === "introPassage") {
+      this.story.purgePassageSummaries(this.id);
+    }
+    this.story.updated();
+  }
+
+  get title() {
+    return this._title;
+  }
+
+  set title(v) {
+    this._title = v;
+    if (this.type === "passage" || this.type === "introPassage") {
+      this.story.purgePassageSummaries(this.id);
+    }
     this.story.updated();
   }
 
@@ -253,6 +387,7 @@ class Property {
     const passage = this.story.getPassageByChoice(this.id, oldChoice);
     if (passage) {
       passage.fromChoice = newChoice;
+      this.story.purgePassageSummaries(passage.id);
     }
     this.choices = this.choices.map((x) => (x === oldChoice ? newChoice : x));
     this.story.updated();
@@ -309,7 +444,7 @@ class Property {
   }
 
   async launchQuery(promptName = null) {
-    const query = this.initialQuery(promptName);
+    const query = await this.initialQuery(promptName);
     const ob = { text: query, type: "init" };
     this.queries = [ob];
     this.story.updated();
@@ -384,7 +519,7 @@ class Property {
     return result.join("\n");
   }
 
-  initialQuery(promptName = null) {
+  async initialQuery(promptName = null) {
     promptName = promptName || this.type;
     const basic = prompts[promptName];
     let existingChoices = null;
@@ -396,11 +531,12 @@ class Property {
       existingChoices = existingChoices.join("\n");
     }
     const result = [];
+    const passageContext = await this.passageContext();
     for (let s of [
       prompts.assistantIntro,
       prompts.general,
       this.story.storyContext(),
-      this.passageContext(),
+      passageContext,
       basic,
       existingChoices,
       "Edward says:",
@@ -413,24 +549,37 @@ class Property {
     return result.join("\n\n") + "\n\n";
   }
 
-  passageContext() {
+  async passageContext() {
     if (this.type !== "passage") {
       return null;
     }
-    const p = [];
+    const ids = [];
     let current = this;
-    while (current.fromPassageId) {
+    for (;;) {
+      ids.push(current.id);
+      if (!current.fromPassageId) {
+        break;
+      }
       current = current.fromPassage;
-      p.push(current.value);
     }
-    p.reverse();
-    p.push(this.fromChoice);
-    if (this.value) {
-      // FIXME: this is right for choices, but seems wrong for editing the passage
-      p.push(this.value);
-    }
-    return p.join("\n\n");
+    ids.reverse();
+    return this.story.getSummaries(ids);
   }
+}
+
+function sortByKey(array, func) {
+  /* Sort array by whatever value func(item) gives */
+  return array.sort((a, b) => {
+    const aKey = func(a);
+    const bKey = func(b);
+    if (aKey < bKey) {
+      return -1;
+    }
+    if (aKey > bKey) {
+      return 1;
+    }
+    return 0;
+  });
 }
 
 // Every so often (not that often) it returns these emoji instead of 1./2. etc:
