@@ -13,11 +13,7 @@ import {
 import Sidebar from "../components/sidebar";
 import { signal } from "@preact/signals";
 import { useState, useEffect, useRef } from "preact/hooks";
-import {
-  markdownToElement,
-  elementToPreact,
-  markdownToPreact,
-} from "../markdown";
+import { markdownToElement, elementToPreact, Markdown } from "../markdown";
 import * as icons from "../components/icons";
 import { QueryLog } from "../components/querylog";
 
@@ -226,7 +222,7 @@ function PropertyValue({ value, onEdit }) {
   if (value) {
     return (
       <div class="p-1 m-3 bg-gray-200" onClick={onClick}>
-        <Markdown text={value} />
+        <Markdown class="gpt-response" text={value} />
       </div>
     );
   }
@@ -467,7 +463,7 @@ function QueryText({ property, onSubmit, onSelect, ignoreElement }) {
   });
   return (
     <div>
-      <div class="unreset">{markup}</div>
+      <div class="unreset gpt-response">{markup}</div>
       <TextArea onSubmit={onSubmit} autoFocus="1" textareaRef={textareaRef} />
     </div>
   );
@@ -563,11 +559,6 @@ function LogItem({ log, defaultOpen }) {
       ) : null}
     </div>
   );
-}
-
-function Markdown({ text }) {
-  const c = markdownToPreact(text);
-  return <div class="unreset">{c}</div>;
 }
 
 function ImportExportMenu({ story }) {

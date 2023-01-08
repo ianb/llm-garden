@@ -1,4 +1,5 @@
 import { getCompletion } from "./appgpt";
+import { defaultBody } from "./gpt";
 import LocalCache from "../localcache";
 
 export class GptCache {
@@ -12,7 +13,11 @@ export class GptCache {
     this.storageName = storageName;
     this.basePaths = basePaths || [];
     this.responseFixer = responseFixer || ((v) => v);
-    this.defaultPromptOptions = defaultPromptOptions || {};
+    this.defaultPromptOptions = Object.assign(
+      {},
+      defaultBody,
+      defaultPromptOptions || {}
+    );
     this.logResults = logResults || false;
     this.log = [];
     // FIXME: should change to IndexedDB/Dexie:
@@ -24,10 +29,16 @@ export class GptCache {
     usagePaths = usagePaths || [];
     usagePaths = [...this.basePaths, ...usagePaths];
     usagePaths = this.resolvePaths(usagePaths);
-    let val;
-    if (typeof prompt === "string") {
-      val = this.queryCache.get(prompt);
-    }
+    let requestBody = typeof prompt === "string" ? { prompt } : prompt;
+    requestBody = Object.assign({}, this.defaultPromptOptions, requestBody);
+    const key = `${requestBody.prompt}
+${requestBody.model}
+${requestBody.max_tokens}
+${floatKey(requestBody.temperature)}
+${stopRepr(requestBody.stop)}
+${floatKey(requestBody.presence_penalty)}
+${floatKey(requestBody.frequency_penalty)}`;
+    let val = this.queryCache.get(key);
     if (val) {
       this.log.push({
         prompt,
@@ -39,13 +50,6 @@ export class GptCache {
       this.updated();
       return val;
     }
-    let requestBody;
-    if (typeof prompt === "string") {
-      requestBody = { prompt };
-    } else {
-      requestBody = prompt;
-    }
-    requestBody = Object.assign({}, this.defaultPromptOptions, requestBody);
     const start = Date.now();
     const logItem = { prompt: requestBody.prompt, start };
     this.log.push(logItem);
@@ -89,4 +93,21 @@ export class GptCache {
   updated() {
     this._onLogUpdates.forEach((f) => f());
   }
+}
+
+function floatKey(f) {
+  if (!f) {
+    return "";
+  }
+  return f.toFixed(1);
+}
+
+function stopRepr(s) {
+  if (!s) {
+    return "";
+  }
+  if (typeof s === "string") {
+    return s;
+  }
+  return s.join("|");
 }

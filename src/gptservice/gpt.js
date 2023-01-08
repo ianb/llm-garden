@@ -34,6 +34,7 @@ export const defaultBody = {
   model: "text-davinci-003",
   temperature: 0.2,
   max_tokens: 40,
+  n: 1,
 };
 
 let sessionTokens = 0;

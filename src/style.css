@@ -41,6 +41,10 @@ html, body {
   max-width: 40%;
 }
 
+.gpt-response.unreset h1 {
+  font-size: 1.1em;
+}
+
 .unreset {
 	/**
  * Unreset CSS

@@ -10,7 +10,7 @@ export class ChooserStory {
     this.mainCharacter = new Property(this, "mainCharacter", "Main Character");
     this.introPassage = new Property(this, "introPassage", "Introduction");
     this.passages = [];
-    this.passageSummaryVersion = 1;
+    this.passageSummaryVersion = 3;
     this.passageSummaries = {};
     this.queryLog = [];
     this._updates = [];
@@ -71,7 +71,10 @@ export class ChooserStory {
     }
     passageIdList = [...passageIdList];
     // We never try to summarize the last passage, it should be included in its entirety:
-    const lastPassage = this.getPassageById(passageIdList.pop());
+    const lastPassages = [this.getPassageById(passageIdList.pop())];
+    if (!lastPassages[0].value) {
+      lastPassages.unshift(this.getPassageById(passageIdList.pop()));
+    }
     const summary = [];
     let literals = 0;
     while (passageIdList.length) {
@@ -125,11 +128,13 @@ export class ChooserStory {
         text: this.getPassageSummary(stretches[0].ids),
       });
     }
-    summary.push({
-      type: "literal",
-      id: lastPassage.id,
-      text: this.createPassagePrompt(lastPassage),
-    });
+    for (const lastPassage of lastPassages) {
+      summary.push({
+        type: "literal",
+        id: lastPassage.id,
+        text: this.createPassagePrompt(lastPassage),
+      });
+    }
     return summary.map((x) => x.text).join("\n\n");
   }
 
@@ -140,7 +145,7 @@ export class ChooserStory {
 
   purgePassageSummaries(id) {
     for (const key in this.passageSummaries) {
-      if (key.contains(id)) {
+      if (key.includes(id)) {
         delete this.passageSummaries[key];
       }
     }
@@ -150,6 +155,9 @@ export class ChooserStory {
   createPassagePrompt(passage) {
     if (passage.id === "introPassage") {
       return passage.value;
+    }
+    if (!passage.value) {
+      return `You choose: ${passage.fromChoice}`;
     }
     return `You choose: ${passage.fromChoice}\n\n# ${passage.title}\n\n${passage.value}`;
   }
@@ -162,7 +170,7 @@ export class ChooserStory {
       texts.push(this.createPassagePrompt(passage));
     }
     const text = texts.join("\n\n");
-    const prompt = `Summarize the following passages as a list of bullet points:\n\n${text}\n\nBullet points:\n*`;
+    const prompt = `Create a list of facts and events from the following passages:\n\n${text}\n\nComprehensive list of facts, events, characters, and settings from the passages:\n*`;
     const summary = await this.gpt.getCompletion(prompt);
     this.passageSummaries[key] = {
       version: this.passageSummaryVersion,
@@ -354,7 +362,9 @@ class Property {
     }
     const lines = v.split("\n");
     if (lines.length > 3 && lines[1].trim() === "" && lines[0].length < 60) {
-      return [lines[0], lines.slice(2).join("\n").trim()];
+      let title = lines[0];
+      title = title.replace(/^#+\s+/, "");
+      return [title, lines.slice(2).join("\n").trim()];
     }
     return [null, v];
   }
@@ -448,7 +458,10 @@ class Property {
     const ob = { text: query, type: "init" };
     this.queries = [ob];
     this.story.updated();
-    const response = await this.story.gpt.getCompletion(query);
+    const response = await this.story.gpt.getCompletion({
+      prompt: query,
+      stop: ["You choose:"],
+    });
     ob.response = fixResponseText(response.choices[0].text);
     this.story.updated();
   }
