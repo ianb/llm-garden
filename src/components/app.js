@@ -6,6 +6,7 @@ import { StoryPlayerLoader } from "../myoa/player";
 import { RequestKeyPage } from "../key-management/index";
 import { Home, NotFound } from "./home";
 import { ToneChangerIndex } from "../tone-changer/index";
+import { VoiceComposerIndex } from "../voice-composer/index";
 import Router from "preact-router";
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
       <AdventureIndex path="/myoa" />
       <StoryPlayerLoader path="/myoa/play" />
       <ToneChangerIndex path="/tone-changer" />
+      <VoiceComposerIndex path="/voice-composer" />
       <NotFound default />
     </Router>
   );

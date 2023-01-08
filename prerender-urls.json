@@ -22,5 +22,9 @@
   {
     "url": "/key-management",
     "title": "Add your key"
+  },
+  {
+    "url": "/voice-composer",
+    "title": "Voice Composer"
   }
 ]

@@ -28,6 +28,12 @@ Act like you are someone else! Have your speech translated to a
 different tone (or language).
 `.trim(),
   },
+  "Voice Composer": {
+    link: "/voice-composer/",
+    description: `
+Voice composer: a voice-centric text composition and editing tool
+`.trim(),
+  },
 };
 
 export const Home = () => {
