@@ -1,5 +1,5 @@
-import { getCompletion } from "./appgpt";
-import { defaultBody } from "./gpt";
+import { getCompletion, getEdit } from "./appgpt";
+import { defaultBody, defaultEditBody } from "./gpt";
 import LocalCache from "../localcache";
 
 export class GptCache {
@@ -9,6 +9,7 @@ export class GptCache {
     logResults,
     responseFixer,
     defaultPromptOptions,
+    defaultEditOptions,
   }) {
     this.storageName = storageName;
     this.basePaths = basePaths || [];
@@ -17,6 +18,11 @@ export class GptCache {
       {},
       defaultBody,
       defaultPromptOptions || {}
+    );
+    this.defaultEditOptions = Object.assign(
+      {},
+      defaultEditBody,
+      defaultEditOptions || {}
     );
     this.logResults = logResults || false;
     this.log = [];
@@ -31,7 +37,8 @@ export class GptCache {
     usagePaths = this.resolvePaths(usagePaths);
     let requestBody = typeof prompt === "string" ? { prompt } : prompt;
     requestBody = Object.assign({}, this.defaultPromptOptions, requestBody);
-    const key = `${requestBody.prompt}
+    const key = `completion
+${requestBody.prompt}
 ${requestBody.model}
 ${requestBody.max_tokens}
 ${floatKey(requestBody.temperature)}
@@ -42,6 +49,7 @@ ${floatKey(requestBody.frequency_penalty)}`;
     if (val) {
       this.log.push({
         prompt,
+        type: "completion",
         fromCache: true,
         response: this.responseFixer(val.choices[0].text),
       });
@@ -51,7 +59,7 @@ ${floatKey(requestBody.frequency_penalty)}`;
       return val;
     }
     const start = Date.now();
-    const logItem = { prompt: requestBody.prompt, start };
+    const logItem = { prompt: requestBody.prompt, start, type: "completion" };
     this.log.push(logItem);
     this.updated();
     const resp = await getCompletion(requestBody, usagePaths);
@@ -63,10 +71,61 @@ ${floatKey(requestBody.frequency_penalty)}`;
     );
     const cached = Object.assign({}, resp);
     cached.fromCache = true;
-    this.queryCache.set(requestBody.prompt, cached);
+    this.queryCache.set(key, cached);
     logItem.response = this.responseFixer(resp.choices[0].text);
     logItem.time = Date.now() - start;
     resp.text = this.responseFixer(resp.choices[0].text);
+    this.updated();
+    return resp;
+  }
+
+  async getEdit(body, usagePaths) {
+    usagePaths = usagePaths || [];
+    usagePaths = [...this.basePaths, ...usagePaths];
+    usagePaths = this.resolvePaths(usagePaths);
+    const requestBody = Object.assign({}, this.defaultEditOptions, body);
+    // Not applicable to edit:
+    delete requestBody.max_tokens;
+    delete requestBody.stop;
+    delete requestBody.presence_penalty;
+    delete requestBody.frequency_penalty;
+    const key = `edit
+${requestBody.input}
+${requestBody.instruction}
+${requestBody.model}
+${floatKey(requestBody.temperature)}`;
+    let val = this.queryCache.get(key);
+    if (val) {
+      this.log.push({
+        prompt: requestBody,
+        type: "edit",
+        fromCache: true,
+        response: val.choices[0].text,
+      });
+      val = Object.assign({}, val);
+      val.text = val.choices[0].text;
+      this.updated();
+      return val;
+    }
+    const start = Date.now();
+    const logItem = { prompt: requestBody, start, type: "edit" };
+    this.log.push(logItem);
+    this.updated();
+    const resp = await getEdit(requestBody, usagePaths);
+    console.log(
+      "GPT edit response",
+      requestBody.input +
+        "\n=>" +
+        requestBody.instruction +
+        "\n---------------\n" +
+        resp.choices[0].text
+    );
+    const cached = Object.assign({}, resp);
+    cached.fromCache = true;
+    this.queryCache.set(key, cached);
+    logItem.response = resp.choices[0].text;
+    logItem.time = Date.now() - start;
+    resp.text = resp.choices[0].text;
     this.updated();
     return resp;
   }

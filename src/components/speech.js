@@ -23,15 +23,15 @@ export const SpeechButton = ({
   const isSpeaking = speaking.value;
   useEffect(() => {
     if (listening && recognition && isSpeaking && !paused) {
-      console.log("pausing recognition");
+      console.info("pausing recognition");
       recognition.stop();
       setPaused(true);
     } else if (listening && recognition && !isSpeaking && paused) {
-      console.log("resuming recognition");
+      console.info("resuming recognition");
       recognition.start();
       setPaused(false);
     } else if (listening && !recognition) {
-      console.log("starting recognition");
+      console.info("starting recognition");
       recognition = new webkitSpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
@@ -41,8 +41,16 @@ export const SpeechButton = ({
         const last = results[results.length - 1];
         let text = last[0].transcript;
         if (!last.isFinal) {
-          text = "";
+          let hypothesisResults = [];
           for (const item of results) {
+            if (item.isFinal) {
+              hypothesisResults = [];
+            } else {
+              hypothesisResults.push(item);
+            }
+          }
+          text = "";
+          for (const item of hypothesisResults) {
             text += item[0].transcript;
           }
         }
@@ -60,7 +68,7 @@ export const SpeechButton = ({
       };
       recognition.start();
     } else if (!listening && recognition) {
-      console.log("stopping recognition");
+      console.info("stopping recognition");
       recognition.stop();
       recognition = null;
     }
@@ -108,7 +116,7 @@ export const speak = async (text, voice, lang = "en-US") => {
     checkVoice();
   };
   utt.onerror = (err) => {
-    console.log("Error for speech:", err);
+    console.warn("Error for speech:", err);
     reject(err);
     checkVoice();
   };

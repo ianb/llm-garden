@@ -36,6 +36,12 @@ function LogItem({ log, defaultOpen }) {
   }
   // FIXME: this might not be updated properly when the log item changes
   // and the response comes in...
+  let text = "?";
+  if (log.type === "completion") {
+    text = log.prompt.prompt;
+  } else if (log.type === "edit") {
+    text = log.prompt.input + "\n=> " + log.prompt.instruction + "\n";
+  }
   return (
     <div>
       <div
@@ -52,7 +58,7 @@ function LogItem({ log, defaultOpen }) {
       </div>
       {open ? (
         <Pre class="text-xs">
-          {log.prompt}
+          {text}
           {log.response ? (
             <span class="text-red-800">{log.response}</span>
           ) : (
