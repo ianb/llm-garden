@@ -36,11 +36,14 @@ function LogItem({ log, defaultOpen }) {
   }
   // FIXME: this might not be updated properly when the log item changes
   // and the response comes in...
-  let text = "?";
+  let text;
   if (log.type === "completion") {
-    text = log.prompt.prompt;
+    text = log.body.prompt;
   } else if (log.type === "edit") {
-    text = log.prompt.input + "\n=> " + log.prompt.instruction + "\n";
+    text = log.body.input + "\n=> " + log.body.instruction + "\n";
+  } else {
+    console.warn("Unknown log type", log.type);
+    text = "Error";
   }
   return (
     <div>

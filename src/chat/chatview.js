@@ -60,7 +60,7 @@ function PromptEditor({ model }) {
     model.domain.exampleInteraction = event.target.value;
   }
   function onChangeSaveHistory(event) {
-    model.domain.saveHistory = event.target.value;
+    model.domain.saveHistory = event.target.checked;
   }
   function onClearHistory() {
     model.domain.clearHistory();
@@ -112,7 +112,7 @@ function PromptEditor({ model }) {
         <input
           type="checkbox"
           onChange={onChangeSaveHistory}
-          value={model.domain.saveHistory}
+          checked={model.domain.saveHistory}
         />
       </Field>
       <Button onClick={onClearHistory}>Clear Chat</Button>

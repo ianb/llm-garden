@@ -175,6 +175,9 @@ class Chat {
   }
 
   parseExample() {
+    if (!this.exampleInteraction) {
+      return [];
+    }
     const lines = this.exampleInteraction.split("\n");
     const result = [];
     for (const line of lines) {

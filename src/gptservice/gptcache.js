@@ -48,7 +48,7 @@ ${floatKey(requestBody.frequency_penalty)}`;
     let val = this.queryCache.get(key);
     if (val) {
       this.log.push({
-        prompt,
+        body: requestBody,
         type: "completion",
         fromCache: true,
         response: this.responseFixer(val.choices[0].text),
@@ -59,7 +59,7 @@ ${floatKey(requestBody.frequency_penalty)}`;
       return val;
     }
     const start = Date.now();
-    const logItem = { prompt: requestBody.prompt, start, type: "completion" };
+    const logItem = { body: requestBody, start, type: "completion" };
     this.log.push(logItem);
     this.updated();
     const resp = await getCompletion(requestBody, usagePaths);
@@ -97,7 +97,7 @@ ${floatKey(requestBody.temperature)}`;
     let val = this.queryCache.get(key);
     if (val) {
       this.log.push({
-        prompt: requestBody,
+        body: requestBody,
         type: "edit",
         fromCache: true,
         response: val.choices[0].text,
@@ -108,7 +108,7 @@ ${floatKey(requestBody.temperature)}`;
       return val;
     }
     const start = Date.now();
-    const logItem = { prompt: requestBody, start, type: "edit" };
+    const logItem = { body: requestBody, start, type: "edit" };
     this.log.push(logItem);
     this.updated();
     const resp = await getEdit(requestBody, usagePaths);
