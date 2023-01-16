@@ -6,6 +6,7 @@ export class ChooserStory {
     this.genre = new Property(this, "genre", "Genre");
     this.title = new Property(this, "title", "Title");
     this.theme = new Property(this, "theme", "Theme");
+    this.gameState = new Property(this, "gameState", "Game State");
     this.characterName = new Property(this, "characterName", "Character Name");
     this.mainCharacter = new Property(this, "mainCharacter", "Main Character");
     this.introPassage = new Property(this, "introPassage", "Introduction");
@@ -35,6 +36,7 @@ export class ChooserStory {
       theme: this.theme,
       characterName: this.characterName,
       mainCharacter: this.mainCharacter,
+      gameState: this.gameState,
       introPassage: this.introPassage,
       passages: this.passages,
       passageSummaries: this.passageSummaries,
@@ -48,6 +50,7 @@ export class ChooserStory {
     this.characterName.updateFromJSON(data.characterName);
     this.mainCharacter.updateFromJSON(data.mainCharacter);
     this.introPassage.updateFromJSON(data.introPassage);
+    this.gameState.updateFromJSON(data.gameState);
     this.passages = data.passages.map((p) => {
       const prop = new Property(this);
       prop.updateFromJSON(p);
@@ -86,7 +89,7 @@ export class ChooserStory {
           passageIdList.splice(0, i);
           summary.push({
             type: "summary",
-            text: `These things have happened:\n${passageSummary}`,
+            text: `These things happen:\n${passageSummary}`,
           });
           found = true;
           break;
@@ -103,7 +106,7 @@ export class ChooserStory {
         passageIdList.splice(0, 1);
       }
     }
-    if (literals > 3) {
+    if (literals >= 3) {
       const stretches = [];
       for (let i = 0; i < summary.length; i++) {
         const item = summary[i];
@@ -154,10 +157,13 @@ export class ChooserStory {
 
   createPassagePrompt(passage) {
     if (passage.id === "introPassage") {
-      return passage.value;
+      return `# Introduction\n\n${passage.value}`;
     }
     if (!passage.value) {
       return `You choose: ${passage.fromChoice}`;
+    }
+    if (passage.fromChoice === passage.title) {
+      return `You choose: ${passage.fromChoice}\n\n${passage.value}`;
     }
     return `You choose: ${passage.fromChoice}\n\n# ${passage.title}\n\n${passage.value}`;
   }
@@ -259,6 +265,7 @@ class Property {
     this._value = null;
     this.single = !!prompts[type + "Single"];
     this.fixupPrompt = prompts[type + "Fixup"];
+    this.chatResponsePrompt = prompts[type + "ChatResponse"] || "Response:";
     if (this.type === "passage") {
       this.id = uuid();
     } else if (this.type === "introPassage") {
@@ -269,6 +276,7 @@ class Property {
     if (this.hasChoices) {
       this.choices = [];
     }
+    this._collapsed = false;
   }
 
   toJSON() {
@@ -280,6 +288,8 @@ class Property {
       id: this.id,
       fromPassageId: this.fromPassageId,
       fromChoice: this.fromChoice,
+      choiceLinks: this.choiceLinks,
+      collapsed: this.collapsed ? true : undefined,
     };
   }
 
@@ -293,6 +303,9 @@ class Property {
   }
 
   updateFromJSON(data) {
+    if (!data) {
+      return;
+    }
     if (this.type && this.type !== data.type) {
       throw new Error(`Type mismatch: ${this.type} vs ${data.type}`);
     }
@@ -310,12 +323,15 @@ class Property {
         data.value
       );
     } else {
-      this.value = data.value;
+      this._value = data.value;
     }
     this.choices = data.choices;
+    this.choiceLinks = data.choiceLinks;
     this.id = data.id;
     this.fromPassageId = data.fromPassageId;
     this.fromChoice = data.fromChoice;
+    this.choiceLinks = data.choiceLinks;
+    this._collapsed = !!data.collapsed;
   }
 
   get value() {
@@ -339,6 +355,67 @@ class Property {
     if (this.type === "passage" || this.type === "introPassage") {
       this.story.purgePassageSummaries(this.id);
     }
+    this.story.updated();
+  }
+
+  get completionStatus() {
+    if (this.type === "passage" || this.type === "introPassage") {
+      if (!this.value) {
+        return "notStarted";
+      }
+      if (!this.choices.length) {
+        return "ending";
+      }
+      if (this.choices.every((c) => this.choiceHasPassage(c))) {
+        if (this.choices.length === 1) {
+          return "through";
+        }
+        return "complete";
+      }
+      return "incomplete";
+    }
+    if (this.value) {
+      return "complete";
+    }
+    return "notStarted";
+  }
+
+  get shortSummary() {
+    if (this.type === "passage" || this.type === "introPassage") {
+      const title = this.title.trim();
+      const words = this.value ? this.value.split(/\s+/).length : 0;
+      const choices = this.choices.length;
+      const filled = this.choices.filter((c) =>
+        this.choiceHasPassage(c)
+      ).length;
+      if (!words && !choices) {
+        return `${title}: Not started`;
+      }
+      if (!choices) {
+        return `${title}: ${words} words`;
+      }
+      if (filled === choices) {
+        return `${title}: ${words} words, ${choices} choices`;
+      }
+      return `${title}: ${words} words, ${filled}/${choices} choices`;
+    }
+    if (!this.value) {
+      return this.title;
+    }
+    // FIXME: if this value is too long it can make the card get wide, but WHY? The overflow is supposed to handle it
+    return this.value.split(/\n/)[0].slice(0, 50);
+  }
+
+  get supportsEdit() {
+    return this.type !== "gameState";
+  }
+
+  get collapsed() {
+    return this._collapsed;
+  }
+
+  set collapsed(v) {
+    this._collapsed = !!v;
     this.story.updated();
   }
 
@@ -387,6 +464,14 @@ class Property {
     return this.choices.includes(choice);
   }
 
+  linkChoiceToPassage(choice, passageId) {
+    if (!this.choiceLinks) {
+      this.choiceLinks = {};
+    }
+    this.choiceLinks[choice] = passageId;
+    this.story.updated();
+  }
+
   renameChoice(oldChoice, newChoice) {
     if (!this.hasChoice(oldChoice)) {
       throw new Error(`No such choice: ${oldChoice}`);
@@ -400,6 +485,10 @@ class Property {
       this.story.purgePassageSummaries(passage.id);
     }
     this.choices = this.choices.map((x) => (x === oldChoice ? newChoice : x));
+    if (this.choiceLinks && this.choiceLinks[oldChoice]) {
+      this.choiceLinks[newChoice] = this.choiceLinks[oldChoice];
+      delete this.choiceLinks[oldChoice];
+    }
     this.story.updated();
   }
 
@@ -408,6 +497,9 @@ class Property {
   }
 
   choicePassage(choice) {
+    if (this.choiceLinks && this.choiceLinks[choice]) {
+      return this.story.getPassageById(this.choiceLinks[choice]);
+    }
     for (const p of this.story.passages) {
       if (p.fromChoice === choice && p.fromPassageId === this.id) {
         return p;
@@ -518,7 +610,7 @@ class Property {
     const result = [];
     for (const item of this.queries) {
       if (item.type === "user") {
-        result.push(`Request: ${item.text}\nResponse:`);
+        result.push(`\nRequest: ${item.text}\n${this.chatResponsePrompt}`);
       } else if (item.type === "response") {
         result.push(item.text + "\n");
       } else if (item.type === "init") {
@@ -545,6 +637,15 @@ class Property {
     }
     const result = [];
     const passageContext = await this.passageContext();
+    let titlePrompt;
+    if (
+      this.type === "passage" &&
+      promptName !== "choices" &&
+      this.title !== this.fromChoice &&
+      !this.value
+    ) {
+      titlePrompt = `# ${this.title}`;
+    }
     for (let s of [
       prompts.assistantIntro,
       prompts.general,
@@ -553,6 +654,7 @@ class Property {
       basic,
       existingChoices,
       "Edward says:",
+      titlePrompt,
     ]) {
       s = s && s.trim();
       if (s) {
@@ -576,7 +678,8 @@ class Property {
       current = current.fromPassage;
     }
     ids.reverse();
-    return this.story.getSummaries(ids);
+    const val = await this.story.getSummaries(ids);
+    return val;
   }
 }
 
@@ -613,30 +716,35 @@ function fixResponseText(text) {
 export const prompts = {
   genre: `
   Introduce yourself. Ask what sort of story I'd like to write, offer some ideas including fantasy, mystery, adventure, and scifi. Present the ideas as a numbered list with emojis. Also offer at least 2 other story types.`,
+  genreChatResponse: `New list of genres:`,
   genreContext: `
   The genre of the story is $value.
   `,
   title: `
   Choose a name for the story. Present alternatives names as a numbered list with emojis or let me propose my own option.
   `,
+  titleChatResponse: `New list of titles:`,
   titleContext: `
   The story is titled $value.
   `,
   theme: `
   Choose a secondary theme for the story or let me propose my own options. Present alternative themes with a numbered list with emojis.
   `,
+  themeChatResponse: `New list of themes:`,
   themeContext: `
   The theme of the story is $value.
   `,
   characterName: `
   Choose a name for the main character or let me propose my own options. Present alternative names with a numbered list with emojis. Include interesting and unusual names.
   `,
+  characterNameChatResponse: `New list of character names:`,
   characterNameContext: `
   You are the main character. Your name is $value.
   `,
   mainCharacter: `
   Describe the main character: their age, their motivations, and their personality. Ask if I'd like to make changes. Repeat the character description after each change.
   `,
+  mainCharacterChatResponse: `New character description:`,
   mainCharacterContext: `
   $value.
   `,
@@ -647,12 +755,14 @@ export const prompts = {
   Create a character description, referring to the character as "you"
   `,
   introPassage: `
-  Compose the first passage of the story. Describe the setting and the main character. Repeat the passage after each change.
+  Compose the first passage of the story. Describe the setting and the main character. Refer to the main character as "You". Write in the present tense.
   `,
+  introPassageChatResponse: `New version of the introductory passage:`,
   introPassageSingle: true,
   passage: `
-  Compose a passage of the story. Give the passage a title. Repeat the passage after each change. The passage should end just before a critical choice.
+  Compose a passage of the story. Give the passage a title. The passage should end just before a critical choice. Do not specify choices. Write in the present tense.
   `,
+  passageChatResponse: `New version of the passage:`,
   passageSingle: true,
   general: `
 * Keep responses short, concise, and easy to understand.

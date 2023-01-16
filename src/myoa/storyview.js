@@ -9,6 +9,7 @@ import {
   TextArea,
   mergeProps,
   Field,
+  Select,
 } from "../components/common";
 import Sidebar from "../components/sidebar";
 import { signal } from "@preact/signals";
@@ -66,11 +67,11 @@ function RegularEditor({ story }) {
   return (
     <div class="flex flex-wrap">
       <PropertyView property={story.genre} prev={dummyProp} class="w-1/4" />
-      <PropertyView property={story.title} prev={story.genre} class="w-1/4" />
-      <PropertyView property={story.theme} prev={story.title} class="w-1/4" />
+      <PropertyView property={story.theme} prev={story.genre} class="w-1/4" />
+      <PropertyView property={story.title} prev={story.theme} class="w-1/4" />
       <PropertyView
         property={story.characterName}
-        prev={story.theme}
+        prev={story.title}
         class="w-1/4"
       />
       <PropertyView
@@ -78,6 +79,7 @@ function RegularEditor({ story }) {
         prev={story.characterName}
         class="w-1/2"
       />
+      <PropertyView property={story.gameState} class="w-1/2" />
       <PropertyView
         property={story.introPassage}
         prev={story.mainCharacter}
@@ -93,6 +95,9 @@ function RegularEditor({ story }) {
 function PropertyView({ class: _class, property, prev }) {
   const [editing, setEditing] = useState(null);
   const [addingChoice, setAddingChoice] = useState(false);
+  if (property.collapsed) {
+    return <PropertyViewCollapsed class={_class} property={property} />;
+  }
   let actualEditing = editing;
   if (editing === null && prev && prev.value && !property.value) {
     actualEditing = true;
@@ -138,15 +143,28 @@ function PropertyView({ class: _class, property, prev }) {
       />
     );
   }
+  const title = (
+    <>
+      <PropertyStatusIcon property={property} />
+      {property.title}
+    </>
+  );
   return (
     <Card
       class={_class}
-      title={property.title}
+      title={title}
       onTitleEdit={onTitleEdit}
       buttons={[
         addChoiceButton,
         actualEditing ? deleteButton : null,
-        actualEditing || addingChoice ? doneButton : editButton,
+        actualEditing || addingChoice
+          ? doneButton
+          : property.supportsEdit
+          ? editButton
+          : null,
+        <CardButton onClick={() => (property.collapsed = true)}>
+          <icons.ChevronUp class="h-3 w-3" />
+        </CardButton>,
       ]}
     >
       {property.type === "passage" ? (
@@ -171,6 +189,40 @@ function PropertyView({ class: _class, property, prev }) {
       ) : null}
     </Card>
   );
+}
+
+function PropertyViewCollapsed({ property, class: _class }) {
+  const buttons = [
+    <CardButton onClick={() => (property.collapsed = false)}>
+      <icons.ChevronDown class="h-3 w-3" />
+    </CardButton>,
+  ];
+  const title = (
+    <span>
+      <PropertyStatusIcon property={property} />
+      {property.shortSummary}
+    </span>
+  );
+  return <Card class={_class} title={title} buttons={buttons} />;
+}
+
+function PropertyStatusIcon({ property }) {
+  const status = property.completionStatus;
+  const IconComponent = {
+    notStarted: icons.MinusCircle,
+    ending: icons.StopCircle,
+    through: icons.RightArrowCircle,
+    complete: icons.CheckCircle,
+    incomplete: icons.ExclamationCircle,
+  }[status];
+  const iconColor = {
+    notStarted: "text-gray-300",
+    ending: "text-black",
+    through: "text-black",
+    complete: "text-black",
+    incomplete: "text-red",
+  }[status];
+  return <IconComponent class={`h-6 w-6 mr-1 inline-block ${iconColor}`} />;
 }
 
 function PropertySource({ property }) {
@@ -251,6 +303,7 @@ function Choices({ property, onCancelChoices }) {
 
 function Choice({ choice, property, onCancelChoices }) {
   const [editing, setEditing] = useState(false);
+  const [linking, setLinking] = useState(false);
   const textRef = useRef(null);
   function onSubmit(el) {
     el = el || textRef.current;
@@ -276,6 +329,9 @@ function Choice({ choice, property, onCancelChoices }) {
   function onBindPassage() {
     onCancelChoices();
     property.story.addPassage(property.id, choice);
+  }
+  function onChoosePassage() {
+    setLinking(true);
   }
   function onTrash() {
     property.removeChoice(choice);
@@ -312,13 +368,47 @@ function Choice({ choice, property, onCancelChoices }) {
           +
         </button>
       )}
+      {linking ? (
+        <PassageChooser
+          choice={choice}
+          property={property}
+          onDone={() => setLinking(false)}
+        />
+      ) : null}
       <span onClick={onClick}>{choice}</span>
-      {property.choiceHasPassage(choice) ? null : (
-        <button class="float-right" onClick={onTrash}>
-          <icons.Trash class="h-3 w-3" />
-        </button>
+      {property.choiceHasPassage(choice) || linking ? null : (
+        <div class="float-right">
+          <button onClick={() => onChoosePassage()}>
+            <icons.Link class="h-3 w-3" />
+          </button>
+          <button onClick={onTrash}>
+            <icons.Trash class="h-3 w-3" />
+          </button>
+        </div>
       )}
     </>
+  );
+}
+
+function PassageChooser({ choice, property, onDone }) {
+  function onInput(event) {
+    const id = event.target.value;
+    if (!id) {
+      return;
+    }
+    if (id !== "cancel") {
+      property.linkChoiceToPassage(choice, id);
+    }
+    onDone();
+  }
+  return (
+    <Select onInput={onInput}>
+      <option value="">(choose a passage)</option>
+      {property.story.passages.map((p) => (
+        <option value={p.id}>{p.title}</option>
+      ))}
+      <option value="cancel">Cancel</option>
+    </Select>
   );
 }
 

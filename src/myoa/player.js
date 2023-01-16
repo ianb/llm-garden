@@ -4,6 +4,8 @@ import { signal } from "@preact/signals";
 import storyDb from "./storydb";
 import { PageContainer, Button } from "../components/common";
 import { Header, HeaderButton } from "../components/header";
+import { PlayState } from "./playstate";
+import { Markdown } from "../markdown";
 
 const hashSignal = signal(window.location.hash);
 window.addEventListener("hashchange", () => {
@@ -31,8 +33,16 @@ export function StoryPlayerLoader() {
 }
 
 export function StoryPlayer({ model }) {
-  const params = new URLSearchParams(hashSignal.value.substr(1));
+  const params = new URLSearchParams(hashSignal.value.slice(1));
   const passageId = params.get("passage");
+  const state = params.get("state");
+  let initState = model.domain.gameState.value;
+  let playState;
+  if (initState) {
+    initState = JSON.parse(initState);
+    playState = new PlayState(initState);
+    playState.deserialize(state);
+  }
   let passage = null;
   if (passageId === "introPassage") {
     passage = model.domain.introPassage;
@@ -56,7 +66,7 @@ export function StoryPlayer({ model }) {
         ]}
       />
       {passage ? (
-        <PassageScreen passage={passage} />
+        <PassageScreen passage={passage} playState={playState} />
       ) : (
         <IntroScreen model={model} onStart={onStart} />
       )}
@@ -76,29 +86,38 @@ function IntroScreen({ model, onStart }) {
   );
 }
 
-function PassageScreen({ passage }) {
+function PassageScreen({ passage, playState }) {
+  const choices = passage.choices.filter(
+    (c) => !playState || playState.check(c)
+  );
   return (
     <div>
       <div class="mx-auto text-center text-2xl font-bold p-3">
         {passage.title}
       </div>
+      {playState ? (
+        <div class="float-right bg-white p-2">
+          <pre class="text-xs">{JSON.stringify(playState, null, "  ")}</pre>
+        </div>
+      ) : null}
       <div
         class="mx-auto drop-shadow-lg mt-2 text-gray-500 max-w-2xl bg-white p-5"
         style="min-height: 50vh"
       >
-        {passage.value}
+        <Markdown text={passage.value} />
       </div>
       <div class="mx-auto max-w-2xl p-5">
         <ol class="ml-4 list-decimal">
-          {passage.choices.map((choice) =>
-            passage.choiceHasPassage(choice) ? (
+          {choices.map((choice) =>
+            passage.choiceHasPassage(choice) &&
+            (!playState || playState.check(choice)) ? (
               <li class="p-2 hover:bg-white">
                 <a
                   href={`#passage=${encodeURIComponent(
                     passage.choicePassage(choice).id
-                  )}`}
+                  )}${addPlayState(playState, choice)}`}
                 >
-                  {choice}
+                  {playState ? playState.clean(choice) : choice}
                 </a>
               </li>
             ) : (
@@ -109,4 +128,15 @@ function PassageScreen({ passage }) {
       </div>
     </div>
   );
+}
+
+function addPlayState(playState, choice) {
+  if (playState) {
+    const newState = playState.withExec(choice).serialize();
+    if (!newState) {
+      return "";
+    }
+    return `&state=${encodeURIComponent(newState)}`;
+  }
+  return "";
 }

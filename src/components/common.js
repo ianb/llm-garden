@@ -74,6 +74,18 @@ export const Card = ({
   const onCancelTitle = () => {
     setEditingTitle(false);
   };
+  let titleText = title;
+  if (typeof title === "object" && title) {
+    titleText = "";
+    const getText = (el) => {
+      if (typeof el === "string") {
+        titleText += el;
+      } else if (el.props && el.props.children) {
+        el.props.children.forEach(getText);
+      }
+    };
+    getText(title);
+  }
   return (
     <div class={_class}>
       <div class="rounded drop-shadow-lg w-full">
@@ -81,7 +93,7 @@ export const Card = ({
           <div class="flex items-center justify-between">
             {editingTitle ? (
               <TextInput
-                defaultValue={title}
+                defaultValue={titleText}
                 onSubmit={onSubmitTitle}
                 onCancel={onCancelTitle}
                 autoFocus="1"
@@ -97,7 +109,9 @@ export const Card = ({
             {buttonContainer}
           </div>
         </div>
-        <div class={innerClass}>{children}</div>
+        {children && children.length ? (
+          <div class={innerClass}>{children}</div>
+        ) : null}
         {footer ? (
           <div class="bg-magenta-lighter px-1 rounded-b text-magenta">
             <div class="flex items-center justify-between">{footer}</div>
@@ -295,10 +309,12 @@ export const Select = (props) => {
     children = options.map((option) => (
       <option value={option}>{option}</option>
     ));
-  } else {
+  } else if (options) {
     children = Object.keys(options).map((key) => (
       <option value={key}>{options[key]}</option>
     ));
+  } else {
+    children = props.children;
   }
   return <select {...newProps}>{children}</select>;
 };
@@ -332,7 +348,7 @@ export const PageContainer = ({ children }) => {
     (child) => child.type !== Header && child.type !== Sidebar
   );
   return (
-    <div class="flex flex-col bg-blue-complement-light min-h-screen">
+    <div class="flex flex-col bg-blue-complement-light min-h-screen pb-96">
       <div class="shrink-0">{header}</div>
       <div class="flex grow flex-row w-full">
         <div class="flex-2">{rest}</div>
