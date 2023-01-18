@@ -18,19 +18,19 @@ export class PlayState {
     if (!s) {
       return;
     }
-    console.log("deserialize", [s]);
-    const data = deserialize(atob(s));
-    this.state = data;
+    const data = deserialize(s);
+    this.state = Object.assign({}, this.initState, data);
   }
 
   serialize() {
     if (!Object.keys(this.toJSON()).length) {
       return "";
     }
-    return btoa(serialize(this.toJSON()));
+    return serialize(this.toJSON());
   }
 
   evaluate(s) {
+    console.info(`evaluating (${s}) with:`, this.state);
     return window.withEval(this.state, s);
   }
 
@@ -68,6 +68,16 @@ export class PlayState {
     state.exec(s);
     return state;
   }
+
+  debugRepr() {
+    const lines = [];
+    for (const key in this.state) {
+      if (!deepEqual(this.state[key], this.initState[key])) {
+        lines.push(`${key}: ${JSON.stringify(this.state[key], null, "  ")}`);
+      }
+    }
+    return lines.join("\n");
+  }
 }
 
 // Why did I make my own serialization format here? I don't know, it's totally silly, JSON would have been fine!
@@ -92,7 +102,8 @@ function serialize(data) {
     return `n${serializeLength(s.length, 1)}${s}`;
   }
   if (typeof data === "string") {
-    return `s${serializeLength(data.length, 3)}${data}`;
+    const val = cleanBtoa(data);
+    return `s${serializeLength(val.length, 3)}${val}`;
   }
   if (Array.isArray(data)) {
     const s = data.map(serialize).join("");
@@ -119,7 +130,8 @@ function serializeLength(n, maxDigits) {
 }
 
 function serializeKey(key) {
-  return `${serializeLength(key.length, 1)}${key}`;
+  const val = cleanBtoa(key);
+  return `${serializeLength(val.length, 1)}${val}`;
 }
 
 function deserializeLength(s, digits) {
@@ -129,7 +141,7 @@ function deserializeLength(s, digits) {
 function deserializeKey(s) {
   const [length, s2] = deserializeLength(s, 1);
   const [key, s3] = [s2.slice(0, length), s2.slice(length)];
-  return [key, s3];
+  return [cleanAtob(key), s3];
 }
 
 function deserializeOne(orig) {
@@ -162,7 +174,7 @@ function deserializeOne(orig) {
   if (type === "s") {
     const [length, s2] = deserializeLength(s, 3);
     const [value, s3] = [s2.slice(0, length), s2.slice(length)];
-    return [value, s3];
+    return [cleanAtob(value), s3];
   }
   if (type === "a") {
     const [length, s2] = deserializeLength(s, 2);
@@ -182,7 +194,6 @@ function deserializeOne(orig) {
   }
   if (type === "o") {
     const [length, s2] = deserializeLength(s, 2);
-    console.log([s, length, s2]);
     const result = {};
     let remaining = s2;
     for (let i = 0; i < length; i++) {
@@ -234,4 +245,12 @@ function deepEqual(a, b) {
     return true;
   }
   return false;
+}
+
+function cleanAtob(s) {
+  return atob(s.replace("-", "+").replace("_", "/"));
+}
+
+function cleanBtoa(s) {
+  return btoa(s).replace(/=+$/g, "").replace("+", "-").replace("/", "_");
 }

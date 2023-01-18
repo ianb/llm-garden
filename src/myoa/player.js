@@ -90,6 +90,12 @@ function PassageScreen({ passage, playState }) {
   const choices = passage.choices.filter(
     (c) => !playState || playState.check(c)
   );
+  const clickTarget = (e) => {
+    const anchor = e.target.querySelector("a");
+    if (anchor) {
+      location.href = e.target.querySelector("a").href;
+    }
+  };
   return (
     <div>
       <div class="mx-auto text-center text-2xl font-bold p-3">
@@ -97,7 +103,7 @@ function PassageScreen({ passage, playState }) {
       </div>
       {playState ? (
         <div class="float-right bg-white p-2">
-          <pre class="text-xs">{JSON.stringify(playState, null, "  ")}</pre>
+          <pre class="text-xs">{playState.debugRepr()}</pre>
         </div>
       ) : null}
       <div
@@ -111,7 +117,7 @@ function PassageScreen({ passage, playState }) {
           {choices.map((choice) =>
             passage.choiceHasPassage(choice) &&
             (!playState || playState.check(choice)) ? (
-              <li class="p-2 hover:bg-white">
+              <li class="p-2 hover:bg-white" onClick={clickTarget}>
                 <a
                   href={`#passage=${encodeURIComponent(
                     passage.choicePassage(choice).id
