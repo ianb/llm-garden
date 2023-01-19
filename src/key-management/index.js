@@ -1,6 +1,7 @@
 /* eslint no-unused-vars: "off" */
 import { signal } from "@preact/signals";
 import { holder } from "../key-management/key";
+import * as replicateKey from "../imageapi/replicatekey";
 import {
   P,
   A,
@@ -15,12 +16,20 @@ import {
 } from "../components/common";
 import { Header } from "../components/header";
 
+const replicateHolder = replicateKey.holder;
+
 window.holder = holder;
-export const hasKeySignal = signal(holder.hasKey());
+export const hasGptKeySignal = signal(holder.hasKey());
 holder.addOnUpdate(() => {
-  hasKeySignal.value = holder.hasKey();
+  hasGptKeySignal.value = holder.hasKey();
 });
-const keyError = signal("");
+const gptKeyError = signal("");
+
+export const hasReplicateKeySignal = signal(replicateHolder.hasKey());
+replicateHolder.addOnUpdate(() => {
+  hasReplicateKeySignal.value = replicateHolder.hasKey();
+});
+const replicateKeyError = signal("");
 
 export const RequestKeyPage = () => {
   return (
@@ -32,14 +41,32 @@ export const RequestKeyPage = () => {
 };
 
 export const RequestKey = () => {
-  function onSubmit(textInput) {
+  function onSubmitGpt(textInput) {
     const setKey = holder.setKeyFromText(textInput);
     if (setKey) {
-      keyError.value = "";
+      gptKeyError.value = "";
     } else {
-      keyError.value = "Invalid key";
+      gptKeyError.value = "Invalid key";
     }
+    textInput.value = "";
   }
+  function onSubmitReplicate(textInput) {
+    const setKey = replicateHolder.setKeyFromText(textInput.value);
+    if (setKey) {
+      replicateKeyError.value = "";
+    } else {
+      replicateKeyError.value = "Invalid key";
+    }
+    textInput.value = "";
+  }
+
+  console.log(
+    "has key",
+    hasGptKeySignal.value,
+    holder.hasKey(),
+    holder.hasKey() && holder.getKey()
+  );
+
   return (
     <div class="flex items-center justify-center">
       <Card class="w-3/4" title="GPT-3 API key required">
@@ -58,15 +85,33 @@ export const RequestKey = () => {
               beta.openai.com/account/api-keys
             </A>
           </P>
-          {hasKeySignal.value ? <ExistingKey gptKey={holder.getKey()} /> : null}
-          {keyError.value ? <Alert>{keyError.value}</Alert> : null}
           <P>
-            <Form onSubmit={onSubmit}>
-              <Field>
-                GPT key:
-                <TextInput errored={!!keyError.value} />
-              </Field>
-            </Form>
+            For image generation you can use{" "}
+            <a href="https://replicate.com/">Replicate</a> and generate a key in
+            your <a href="https://replicate.com/account">Account Settings</a>
+          </P>
+          {hasGptKeySignal.value ? (
+            <ExistingKey name="OpenAI GPT key" holder={holder} />
+          ) : null}
+          {gptKeyError.value ? <Alert>{gptKeyError.value}</Alert> : null}
+          {hasReplicateKeySignal.value ? (
+            <ExistingKey name="Replicate.com key" holder={replicateHolder} />
+          ) : null}
+          {replicateKeyError.value ? (
+            <Alert>{replicateKeyError.value}</Alert>
+          ) : null}
+          <P>
+            <Field>
+              GPT key:
+              <TextInput onSubmit={onSubmitGpt} errored={!!gptKeyError.value} />
+            </Field>
+            <Field>
+              Replicate key (optional):
+              <TextInput
+                onSubmit={onSubmitReplicate}
+                errored={!!replicateKeyError.value}
+              />
+            </Field>
           </P>
         </div>
       </Card>
@@ -74,17 +119,17 @@ export const RequestKey = () => {
   );
 };
 
-const ExistingKey = ({ gptKey }) => {
+const ExistingKey = ({ name, holder }) => {
   function onRemove() {
     holder.removeKey();
   }
   return (
     <div>
-      <P>You have a key already configured:</P>
+      <P>You have a {name} already configured:</P>
       <P class="pl-5">
         <Code>
-          {gptKey.slice(0, 3)}...
-          {gptKey.slice(gptKey.length - 4, gptKey.length)}
+          {holder.getKey().slice(0, 3)}...
+          {holder.getKey().slice(-3)}
         </Code>
       </P>
       <P>

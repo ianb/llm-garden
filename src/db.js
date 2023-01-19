@@ -287,6 +287,9 @@ export class Model {
 }
 
 function makeSlug(text) {
+  if (!text) {
+    return "";
+  }
   return text
     .trim()
     .toLowerCase()

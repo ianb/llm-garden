@@ -34,6 +34,12 @@ different tone (or language).
 Voice composer: a voice-centric text composition and editing tool
 `.trim(),
   },
+  "Image Generator": {
+    link: "/imagegen/",
+    description: `
+A simple frontend to Replicate's Stable Diffusion API
+`.trim(),
+  },
 };
 
 export const Home = () => {

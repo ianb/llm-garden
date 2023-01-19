@@ -86,6 +86,7 @@ export const Card = ({
     };
     getText(title);
   }
+
   return (
     <div class={_class}>
       <div class="rounded drop-shadow-lg w-full">
@@ -109,7 +110,7 @@ export const Card = ({
             {buttonContainer}
           </div>
         </div>
-        {children && children.length ? (
+        {children && (!Array.isArray(children) || children.length) ? (
           <div class={innerClass}>{children}</div>
         ) : null}
         {footer ? (
@@ -143,10 +144,10 @@ export const H1 = ({ class: className, children }) => (
   </div>
 );
 
-export const Field = ({ sideBySide, children }) => {
+export const Field = ({ class: className, sideBySide, children }) => {
   if (children.length !== 2) {
     throw new Error(
-      `Expected exactly two children to <Field>, not {children.length}`
+      `Expected exactly two children to <Field>, not ${children.length}`
     );
   }
   const label = children[0];
@@ -156,7 +157,7 @@ export const Field = ({ sideBySide, children }) => {
     divClass += " inline pr-2";
   }
   return (
-    <div class="mb-4">
+    <div class={twMerge("mb-4", className)}>
       <label>
         <div class={divClass}>{label}</div>
         {input}
