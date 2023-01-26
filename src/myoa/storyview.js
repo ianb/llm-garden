@@ -13,7 +13,7 @@ import {
 } from "../components/common";
 import Sidebar from "../components/sidebar";
 import { signal } from "@preact/signals";
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useState, useEffect, useRef, useCallback } from "preact/hooks";
 import { markdownToElement, elementToPreact, Markdown } from "../markdown";
 import * as icons from "../components/icons";
 import { QueryLog } from "../components/querylog";
@@ -80,6 +80,7 @@ function RegularEditor({ story }) {
         class="w-1/2"
       />
       <PropertyView property={story.gameState} class="w-1/2" />
+      <PropertyView property={story.visualPrompt} class="w-1/2" />
       <PropertyView
         property={story.introPassage}
         prev={story.mainCharacter}
@@ -95,8 +96,19 @@ function RegularEditor({ story }) {
 function PropertyView({ class: _class, property, prev }) {
   const [editing, setEditing] = useState(null);
   const [addingChoice, setAddingChoice] = useState(false);
+  const [addingImage, setAddingImage] = useState(false);
+  function onAddImage() {
+    property.collapsed = false;
+    setAddingImage(true);
+  }
   if (property.collapsed) {
-    return <PropertyViewCollapsed class={_class} property={property} />;
+    return (
+      <PropertyViewCollapsed
+        class={_class}
+        property={property}
+        onAddImage={onAddImage}
+      />
+    );
   }
   let actualEditing = editing;
   if (editing === null && prev && prev.value && !property.value) {
@@ -106,6 +118,7 @@ function PropertyView({ class: _class, property, prev }) {
   const onDone = () => {
     setEditing(false);
     setAddingChoice(false);
+    setAddingImage(false);
   };
   const onDelete = () => {
     if (confirm("Are you sure?")) {
@@ -119,8 +132,16 @@ function PropertyView({ class: _class, property, prev }) {
       property.story.updated();
     };
   }
-  const editButton = <CardButton onClick={onEdit}>Edit</CardButton>;
-  const doneButton = <CardButton onClick={onDone}>Done</CardButton>;
+  const editButton = (
+    <CardButton onClick={onEdit}>
+      <icons.Edit class="h-3 w-3" />
+    </CardButton>
+  );
+  const doneButton = (
+    <CardButton onClick={onDone}>
+      <icons.Check class="h-3 w-3" />
+    </CardButton>
+  );
   const deleteButton = (
     <CardButton onClick={onDelete}>
       <icons.Trash class="h-3 w-3" />
@@ -131,8 +152,12 @@ function PropertyView({ class: _class, property, prev }) {
     property.queries = [];
     setAddingChoice(true);
   }
-  if (property.hasChoices && !addingChoice && !actualEditing) {
-    addChoiceButton = <CardButton onClick={onAddChoice}>+choice</CardButton>;
+  if (property.hasChoices && !addingChoice && !actualEditing && !addingImage) {
+    addChoiceButton = (
+      <CardButton onClick={onAddChoice}>
+        <icons.List class="h-3 w-3" />
+      </CardButton>
+    );
   }
   let choices = null;
   if (property.hasChoices && property.choices.length) {
@@ -143,6 +168,15 @@ function PropertyView({ class: _class, property, prev }) {
       />
     );
   }
+  const addingImageButton = (
+    <CardButton onClick={() => setAddingImage(!addingImage)}>
+      {property.image ? (
+        <icons.Photo class="h-3 w-3" />
+      ) : (
+        <icons.Camera class="h-3 m-3" />
+      )}
+    </CardButton>
+  );
   const title = (
     <>
       <PropertyStatusIcon property={property} />
@@ -157,10 +191,13 @@ function PropertyView({ class: _class, property, prev }) {
       buttons={[
         addChoiceButton,
         actualEditing ? deleteButton : null,
-        actualEditing || addingChoice
+        actualEditing || addingChoice || addingImage
           ? doneButton
           : property.supportsEdit
           ? editButton
+          : null,
+        property.type === "passage" || property.type === "introPassage"
+          ? addingImageButton
           : null,
         <CardButton onClick={() => (property.collapsed = true)}>
           <icons.ChevronUp class="h-3 w-3" />
@@ -170,7 +207,7 @@ function PropertyView({ class: _class, property, prev }) {
       {property.type === "passage" ? (
         <PropertySource property={property} />
       ) : null}
-      {property.value || !actualEditing ? (
+      {!addingImage && (property.value || !actualEditing) ? (
         <PropertyValue
           value={property.value}
           onEdit={(v) => (property.value = v)}
@@ -179,7 +216,7 @@ function PropertyView({ class: _class, property, prev }) {
       {actualEditing ? (
         <PropertyEditor property={property} onDone={onDone} />
       ) : null}
-      {choices}
+      {!addingImage ? choices : null}
       {addingChoice ? (
         <PropertyEditor
           property={property}
@@ -187,12 +224,20 @@ function PropertyView({ class: _class, property, prev }) {
           onDone={() => setAddingChoice(false)}
         />
       ) : null}
+      {addingImage ? (
+        <ImageEditor property={property} onDone={() => setAddingImage(false)} />
+      ) : null}
     </Card>
   );
 }
 
-function PropertyViewCollapsed({ property, class: _class }) {
+function PropertyViewCollapsed({ property, onAddImage, class: _class }) {
   const buttons = [
+    property.hasImage && !property.image ? (
+      <CardButton onClick={onAddImage}>
+        <icons.Camera class="h-3 w-3" />
+      </CardButton>
+    ) : null,
     <CardButton onClick={() => (property.collapsed = false)}>
       <icons.ChevronDown class="h-3 w-3" />
     </CardButton>,
@@ -555,6 +600,92 @@ function QueryText({ property, onSubmit, onSelect, ignoreElement }) {
     <div>
       <div class="unreset gpt-response">{markup}</div>
       <TextArea onSubmit={onSubmit} autoFocus="1" textareaRef={textareaRef} />
+    </div>
+  );
+}
+
+function ImageEditor({ property, onDone }) {
+  const [waitingOnResults, setWaitingOnResults] = useState(false);
+  async function onGenerate(n) {
+    setWaitingOnResults(true);
+    await property.generateImageFromPrompt(property.lastImagePrompt, n);
+    setWaitingOnResults(false);
+  }
+  const onRefresh = useCallback(async () => {
+    const suggested = await property.suggestImagePrompt();
+    property.lastImagePrompt = suggested;
+  }, [property]);
+  useEffect(() => {
+    if (property.lastImagePrompt) {
+      return;
+    }
+    onRefresh();
+  }, [property, onRefresh]);
+  return (
+    <div>
+      {waitingOnResults ? (
+        <div>Generating: {property.lastImagePrompt}...</div>
+      ) : (
+        <>
+          <Field>
+            Prompt:
+            <TextArea
+              placeholder="Generating suggestion..."
+              value={property.lastImagePrompt}
+              onInput={(e) => {
+                property.lastImagePrompt = e.target.value;
+              }}
+            />
+          </Field>
+          <div>
+            <Button onClick={onGenerate.bind(this, 1)}>Generate</Button>
+            <Button onClick={onGenerate.bind(this, 2)}>x2</Button>
+            <Button onClick={onRefresh}>Refresh</Button>
+          </div>
+        </>
+      )}
+      {property.imageTrials && property.imageTrials.length ? (
+        <div>
+          {property.imageTrials.map((image) => (
+            <ImagePreview image={image} property={property} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ImagePreview({ image, property }) {
+  const onSelect = () => {
+    if (property.image && property.image.id === image.id) {
+      property.image = null;
+    } else {
+      property.image = image;
+    }
+  };
+  return (
+    <div class="m-1">
+      {property.image && property.image.id === image.id ? (
+        <div class="absolute left-0 z-10 p-5">
+          <icons.Star class="h-4 w-4 text-yellow-500" />
+        </div>
+      ) : null}
+      <div class="group absolute right-0 z-10 h-20 w-20">
+        <div class="invisible group-hover:visible">
+          <Button onClick={onSelect}>
+            {property.image && property.image.id === image.id ? (
+              <icons.Check class="h-3 w-3" />
+            ) : (
+              <icons.Plus class="h-3 w-3" />
+            )}
+          </Button>
+          <br />
+          <Button onClick={() => property.removeImage(image)}>
+            <icons.Trash class="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+      <img src={image.url} class="w-full" title={image.prompt} />
     </div>
   );
 }

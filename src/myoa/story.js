@@ -1,5 +1,7 @@
 import uuid from "../uuid";
 import { GptCache } from "../gptservice/gptcache";
+import { getDallECompletion } from "../imageapi/dalle";
+import * as thumbsnap from "../imageapi/thumbsnap";
 
 export class ChooserStory {
   constructor(props) {
@@ -7,6 +9,7 @@ export class ChooserStory {
     this.title = new Property(this, "title", "Title");
     this.theme = new Property(this, "theme", "Theme");
     this.gameState = new Property(this, "gameState", "Game State");
+    this.visualPrompt = new Property(this, "visualPrompt", "Visual Prompt");
     this.characterName = new Property(this, "characterName", "Character Name");
     this.mainCharacter = new Property(this, "mainCharacter", "Main Character");
     this.introPassage = new Property(this, "introPassage", "Introduction");
@@ -37,6 +40,7 @@ export class ChooserStory {
       characterName: this.characterName,
       mainCharacter: this.mainCharacter,
       gameState: this.gameState,
+      visualPrompt: this.visualPrompt,
       introPassage: this.introPassage,
       passages: this.passages,
       passageSummaries: this.passageSummaries,
@@ -51,6 +55,7 @@ export class ChooserStory {
     this.mainCharacter.updateFromJSON(data.mainCharacter);
     this.introPassage.updateFromJSON(data.introPassage);
     this.gameState.updateFromJSON(data.gameState);
+    this.visualPrompt.updateFromJSON(data.visualPrompt);
     this.passages = data.passages.map((p) => {
       const prop = new Property(this);
       prop.updateFromJSON(p);
@@ -277,6 +282,9 @@ class Property {
       this.choices = [];
     }
     this._collapsed = false;
+    this._image = null;
+    this.imageTrials = [];
+    this._lastImagePrompt = "";
   }
 
   toJSON() {
@@ -286,10 +294,16 @@ class Property {
       value: this.value,
       choices: this.choices,
       id: this.id,
-      fromPassageId: this.fromPassageId,
-      fromChoice: this.fromChoice,
+      fromPassageId: this.fromPassageId || undefined,
+      fromChoice: this.fromChoice || undefined,
       choiceLinks: this.choiceLinks,
       collapsed: this.collapsed ? true : undefined,
+      image: this.image ? this.image : undefined,
+      imageTrials:
+        this.imageTrials && this.imageTrials.length
+          ? this.imageTrials
+          : undefined,
+      lastImagePrompt: this.lastImagePrompt || "",
     };
   }
 
@@ -332,6 +346,11 @@ class Property {
     this.fromChoice = data.fromChoice;
     this.choiceLinks = data.choiceLinks;
     this._collapsed = !!data.collapsed;
+    const image = data.image || null;
+    this._image = image ? new Image(image) : null;
+    const imageTrials = data.imageTrials || [];
+    this.imageTrials = imageTrials ? imageTrials.map((x) => new Image(x)) : [];
+    this.lastImagePrompt = data.lastImagePrompt || "";
   }
 
   get value() {
@@ -355,6 +374,24 @@ class Property {
     if (this.type === "passage" || this.type === "introPassage") {
       this.story.purgePassageSummaries(this.id);
     }
+    this.story.updated();
+  }
+
+  get image() {
+    return this._image;
+  }
+
+  set image(v) {
+    this._image = v;
+    this.story.updated();
+  }
+
+  get lastImagePrompt() {
+    return this._lastImagePrompt;
+  }
+
+  set lastImagePrompt(v) {
+    this._lastImagePrompt = v;
     this.story.updated();
   }
 
@@ -447,6 +484,10 @@ class Property {
   }
 
   get hasChoices() {
+    return this.type === "introPassage" || this.type === "passage";
+  }
+
+  get hasImage() {
     return this.type === "introPassage" || this.type === "passage";
   }
 
@@ -681,6 +722,70 @@ class Property {
     const val = await this.story.getSummaries(ids);
     return val;
   }
+
+  async generateImageFromPrompt(prompt, n = 1) {
+    prompt = `${this.story.visualPrompt.value.trim()}\n${prompt}`;
+    thumbsnap.requireKey();
+    const result = await getDallECompletion({ prompt, n });
+    const images = [];
+    for (const item of result.data) {
+      const result = await thumbsnap.upload(item.b64_json);
+      // FIXME: maybe should also save the thumbnail URL
+      images.push(
+        new Image({
+          generator: "dalle",
+          url: result.data.media,
+          prompt,
+        })
+      );
+    }
+    this.addImageTrials(images);
+  }
+
+  async suggestImagePrompt() {
+    const visualPrompt = prompts.visualPassageDescription.replace(
+      "$value",
+      this.value
+    );
+    const result = await this.story.gpt.getCompletion(visualPrompt);
+    return result.text.trim();
+  }
+
+  addImageTrials(images) {
+    if (!this.imageTrials) {
+      this.imageTrials = images;
+    } else {
+      this.imageTrials = images.concat(this.imageTrials);
+    }
+    this.story.updated();
+  }
+
+  removeImage(image) {
+    this.imageTrials = this.imageTrials.filter((i) => i !== image);
+    this.story.updated();
+  }
+}
+
+// FIXME: I can't decide if this class is worth anything, so far not...
+class Image {
+  constructor(props) {
+    props = props || {};
+    this.id = props.id || uuid();
+    this.generator = props.generator || null;
+    this.url = props.url || null;
+    this.prompt = props.prompt || "";
+    this.created = props.created || Date.now();
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      generator: this.generator,
+      url: this.url,
+      prompt: this.prompt,
+      created: this.created,
+    };
+  }
 }
 
 function sortByKey(array, func) {
@@ -784,4 +889,15 @@ export const prompts = {
   choices: `
   Offer at least 5 new choices for what to do next. Present alternatives as a numbered list. Use a variety of emoji for the choices.
   `,
+  visualPrompt: `
+Suggest 5 style prompts, using surprising combinations of the names of visual styles, artists, illustrators, and photographers. Use two separate emoji for each:
+`,
+  visualPromptChatResponse: `New list of visual prompts:`,
+  visualPassageDescription: `
+$value
+
+###
+
+Describe the imagery in this scene in two sentences:
+`,
 };

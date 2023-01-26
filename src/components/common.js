@@ -107,7 +107,7 @@ export const Card = ({
                 {title}
               </h3>
             )}
-            {buttonContainer}
+            <div>{buttonContainer}</div>
           </div>
         </div>
         {children && (!Array.isArray(children) || children.length) ? (

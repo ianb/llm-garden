@@ -2,6 +2,7 @@
 import { signal } from "@preact/signals";
 import { holder } from "../key-management/key";
 import * as replicateKey from "../imageapi/replicatekey";
+import * as thumbsnapKey from "../imageapi/thumbsnapkey";
 import {
   P,
   A,
@@ -17,6 +18,7 @@ import {
 import { Header } from "../components/header";
 
 const replicateHolder = replicateKey.holder;
+const thumbsnapHolder = thumbsnapKey.holder;
 
 window.holder = holder;
 export const hasGptKeySignal = signal(holder.hasKey());
@@ -30,6 +32,12 @@ replicateHolder.addOnUpdate(() => {
   hasReplicateKeySignal.value = replicateHolder.hasKey();
 });
 const replicateKeyError = signal("");
+
+export const hasThumbsnapKeySignal = signal(thumbsnapHolder.hasKey());
+thumbsnapHolder.addOnUpdate(() => {
+  hasThumbsnapKeySignal.value = thumbsnapHolder.hasKey();
+});
+const thumbsnapKeyError = signal("");
 
 export const RequestKeyPage = () => {
   return (
@@ -59,13 +67,15 @@ export const RequestKey = () => {
     }
     textInput.value = "";
   }
-
-  console.log(
-    "has key",
-    hasGptKeySignal.value,
-    holder.hasKey(),
-    holder.hasKey() && holder.getKey()
-  );
+  function onSubmitThumbsnap(textInput) {
+    const setKey = thumbsnapHolder.setKeyFromText(textInput.value);
+    if (setKey) {
+      thumbsnapKeyError.value = "";
+    } else {
+      thumbsnapKeyError.value = "Invalid key";
+    }
+    textInput.value = "";
+  }
 
   return (
     <div class="flex items-center justify-center">
@@ -90,6 +100,11 @@ export const RequestKey = () => {
             <a href="https://replicate.com/">Replicate</a> and generate a key in
             your <a href="https://replicate.com/account">Account Settings</a>
           </P>
+          <P>
+            For image hosting you can use{" "}
+            <a href="https://thumbsnap.com/api">Thumb Snap</a> and get an API
+            key there.
+          </P>
           {hasGptKeySignal.value ? (
             <ExistingKey name="OpenAI GPT key" holder={holder} />
           ) : null}
@@ -99,6 +114,12 @@ export const RequestKey = () => {
           ) : null}
           {replicateKeyError.value ? (
             <Alert>{replicateKeyError.value}</Alert>
+          ) : null}
+          {hasThumbsnapKeySignal.value ? (
+            <ExistingKey name="Thumb Snap key" holder={thumbsnapHolder} />
+          ) : null}
+          {thumbsnapKeyError.value ? (
+            <Alert>{thumbsnapKeyError.value}</Alert>
           ) : null}
           <P>
             <Field>
@@ -110,6 +131,13 @@ export const RequestKey = () => {
               <TextInput
                 onSubmit={onSubmitReplicate}
                 errored={!!replicateKeyError.value}
+              />
+            </Field>
+            <Field>
+              Thumb Snap key (optional):
+              <TextInput
+                onSubmit={onSubmitThumbsnap}
+                errored={!!thumbsnapKeyError.value}
               />
             </Field>
           </P>

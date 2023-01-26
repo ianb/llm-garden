@@ -31,20 +31,24 @@ export class GptCache {
     this._onLogUpdates = [];
   }
 
+  makeCacheKey(body) {
+    return `completion
+${body.prompt}
+${body.model}
+${body.max_tokens}
+${floatKey(body.temperature)}
+${stopRepr(body.stop)}
+${floatKey(body.presence_penalty)}
+${floatKey(body.frequency_penalty)}`;
+  }
+
   async getCompletion(prompt, usagePaths) {
     usagePaths = usagePaths || [];
     usagePaths = [...this.basePaths, ...usagePaths];
     usagePaths = this.resolvePaths(usagePaths);
     let requestBody = typeof prompt === "string" ? { prompt } : prompt;
     requestBody = Object.assign({}, this.defaultPromptOptions, requestBody);
-    const key = `completion
-${requestBody.prompt}
-${requestBody.model}
-${requestBody.max_tokens}
-${floatKey(requestBody.temperature)}
-${stopRepr(requestBody.stop)}
-${floatKey(requestBody.presence_penalty)}
-${floatKey(requestBody.frequency_penalty)}`;
+    const key = this.makeCacheKey(requestBody);
     let val = this.queryCache.get(key);
     if (val) {
       this.log.push({
@@ -77,6 +81,15 @@ ${floatKey(requestBody.frequency_penalty)}`;
     resp.text = this.responseFixer(resp.choices[0].text);
     this.updated();
     return resp;
+  }
+
+  deleteCache(body) {
+    if (!body) {
+      throw new Error("body not given");
+    }
+    const key = this.makeCacheKey(body);
+    this.queryCache.delete(key);
+    this.log = this.log.filter((l) => this.makeCacheKey(l.body) !== key);
   }
 
   async getEdit(body, usagePaths) {

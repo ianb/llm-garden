@@ -10,6 +10,7 @@ export const costs = {
 
 export async function getDallECompletion(input, key = null) {
   const url = "https://api.openai.com/v1/images/generations";
+  input = Object.assign({ response_format: "b64_json" }, input);
   if (!key) {
     if (!holder.hasKey()) {
       if (window.confirm("No GPT API key is set. Set one now?")) {
@@ -33,10 +34,13 @@ export async function getDallECompletion(input, key = null) {
     body: JSON.stringify(input),
   });
   if (!resp.ok) {
-    console.error("Bad DallE response:", resp);
-    throw new Error(`DallE request failed: ${resp.status} ${resp.statusText}`);
+    const error = await resp.text();
+    console.error("Bad DallE response:", resp, error);
+    throw new Error(
+      `DallE request failed: ${resp.status} ${resp.statusText}: ${error}`
+    );
   }
   const body = await resp.json();
-  body.cost = costs[input.size];
+  body.cost = costs[input.size] * input.n;
   return body;
 }

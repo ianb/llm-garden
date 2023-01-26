@@ -36,6 +36,11 @@ module.exports = {
       "blue-complement": "#17293A",
       "blue-complement-light": "#E8EAEB",
     }),
+    variants: {
+      extend: {
+        display: ["group-hover"],
+      },
+    },
   },
   plugins: [],
 };

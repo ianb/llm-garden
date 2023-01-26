@@ -31,4 +31,9 @@ export default class LocalCache {
     this._cache[key] = value;
     this._save();
   }
+
+  delete(key) {
+    delete this._cache[key];
+    this._save();
+  }
 }

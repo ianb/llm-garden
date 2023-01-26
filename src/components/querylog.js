@@ -12,7 +12,12 @@ export const QueryLog = ({ gptcache }) => {
   return (
     <>
       {reversed(gptcache.log).map((l, index) => (
-        <LogItem log={l} version={version} defaultOpen={index === 0} />
+        <LogItem
+          gptcache={gptcache}
+          log={l}
+          version={version}
+          defaultOpen={index === 0}
+        />
       ))}
     </>
   );
@@ -25,7 +30,7 @@ function reversed(array) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function LogItem({ log, defaultOpen }) {
+function LogItem({ gptcache, log, defaultOpen }) {
   if (!log.expanded) {
     log.expanded = signal(null);
   }
@@ -33,6 +38,9 @@ function LogItem({ log, defaultOpen }) {
     (log.expanded.value === null && defaultOpen) || log.expanded.value;
   function onClickHeader() {
     log.expanded.value = !open;
+  }
+  function onDeleteItem() {
+    gptcache.deleteCache(log.body);
   }
   // FIXME: this might not be updated properly when the log item changes
   // and the response comes in...
@@ -57,6 +65,12 @@ function LogItem({ log, defaultOpen }) {
           <icons.PlusCircle class="h-3 w-3 inline-block mr-2" />
         )}
         {log.fromCache ? "cached " : null}
+        {log.fromCache ? (
+          <icons.Trash
+            onClick={onDeleteItem}
+            class="h-3 w-3 inline-block mr-2"
+          />
+        ) : null}
         {log && log.time ? (log.time / 1000).toFixed(1) + "s" : null}
       </div>
       {open ? (
