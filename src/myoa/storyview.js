@@ -607,6 +607,11 @@ function QueryText({ property, onSubmit, onSelect, ignoreElement }) {
 function ImageEditor({ property, onDone }) {
   const [waitingOnResults, setWaitingOnResults] = useState(false);
   async function onGenerate(n) {
+    if (!property.story.visualPrompt.value) {
+      // FIXME: should have some way to pop you over to set the visual prompt
+      alert("Please set the visual prompt first");
+      return;
+    }
     setWaitingOnResults(true);
     await property.generateImageFromPrompt(property.lastImagePrompt, n);
     setWaitingOnResults(false);
@@ -624,7 +629,10 @@ function ImageEditor({ property, onDone }) {
   return (
     <div>
       {waitingOnResults ? (
-        <div>Generating: {property.lastImagePrompt}...</div>
+        <div>
+          Generating... <br />
+          {property.story.visualPrompt.value} <br /> {property.lastImagePrompt}
+        </div>
       ) : (
         <>
           <Field>

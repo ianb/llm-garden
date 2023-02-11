@@ -285,6 +285,7 @@ class Property {
     this._image = null;
     this.imageTrials = [];
     this._lastImagePrompt = "";
+    this.temperature = 0.7;
   }
 
   toJSON() {
@@ -456,6 +457,10 @@ class Property {
     this.story.updated();
   }
 
+  increaseTemperature() {
+    this.temperature = (1 + this.temperature) / 2;
+  }
+
   setValueFromText(v) {
     if (this.type === "passage") {
       const [title, rest] = this.extractTitle(v);
@@ -570,7 +575,10 @@ class Property {
       return v;
     }
     const prompt = this.fixupPrompt.replace("$value", v);
-    const response = await this.story.gpt.getCompletion(prompt);
+    const response = await this.story.gpt.getCompletion({
+      prompt,
+      temperature: 0.0,
+    });
     return fixResponseText(response.choices[0].text);
   }
 
@@ -594,6 +602,7 @@ class Property {
     const response = await this.story.gpt.getCompletion({
       prompt: query,
       stop: ["You choose:"],
+      temperature: this.temperature,
     });
     ob.response = fixResponseText(response.choices[0].text);
     this.story.updated();
@@ -606,7 +615,10 @@ class Property {
     this.queries.push({ text: input, type: "user" });
     this.story.updated();
     console.log("trying query", this.queries, this.constructQuery());
-    const response = await this.story.gpt.getCompletion(this.constructQuery());
+    const response = await this.story.gpt.getCompletion({
+      prompt: this.constructQuery(),
+      temperature: this.temperature,
+    });
     const ob = {
       text: fixResponseText(response.choices[0].text),
       type: "response",
@@ -619,7 +631,9 @@ class Property {
     const norm = input.trim().toLowerCase();
     if (norm === "reset") {
       this.queries = [];
+      this.increaseTemperature();
       this.story.updated();
+      await this.launchQuery();
       return true;
     }
     if (norm === "undo") {
@@ -724,6 +738,9 @@ class Property {
   }
 
   async generateImageFromPrompt(prompt, n = 1) {
+    if (!prompt) {
+      throw new Error("No general visual prompt given");
+    }
     prompt = `${this.story.visualPrompt.value.trim()}\n${prompt}`;
     thumbsnap.requireKey();
     const result = await getDallECompletion({ prompt, n });
