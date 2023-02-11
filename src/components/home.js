@@ -21,6 +21,13 @@ Adventure-style story. GPT will suggest topics, choices, and
 passages; you can pick and choose, or revise and author.
 `.trim(),
   },
+  "City Maker": {
+    link: "/citymaker/",
+    description: `
+A tool for generating a city, top-down: starting with the city description,
+neighborhoods, buildings, objects, and so on.
+`.trim(),
+  },
   "Tone Changer": {
     link: "/tone-changer/",
     description: `
