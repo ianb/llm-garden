@@ -87,13 +87,14 @@ function LinkCard({ title, description, link }) {
   );
 }
 
-export const NotFound = () => {
+export const NotFound = ({ message }) => {
   return (
     <PageContainer>
       <Header title="Not Found" />
       <InfoHeader title="Not Found">
         <H1>404 Not Found</H1>
         <P>Page not found</P>
+        {message ? <div>{message}</div> : null}
       </InfoHeader>
     </PageContainer>
   );
