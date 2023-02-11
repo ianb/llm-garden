@@ -110,9 +110,13 @@ export class ReplicateModel {
       const checkResponse = await this.replicate.getPrediction(
         startResponse.id
       );
-      console.log("intermediate resp", checkResponse);
       predictionStatus = checkResponse.status;
-      await sleep(this.replicate.pollingInterval);
+      if (["starting", "processing"].includes(predictionStatus)) {
+        console.log("Intermediate response", predictionStatus);
+        await sleep(this.replicate.pollingInterval);
+      } else {
+        console.log("Final response", checkResponse);
+      }
       // TODO: only yield if there is a new prediction
       yield checkResponse;
     } while (["starting", "processing"].includes(predictionStatus));

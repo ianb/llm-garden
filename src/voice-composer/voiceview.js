@@ -7,7 +7,12 @@ import { PageContainer, TextInput, Button } from "../components/common";
 import { SpeechButton } from "../components/speech";
 import { useRef, useState } from "preact/hooks";
 import { markdownToPreact } from "../markdown";
-import { AudioRecorder, Whisper, getResponseText } from "./whisperrecord";
+import {
+  AudioRecorder,
+  Whisper,
+  getResponseText,
+  Speech,
+} from "./whisperrecord";
 
 export function VoiceComposerView({ model }) {
   const [version, setVersion] = useState(0);
@@ -63,6 +68,9 @@ const Editor = ({ model }) => {
           inputRef={inputRef}
         />
         <WhisperButton onText={(text) => model.domain.addUtterance(text)} />
+        <WhisperSpeechButton
+          onText={(text) => model.domain.addUtterance(text)}
+        />
       </div>
     </div>
   );
@@ -124,6 +132,38 @@ const WhisperButton = ({ onText }) => {
       {recorder.error ? (
         <Alert>{`Error recording: ${recorder.error}`}</Alert>
       ) : null}
+    </div>
+  );
+};
+
+const speech = new Speech();
+
+const WhisperSpeechButton = ({ onText }) => {
+  const [version, setVersion] = useState(0);
+  const [lastLength, setLastLength] = useState(0);
+  speech.addOnUpdate(() => {
+    setVersion(version + 1);
+    let len = lastLength;
+    console.log("transcripts are", speech.transcripts, lastLength);
+    while (speech.transcripts.length > len) {
+      onText(speech.transcripts[len]);
+      len++;
+    }
+    if (len !== lastLength) {
+      setLastLength(len);
+    }
+  });
+  function onClick() {
+    console.log("onClick, isListening: " + speech.isListening);
+    if (speech.isListening) {
+      speech.stop();
+    } else {
+      speech.start();
+    }
+  }
+  return (
+    <div>
+      <Button onClick={onClick}>Speech</Button>
     </div>
   );
 };

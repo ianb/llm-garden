@@ -1,6 +1,7 @@
 import { holder } from "../imageapi/replicatekey";
 import { requireKey } from "../imageapi/stablediffusion";
 import Replicate from "../vendor/replicate";
+import { loadScript } from "../loadlegacyscript";
 
 const fullProxyUrl = "http://localhost:8010/proxy/v1";
 
@@ -14,6 +15,7 @@ export class AudioRecorder {
     this._onUpdate = [];
     this._starting = false;
     this._stopping = false;
+    this._header = null;
   }
 
   addOnUpdate(listener) {
@@ -39,8 +41,17 @@ export class AudioRecorder {
     this._starting = true;
     this.updated();
     this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    this.recorder = new MediaRecorder(this.stream);
+    this._startRecorder();
+  }
+
+  _startRecorder() {
+    if (this.recorder) {
+      this.recorder.stop();
+      this.recorder = null;
+    }
+    const recorder = (this.recorder = new MediaRecorder(this.stream));
     this.recorder.addEventListener("dataavailable", (event) => {
+      console.log("got data", this.recorder === recorder);
       this.chunks.push(event.data);
     });
     for (const eventName of ["start", "stop", "error"]) {
@@ -48,17 +59,12 @@ export class AudioRecorder {
         if (eventName === "error") {
           this.error = event.error;
         }
-        if (eventName === "stop") {
-          this.stream.getTracks().forEach((track) => track.stop());
-          this.stream = null;
-        }
         this._starting = false;
         this._stopping = false;
         this.updated();
       });
     }
     this.recorder.start(this.buffer);
-    window.recorder = this.recorder;
   }
 
   get isStarting() {
@@ -71,24 +77,77 @@ export class AudioRecorder {
     );
   }
 
-  stop() {
-    this._stopping = true;
-    this.updated();
+  checkpointAudio() {
+    if (!this.isRecording) {
+      throw new Error("Not recording");
+    }
+    console.log("starting checkpointing");
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        this._starting = false;
-        this.recorder.stop();
-        this.audioBlob = new Blob(this.chunks, {
-          type: "audio/ogg; codecs=opus",
+      const getData = (event) => {
+        const data = event.data;
+        if (
+          !this.chunks.length ||
+          this.chunks[this.chunks.length - 1] !== data
+        ) {
+          this.chunks.push(data);
+        }
+        const audioBlob = new Blob(this.chunks, {
+          type: "audio/ogg;codecs=opus",
         });
-        this.updated();
-        resolve();
-      }, this.buffer);
+        this.chunks = [];
+        this.recorder.removeEventListener("dataavailable", getData);
+        resolve(audioBlob);
+      };
+      this.recorder.addEventListener("dataavailable", getData);
+      this.recorder.requestData();
+      this.recorder.stop();
+      this.recorder = null;
+      this._startRecorder();
     });
-    // const audioUrl = URL.createObjectURL(audioBlob);
-    // const audio = new Audio(audioUrl);
-    // audio.play();
   }
+
+  stop() {
+    return new Promise((resolve, reject) => {
+      const getData = (event) => {
+        const data = event.data;
+        if (
+          !this.chunks.length ||
+          this.chunks[this.chunks.length - 1] !== data
+        ) {
+          this.chunks.push(data);
+        }
+        const audioBlob = new Blob(this.chunks, {
+          type: "audio/ogg;codecs=opus",
+        });
+        this.chinks = [];
+        this.recorder.removeEventListener("dataavailable", getData);
+        resolve(audioBlob);
+      };
+      this.recorder.addEventListener("dataavailable", getData);
+      this._stopping = true;
+      this.recorder.requestData();
+      this.recorder.stop();
+    });
+  }
+
+  // stop() {
+  //   this._stopping = true;
+  //   this.updated();
+  //   return new Promise((resolve, reject) => {
+  //     setTimeout(() => {
+  //       this._starting = false;
+  //       this.recorder.stop();
+  //       this.audioBlob = new Blob(this.chunks, {
+  //         type: "audio/ogg; codecs=opus",
+  //       });
+  //       this.updated();
+  //       resolve();
+  //     }, this.buffer);
+  //   });
+  //   // const audioUrl = URL.createObjectURL(audioBlob);
+  //   // const audio = new Audio(audioUrl);
+  //   // audio.play();
+  // }
 }
 
 async function blobToDataURL(blob) {
@@ -151,11 +210,17 @@ export class Whisper {
     this._init = true;
   }
 
-  async transcribe(audio) {
+  async transcribe(audio, initial_prompt) {
     this.isTranscribing = true;
     if (audio instanceof Blob) {
       audio = await blobToDataURL(audio);
     }
+    console.log("transcribing audio", audio.slice(0, 40), audio.length);
+    window.lastAudio = audio;
+    const a = document.createElement("audio");
+    a.src = audio;
+    a.controls = true;
+    document.body.appendChild(a);
     if (!audio || typeof audio !== "string") {
       throw new Error("Invalid audio, not a data URL");
     }
@@ -163,7 +228,7 @@ export class Whisper {
     await this.init();
     let prediction;
     this.response = null;
-    const input = Object.assign({ audio }, this.options);
+    const input = Object.assign({ audio, initial_prompt }, this.options);
     console.info("Sending to Whisper:", input);
     for await (prediction of this.replicateWhisper.predictor(input)) {
       this.response = prediction;
@@ -180,6 +245,101 @@ export function getResponseText(response) {
   let text = parts.join(" ").trim();
   text = text.replace(/\s\s+/g, " ");
   return text;
+}
+
+export async function loadVadScript() {
+  const scripts = [
+    "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.js",
+    "https://cdn.jsdelivr.net/npm/@ricky0123/vad/dist/index.browser.js",
+  ];
+  for (const script of scripts) {
+    await loadScript(script);
+  }
+}
+
+export async function instantiateVad(options) {
+  await loadVadScript();
+  // eslint-disable-next-line no-undef
+  const myvad = await vad.MicVAD.new(options);
+  return myvad;
+}
+
+export class Speech {
+  constructor() {
+    this.whisper = new Whisper();
+    this.recorder = new AudioRecorder({ buffer: 500 });
+    this._inited = false;
+    this.transcripts = [];
+    this.pendingWhisper = null;
+    this._onUpdate = [];
+  }
+
+  addOnUpdate(listener) {
+    this._onUpdate.push(listener);
+  }
+
+  removeOnUpdate(listener) {
+    this._onUpdate = this._onUpdate.filter((l) => l !== listener);
+  }
+
+  updated() {
+    this._onUpdate.forEach((listener) => listener());
+  }
+
+  async init() {
+    if (this._inited) {
+      return;
+    }
+    this.vad = await instantiateVad({
+      onSpeechStart: this.onSpeechStart.bind(this),
+      onSpeechEnd: this.onSpeechEnd.bind(this),
+    });
+    this._inited = true;
+  }
+
+  async start() {
+    await this.init();
+    this.vad.start();
+    return this.recorder.start();
+  }
+
+  async stop() {
+    return this.recorder.stop();
+  }
+
+  async onSpeechStart() {
+    // Nothing to do really
+    console.log("got on speech start");
+  }
+
+  async onSpeechEnd() {
+    if (this.pendingWhisper) {
+      console.log("got on speech end but there's also something pending");
+      return;
+    }
+    console.log("got on speech end");
+    const audio = await this.recorder.checkpointAudio();
+    console.log("got audio", audio);
+    if (!audio) {
+      console.log("no audio to transcribe");
+      return;
+    }
+    if (this.pendingWhisper) {
+      await this.pendingWhisper;
+    }
+    // Seems possible that there could be a race if this backs up with more than one waiter
+    const text = this.transcripts.join(" ");
+    this.pendingWhisper = this.whisper.transcribe(audio, text);
+    this.updated();
+    const response = await this.pendingWhisper;
+    this.pendingWhisper = null;
+    this.transcripts.push(getResponseText(response));
+    this.updated();
+  }
+
+  get isListening() {
+    return this.recorder.isRecording;
+  }
 }
 
 /* Example response:
