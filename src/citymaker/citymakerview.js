@@ -151,6 +151,17 @@ function PropertyView({ model, property }) {
 }
 
 function PropertyEditor({ model, property, onDone }) {
+  if (property.choiceType) {
+    return (
+      <PropertyEditorChoice model={model} property={property} onDone={onDone} />
+    );
+  }
+  return (
+    <PropertyEditorText model={model} property={property} onDone={onDone} />
+  );
+}
+
+function PropertyEditorChoice({ model, property, onDone }) {
   const [version, setVersion] = useState(0);
   const [gettingMore, setGettingMore] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -195,6 +206,9 @@ function PropertyEditor({ model, property, onDone }) {
     setGettingMore(true);
     property.retrieveMoreChoices();
   };
+  const onRefresh = () => {
+    property.refreshChoices();
+  };
   return (
     <div class="bg-white p-2">
       <div>
@@ -208,6 +222,9 @@ function PropertyEditor({ model, property, onDone }) {
           ) : (
             <icons.Edit class="w-2 h-2" />
           )}
+        </Button>
+        <Button onClick={onRefresh}>
+          <icons.Refresh class="w-2 h-2" />
         </Button>
       </div>
       {editingPrompt ? (
@@ -299,5 +316,19 @@ function PromptEditor({ property, onDone }) {
         defaultValue={property.additionalChoicePrompt}
       />
     </Field>
+  );
+}
+
+function PropertyEditorText({ model, property, onDone }) {
+  function onSubmit(el) {
+    property.editableValue = el.value;
+    onDone();
+  }
+  return (
+    <TextArea
+      defaultValue={property.editableValue}
+      onSubmit={onSubmit}
+      onCancel={onDone}
+    />
   );
 }

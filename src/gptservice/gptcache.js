@@ -47,20 +47,24 @@ ${floatKey(body.frequency_penalty)}`;
     usagePaths = [...this.basePaths, ...usagePaths];
     usagePaths = this.resolvePaths(usagePaths);
     let requestBody = typeof prompt === "string" ? { prompt } : prompt;
+    const noCache = requestBody.noCache;
+    delete requestBody.noCache;
     requestBody = Object.assign({}, this.defaultPromptOptions, requestBody);
     const key = this.makeCacheKey(requestBody);
-    let val = this.queryCache.get(key);
-    if (val) {
-      this.log.push({
-        body: requestBody,
-        type: "completion",
-        fromCache: true,
-        response: this.responseFixer(val.choices[0].text),
-      });
-      val = Object.assign({}, val);
-      val.text = this.responseFixer(val.choices[0].text);
-      this.updated();
-      return val;
+    if (!noCache) {
+      let val = this.queryCache.get(key);
+      if (val) {
+        this.log.push({
+          body: requestBody,
+          type: "completion",
+          fromCache: true,
+          response: this.responseFixer(val.choices[0].text),
+        });
+        val = Object.assign({}, val);
+        val.text = this.responseFixer(val.choices[0].text);
+        this.updated();
+        return val;
+      }
     }
     const start = Date.now();
     const logItem = { body: requestBody, start, type: "completion" };

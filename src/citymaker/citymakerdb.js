@@ -43,7 +43,6 @@ class CityMaker {
   }
 
   select(selector) {
-    console.log("top", Array.from(Object.values(this.topLevelProperties)));
     return SelectArray.from(Object.values(this.topLevelProperties)).select(
       selector
     );
@@ -141,14 +140,6 @@ class Property {
       c = new SelectArray();
     }
     const results = c.select(selector);
-    console.log(
-      "select",
-      this.typeName,
-      selector,
-      c,
-      results,
-      this.is("selector")
-    );
     if (this.is(selector)) {
       results.unshift(this);
     }
@@ -237,13 +228,16 @@ class Property {
   }
 
   get editable() {
-    return !!(this.prompt || this.choices);
+    return true;
+    // Updated so most things are editable...
+    // return !!(this.prompt || this.choices);
   }
 
-  async generateChoices() {
+  async generateChoices(noCache = false) {
     const prompt = this.generatePrompt();
     const result = await this.city.gpt.getCompletion({
       prompt,
+      noCache,
     });
     this.choices = this.parseResponse(result.text);
     this._updates.forEach((fn) => fn());
@@ -255,7 +249,9 @@ class Property {
       const existing = JSON.stringify(this.choices, null, "  ");
       prompt = `${prompt}\n\n${existing}\n\nList of addition choices in JSON:\n`;
     } else {
-      const existing = this.choices.map((c) => `* ${c}\n`).join("");
+      const existing = this.choices
+        .map((c) => `* ${this.describeChoice(c)}\n`)
+        .join("");
       prompt = `${prompt}\n\n${existing}\n\nList of addition choices:\n`;
     }
     const result = await this.city.gpt.getCompletion({
@@ -264,6 +260,12 @@ class Property {
     const moreChoices = this.parseResponse(result.text);
     this.choices = this.choices.concat(moreChoices);
     this._updates.forEach((fn) => fn());
+  }
+
+  async refreshChoices() {
+    this.choices = null;
+    this._updates.forEach((fn) => fn());
+    await this.generateChoices(true);
   }
 
   async coerceChoice(text) {
@@ -393,7 +395,7 @@ class Property {
   parseResponse(text) {
     if (this.unpack === "plain") {
       const choices = [];
-      const re = /(\d+|\*|-)\.?\s+(.*)/gi;
+      const re = /(\d+|\*|-|1️⃣-🔟)\.?\s+(.*)/gi;
       let match;
       while ((match = re.exec(text))) {
         choices.push(match[2].trim());
@@ -403,7 +405,7 @@ class Property {
     if (this.unpack.startsWith(":")) {
       const choices = [];
       const fields = this.unpack.slice(1).split(":");
-      const re = /(\d+|\*|-)\.\s+(.*)/gi;
+      const re = /(\d+|\*|-)\.?\s+(.*)/gi;
       let match;
       while ((match = re.exec(text))) {
         const choice = {};
@@ -605,6 +607,36 @@ class Property {
     }
     return result;
   }
+
+  get editableValue() {
+    if (this.unpack === "json") {
+      const o = Object.assign({ name: this.name }, this.attributes);
+      return propertySerialize(o);
+    } else if (this.unpack.startsWith(":")) {
+      const keys = this.unpack.slice(1).split(":");
+      return keys.map((k) => this[k]).join(": ");
+    } else {
+      return this.name;
+    }
+  }
+
+  set editableValue(value) {
+    if (this.unpack === "json") {
+      const result = propertyDeserialize(value);
+      this.name = result.name;
+      delete result.name;
+      this.attributes = result;
+    } else if (this.unpack.startsWith(":")) {
+      const keys = this.unpack.slice(1).split(":");
+      const parts = value.split(":");
+      for (let i = 0; i < keys.length; i++) {
+        this[keys[i]] = parts[i];
+      }
+    } else {
+      this.name = value;
+    }
+    this.updated();
+  }
 }
 
 Property.prototype.unpack = "plain";
@@ -616,7 +648,15 @@ class CityType extends Property {}
 
 CityType.prototype.title = "City Type";
 registerPropertyClass("cityType", CityType);
-CityType.prototype.prompt = `A numbered list of types of fantastical cities, such as medieval city, high fantasy, underwater city, etc:`;
+CityType.prototype.prompt = `A numbered list of types of historical or fantastical cities, such as these examples:
+
+* A medieval city during a time of plague
+* A high fantasy city with a magical university
+* An underwater city with a submarine port
+* The ancient city of Troy
+
+Include a wide variety of types. You may include emoji in the types:
+`;
 CityType.prototype.choiceType = "single-choice";
 CityType.prototype.topLevel = true;
 
@@ -624,7 +664,7 @@ class CityName extends Property {}
 
 CityName.prototype.title = "City Name";
 registerPropertyClass("cityName", CityName);
-CityName.prototype.prompt = `A numbered list of names for a city of type $cityType:`;
+CityName.prototype.prompt = `A numbered list of interesting and exotic names for a city of type $cityType:`;
 CityName.prototype.choiceType = "single-choice";
 CityName.prototype.topLevel = true;
 
@@ -639,8 +679,20 @@ class CityBackstories extends Property {
 
 CityBackstories.prototype.title = "City Backstory";
 registerPropertyClass("cityBackstories", CityBackstories);
-CityBackstories.prototype.prompt = `A numbered list of backstories for a city of type $cityType named $cityName. 1-2 sentences that describe climate, history, geography, important ongoing events etc. Include exciting and surprising facts that describe an amazing city:
+CityBackstories.prototype.prompt = `Brainstorm a numbered list of one-sentence descriptions of the city $cityName that is $cityType. Include one or more examples describing:
 
+* Climate
+* The year when the city was most prosperous or most dangerous
+* The economy of the city
+* The geography of the city
+* Formative historical events
+* The level of technology present in the city
+* The cultural context of the city, including immigrants, refugees, and religious groups
+* The architecture and building materials used
+* If buildings should protect from rain, heat, cold, or other elements
+* Family and economic structure
+
+Use the present tense. Include exciting and surprising facts that describe an amazing city:
 `;
 CityBackstories.prototype.choiceType = "multi-choice";
 CityBackstories.prototype.topLevel = true;
@@ -660,7 +712,7 @@ class NeighborhoodAlias extends Property {
   }
 }
 
-NeighborhoodAlias.prototype.title = "Neighborhoods called";
+NeighborhoodAlias.prototype.title = "Neighborhoods are called";
 registerPropertyClass("neighborhoodAlias", NeighborhoodAlias);
 NeighborhoodAlias.prototype.prompt = null;
 NeighborhoodAlias.prototype.choices = [
@@ -681,7 +733,7 @@ CityNeighborhoods.prototype.title = "City Neighborhoods";
 registerPropertyClass("cityNeighborhoods", CityNeighborhoods);
 CityNeighborhoods.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
 
-A numbered list of city $neighborhoodAlias using "name:description"; use interesting and thematic names for each $neighborhoodAlias:`;
+A numbered list of city $neighborhoodAlias using "name:description"; use interesting and thematic names for each $neighborhoodAlias. Include economic, cultural, and social distinctions:`;
 CityNeighborhoods.prototype.choiceType = "multi-choice";
 CityNeighborhoods.prototype.unpack = ":name:description";
 CityNeighborhoods.prototype.topLevel = true;
@@ -699,7 +751,7 @@ class Buildings extends Property {}
 Buildings.prototype.title = "Buildings";
 registerPropertyClass("buildings", Buildings);
 Buildings.prototype.prompt = `In the city $cityName that is a $cityType, $cityBackstories
-A list of buildings in $cityNeighborhood: $cityNeighborhood.description
+Create a list of buildings in $cityNeighborhood: $cityNeighborhood.description
 Including at least a few residences. Use colorful descriptions for the buildings, giving each building a distinct personality.
 
 Example:
@@ -716,7 +768,8 @@ Example:
 ]
 
 JSON list:`;
-Buildings.prototype.coercePrompt = `In $cityName is a $cityType. A building in $cityNeighborhood: $cityNeighborhood.description
+Buildings.prototype.coercePrompt = `In the city $cityName that is $cityType. $cityBackstories
+Describe a building in $cityNeighborhood: $cityNeighborhood.description
 
 Example:
 
@@ -772,9 +825,9 @@ class OwnersOccupants extends Property {}
 
 OwnersOccupants.prototype.title = "Owners, Occupants, and Caretakers";
 registerPropertyClass("ownersOccupants", OwnersOccupants);
-OwnersOccupants.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
+OwnersOccupants.prototype.prompt = `The city $cityName that is $cityType. $cityBackstories
 
-A list of owners or caretakers for $building ($building.description). Give each person an interesting name and a colorful background.
+A list of owners, caretakers, residents, tenants, and other inhabitants for $building ($building.description). Give each person an interesting and culturally appropriate name and a colorful background.
 
 Example:
 [
@@ -788,7 +841,7 @@ Example:
 ]
 
 JSON list:`;
-OwnersOccupants.prototype.coercePrompt = `In $cityName is a $cityType, an owner, occupant, or caretaker for $building ($building.description). Give the person an interesting name.
+OwnersOccupants.prototype.coercePrompt = `In $cityName is a $cityType, an owner, caretaker, resident, tenant, and other inhabitant for $building ($building.description). Give the person an interesting and culturally appropriate name.
 
 Example:
 
@@ -824,7 +877,7 @@ Visitors.prototype.title = "Visitors";
 registerPropertyClass("visitors", Visitors);
 Visitors.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
 
-A list of people who might visit $building ($building.description). Give each an interesting name and colorful background.
+A list of visitors, guests, patrons, or clients who might visit $building ($building.description). Give each an interesting and culturally appropriate name and colorful background.
 
 Example:
 [
@@ -840,7 +893,7 @@ Example:
 JSON list:`;
 Visitors.prototype.coercePrompt = `In city $cityName is a $cityType. $cityBackstories
 
-A person who might visit $building ($building.description). Give the person an interesting name.
+A person is a visitor, guest, patron, or client visiting $building ($building.description). Give the person an interesting and culturally appropriate name.
 
 Example:
   {
@@ -861,7 +914,7 @@ class Rooms extends Property {}
 
 Rooms.prototype.title = "Rooms";
 registerPropertyClass("rooms", Rooms);
-Rooms.prototype.prompt = `The city $cityName is a $cityType.
+Rooms.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
 A list of rooms in $building ($building.description) in the $cityNeighborhood.
 
 Example:
@@ -979,7 +1032,7 @@ class Furnitures extends Property {}
 
 Furnitures.prototype.title = "Furniture";
 registerPropertyClass("furnitures", Furnitures);
-Furnitures.prototype.prompt = `The city $cityName is a $cityType.
+Furnitures.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
 A list of furniture in the room $room.name in the building $building.name ($building.description).
 
 The room is described as $room.description.
@@ -996,7 +1049,7 @@ Example:
 ]
 
 JSON list:`;
-Furnitures.prototype.coercePrompt = `The city $cityName is a $cityType.
+Furnitures.prototype.coercePrompt = `The city $cityName is a $cityType. $cityBackstories
 Give furniture in the room $room.name in the building $building.name ($building.description).
 
 The room is described as $room.description.
@@ -1032,7 +1085,7 @@ class Items extends Property {}
 
 Items.prototype.title = "Items";
 registerPropertyClass("items", Items);
-Items.prototype.prompt = `The city $cityName is a $cityType.
+Items.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
 A list of items in the room $room in the building $building.name ($building.description).
 
 The room is described as $room.description. It contains the furniture $room.furniture.
@@ -1051,7 +1104,7 @@ Example:
 ]
 
 JSON list:`;
-Items.prototype.coercePrompt = `The city $cityName is a $cityType.
+Items.prototype.coercePrompt = `The city $cityName is a $cityType. $cityBackstories
 An item in the room $room in the building $building.name ($building.description).
 
 The room is described as $room.description. It contains the furniture $room.furniture.
@@ -1183,6 +1236,71 @@ class SelectArray extends Array {
     }
     return result;
   }
+}
+
+function propertySerialize(o) {
+  if (!o || typeof o !== "object") {
+    console.warn("Serializing non-object:", o);
+    return JSON.stringify(o);
+  }
+  const lines = [];
+  for (const key of Object.keys(o)) {
+    const val = o[key];
+    if (val === "" || val === undefined || val === null) {
+      lines.push(`${key}: `);
+      continue;
+    }
+    if (typeof val === "string") {
+      lines.push(`${key}: ${val}`);
+      continue;
+    }
+    lines.push(`${key}: ${JSON.stringify(val)}`);
+  }
+  return lines.join("\n");
+}
+
+function propertyDeserialize(text) {
+  if (
+    text.startsWith('"') ||
+    text.startsWith("[") ||
+    text === "null" ||
+    text === "true" ||
+    text === "false"
+  ) {
+    return JSON.parse(text);
+  }
+  const result = {};
+  for (const line of text.split("\n")) {
+    if (
+      !line.trim() ||
+      line.trim().startsWith("#") ||
+      line.trim().startsWith("//")
+    ) {
+      continue;
+    }
+    const parts = line.split(/:/);
+    if (parts.length === 1) {
+      console.warn("Line with no :", JSON.stringify(line));
+      continue;
+    }
+    const key = parts[0].trim();
+    let val = parts[1].trim();
+    if (val === "null") {
+      val = null;
+    } else if (val === "true") {
+      val = true;
+    } else if (val === "false") {
+      val = false;
+    } else if (/^\s*\d+\s*$/.test(val)) {
+      val = parseInt(val, 10);
+    } else if (/^\s*\d+\.\d+\s*$/.test(val)) {
+      val = parseFloat(val, 10);
+    } else if (val.startsWith("{") || val.startsWith("[")) {
+      val = JSON.parse(val);
+    }
+    result[key] = val;
+  }
+  return result;
 }
 
 // FIXME: "tone" isn't the right type!
