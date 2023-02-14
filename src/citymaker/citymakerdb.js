@@ -360,7 +360,12 @@ class Property {
   addAdditionalChoicePrompt(prompt) {
     console.log("check regen", prompt, this.additionalChoicePrompt);
     if (this.additionalChoicePrompt) {
-      return this.additionalChoicePrompt.trim() + "\n" + prompt;
+      let paragraphs = prompt.split("\n\n");
+      paragraphs = paragraphs
+        .slice(0, -1)
+        .concat([this.additionalChoicePrompt])
+        .concat(paragraphs.slice(-1));
+      return paragraphs.join("\n\n");
     }
     return prompt;
   }
@@ -609,18 +614,32 @@ class Property {
   }
 
   get editableValue() {
+    const getattr = (name) => {
+      if (name === "name") {
+        return this.name;
+      }
+      return this.attributes[name];
+    };
     if (this.unpack === "json") {
       const o = Object.assign({ name: this.name }, this.attributes);
       return propertySerialize(o);
     } else if (this.unpack.startsWith(":")) {
       const keys = this.unpack.slice(1).split(":");
-      return keys.map((k) => this[k]).join(": ");
+      console.log("packer", this.unpack, keys);
+      return keys.map((k) => getattr(k)).join(": ");
     } else {
       return this.name;
     }
   }
 
   set editableValue(value) {
+    const setattr = (name, value) => {
+      if (name === "name") {
+        this.name = value;
+      } else {
+        this.attributes[name] = value;
+      }
+    };
     if (this.unpack === "json") {
       const result = propertyDeserialize(value);
       this.name = result.name;
@@ -630,7 +649,7 @@ class Property {
       const keys = this.unpack.slice(1).split(":");
       const parts = value.split(":");
       for (let i = 0; i < keys.length; i++) {
-        this[keys[i]] = parts[i];
+        setattr(keys[i], parts[i]);
       }
     } else {
       this.name = value;
@@ -955,7 +974,7 @@ class Room extends Property {
       return "no furniture";
     }
     const furnitures = furnituresList[0];
-    return furnitures.children.map((x) => x.name).join(", ");
+    return (furnitures.children || []).map((x) => x.name).join(", ");
   }
 }
 
