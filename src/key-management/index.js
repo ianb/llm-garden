@@ -50,7 +50,7 @@ export const RequestKeyPage = () => {
 
 export const RequestKey = () => {
   function onSubmitGpt(textInput) {
-    const setKey = holder.setKeyFromText(textInput);
+    const setKey = holder.setKeyFromText(textInput.value);
     if (setKey) {
       gptKeyError.value = "";
     } else {
