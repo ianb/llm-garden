@@ -1324,5 +1324,13 @@ function propertyDeserialize(text) {
   return result;
 }
 
+const builtins = [
+  {
+    title: "Babylon",
+    description: "An imagined ancient city of Babylon",
+    fromExport: "/builtin-models/babylon.json",
+  },
+];
+
 // FIXME: "tone" isn't the right type!
-export const cityMakerDb = new ModelTypeStore("citymaker", CityMaker, []);
+export const cityMakerDb = new ModelTypeStore("citymaker", CityMaker, builtins);

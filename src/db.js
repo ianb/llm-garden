@@ -367,7 +367,7 @@ export class ModelTypeStore {
       if (!data) {
         throw new Error(`No builtin ${this.type} found with slug ${slug}`);
       }
-      return data;
+      return await this.loadBuiltinData(data);
     }
     const model = await db.models.get({ typeSlug: `${this.type}_${slug}` });
     if (!model) {
@@ -382,6 +382,16 @@ export class ModelTypeStore {
       throw new Error(`No ${this.type} found with slug ${slug}`);
     }
     return model;
+  }
+
+  async loadBuiltinData(data) {
+    if (data.fromExport) {
+      const exportData = await fetch(data.fromExport);
+      const exportJSON = await exportData.json();
+      delete data.fromExport;
+      data.domain = exportJSON.model.domain;
+    }
+    return data;
   }
 
   async getDataById(id) {
