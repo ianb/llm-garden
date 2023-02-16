@@ -387,9 +387,10 @@ export const DateView = ({ timestamp, class: _class }) => {
   return <span class={_class}>{dateString}</span>;
 };
 
-export const InfoHeader = ({ title, children }) => {
+export const InfoHeader = ({ title, children, class: className }) => {
+  className = twMerge("w-full", className);
   return (
-    <div class="w-full">
+    <div class={className}>
       <div class="max-w-2xl mx-auto bg-aqua-dark text-white m-5 rounded drop-shadow-lg p-4">
         <H1 class="text-aqua-lightest">
           <icons.Info class="h-6 w-6 inline-block mr-1 mb-1 text-aqua-light" />
