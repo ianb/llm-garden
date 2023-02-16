@@ -54,7 +54,8 @@ Voice composer: a voice-centric text composition and editing tool
     link: "/imagegen/",
     status: "alpha",
     description: `
-A simple frontend to Replicate's Stable Diffusion API
+A simple frontend to Replicate's Stable Diffusion API and Dall-E.
+Really just a testbed for using those APIs in other experiences.
 `.trim(),
   },
   "Infinite AI Array": {
