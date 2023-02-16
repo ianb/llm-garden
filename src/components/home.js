@@ -68,7 +68,7 @@ export const Home = () => {
       <div class="flex">
         <InfoHeader title="An LLM (GPT) Garden" class="w-1/3">
           <div class="float-left">
-            <img src="/assets/icons/llm-garden-icon.png" class="w-32 h-32" />
+            <img src="/assets/icons/llm-garden-logo.png" class="w-32 h-32" />
           </div>
           <P>
             I have a little time on my hands but it's too hard to garden this
