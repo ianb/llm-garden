@@ -50,6 +50,13 @@ different tone (or language).
 Voice composer: a voice-centric text composition and editing tool
 `.trim(),
   },
+  "People Sim": {
+    link: "/peoplesim/",
+    status: "alpha",
+    description: `
+Simulate a few people interacting in an environment
+`.trim(),
+  },
   "Image Generator": {
     link: "/imagegen/",
     status: "alpha",

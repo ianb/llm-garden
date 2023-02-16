@@ -52,6 +52,11 @@ const App = () => {
         module={() => import("../citymaker/index")}
         component="CityMakerIndex"
       />
+      <LazyLoader
+        path="/peoplesim"
+        module={() => import("../peoplesim/index")}
+        component="PeopleSimIndex"
+      />
       <NotFound default />
     </Router>
   );

@@ -28,6 +28,10 @@
     "title": "Add your key"
   },
   {
+    "url": "/peoplesim",
+    "title": "People Sim"
+  },
+  {
     "url": "/voice-composer",
     "title": "Voice Composer"
   }
