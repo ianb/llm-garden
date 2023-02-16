@@ -67,6 +67,9 @@ export const Home = () => {
       <Header title="Large Language Model (GPT-3) Garden" />
       <div class="flex">
         <InfoHeader title="An LLM (GPT) Garden" class="w-1/3">
+          <div class="float-left">
+            <img src="/assets/icons/llm-garden-icon.png" class="w-32 h-32" />
+          </div>
           <P>
             I have a little time on my hands but it's too hard to garden this
             time of year. So I'm building a garden of LLMs instead, GPT
