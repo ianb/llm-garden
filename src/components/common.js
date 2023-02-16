@@ -59,8 +59,8 @@ export const Card = ({
     children = children.filter((c) => c.type !== CardFooter);
   }
   const innerClass = footer
-    ? "min-h-2 p-1 bg-white"
-    : "min-h-2 p-1 bg-white rounded-b";
+    ? "min-h-2 p-1 bg-white overflow-auto"
+    : "min-h-2 p-1 bg-white overflow-auto rounded-b";
   const onClickTitle = (event) => {
     if (onTitleEdit && event.detail === 2) {
       event.stopPropagation();

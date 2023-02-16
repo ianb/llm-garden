@@ -7,16 +7,19 @@ import * as icons from "./icons";
 const options = {
   "Interactive Fiction": {
     link: "/interactive-fiction/",
+    logo: "/assets/icons/interactive-fiction-logo.png",
     status: "alpha",
     description:
       "Run GPT as a _player_ against one of the Zork text adventure games.",
   },
   Chat: {
     link: "/chat/",
+    logo: "/assets/icons/chat-logo.png",
     description: "Chat with one of several personalities run by GPT.",
   },
   "Make Your Own Adventure": {
     link: "/myoa/",
+    logo: "/assets/icons/myoa-logo.png",
     description: `
 A builder/authoring tool for creating a Choose Your Own
 Adventure-style story. GPT will suggest topics, choices, and
@@ -25,6 +28,7 @@ passages; you can pick and choose, or revise and author.
   },
   "City Maker": {
     link: "/citymaker/",
+    logo: "/assets/icons/citymaker-logo.png",
     description: `
 A tool for generating a city, top-down: starting with the city description,
 neighborhoods, buildings, objects, and so on.
@@ -32,6 +36,7 @@ neighborhoods, buildings, objects, and so on.
   },
   "Tone Changer": {
     link: "/tone-changer/",
+    logo: "/assets/icons/tone-changer-logo.png",
     description: `
 Act like you are someone else! Have your speech translated to a
 different tone (or language).
@@ -39,6 +44,7 @@ different tone (or language).
   },
   "Voice Composer": {
     link: "/voice-composer/",
+    logo: "/assets/icons/voice-composer-logo.png",
     status: "alpha",
     description: `
 Voice composer: a voice-centric text composition and editing tool
@@ -53,6 +59,7 @@ A simple frontend to Replicate's Stable Diffusion API
   },
   "Infinite AI Array": {
     link: "https://github.com/ianb/infinite-ai-array",
+    logo: "/assets/icons/iaia-logo.png",
     description: `
 Make your Python lists go forever, make your dictionaries fill just in time,
 and make functions appear magically when you call them. As irresponsible as
@@ -85,17 +92,23 @@ export const Home = () => {
         <div class="w-2/3 grid grid-cols-2 divide-y">
           {Object.entries(options)
             .filter((x) => x[1].status !== "alpha")
-            .map(([title, { link, description }]) => (
-              <LinkCard title={title} link={link} description={description} />
+            .map(([title, { link, description, logo }]) => (
+              <LinkCard
+                title={title}
+                link={link}
+                description={description}
+                logo={logo}
+              />
             ))}
           {Object.entries(options)
             .filter((x) => x[1].status === "alpha")
-            .map(([title, { link, status, description }]) => (
+            .map(([title, { link, status, description, logo }]) => (
               <LinkCard
                 status={status}
                 title={title}
                 link={link}
                 description={description}
+                logo={logo}
               />
             ))}
         </div>
@@ -104,10 +117,11 @@ export const Home = () => {
   );
 };
 
-function LinkCard({ title, description, link, status }) {
+function LinkCard({ title, description, link, status, logo }) {
   return (
     <a href={link}>
       <Card title={title} class="hover:drop-shadow-xl w-full inline-block">
+        {logo ? <img src={logo} class="w-32 h-32 float-right" /> : null}
         {status ? (
           <div class="p-2">
             <span class="bg-gray-200 text-black border-magenta border-2 rounded-full p-2">
