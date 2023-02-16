@@ -1158,6 +1158,8 @@ Items.prototype.creates = Item;
 Room.prototype.createChildren = [Furnitures, Items];
 
 function decodeJsonPermissive(text) {
+  // Remove trailing semicolons
+  text = text.trim().replace(/;+$/, "");
   const extraTail = [
     "",
     "]",
