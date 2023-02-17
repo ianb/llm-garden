@@ -146,6 +146,7 @@ export const H1 = ({ class: className, children }) => (
 
 export const Field = ({ class: className, sideBySide, children }) => {
   if (children.length !== 2) {
+    console.warn("Unexpected number of <Field> children:", children);
     throw new Error(
       `Expected exactly two children to <Field>, not ${children.length}`
     );
@@ -400,4 +401,33 @@ export const InfoHeader = ({ title, children, class: className }) => {
       </div>
     </div>
   );
+};
+
+export const FieldSet = ({
+  legend,
+  children,
+  class: className,
+  onClickLegend,
+}) => {
+  const legendClass = twMerge(
+    "text-gray-700 font-bold",
+    onClickLegend ? "cursor-pointer" : ""
+  );
+  return (
+    <fieldset
+      class={twMerge(
+        "border border-gray-400 rounded-lg py-1 px-2 mb-2",
+        className
+      )}
+    >
+      <legend class={legendClass} onClick={onClickLegend}>
+        {legend}
+      </legend>
+      <div class="px-2">{children}</div>
+    </fieldset>
+  );
+};
+
+export const HR = ({ class: className }) => {
+  return <hr class={twMerge("border border-gray-400", className)} />;
 };
