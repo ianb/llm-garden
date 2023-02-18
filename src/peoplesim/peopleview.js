@@ -289,6 +289,11 @@ function SimulationStatus({ model, index }) {
 
 function FrameStatus({ model, index }) {
   const frame = model.domain.frames[index];
+  console.log(
+    "actions",
+    frame.actions,
+    frame.actions.map((a) => a.constructor.name)
+  );
   return (
     <div class="border-l-2 border-magenta-light pl-4">
       {frame.actions.map((action) =>

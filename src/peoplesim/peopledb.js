@@ -113,6 +113,11 @@ class PeopleSim {
     title = title.replace(/^"*/, "");
     title = title.replace(/[.,!?"]*$/, "");
     this.envelope.title = title.trim();
+    const descResp = await this.gpt.getCompletion(
+      `Make a short 1-2 sentence description to describe a simulation of this scene: ${this.scenarioDescription}\n\nDescription:`
+    );
+    const desc = descResp.text.trim();
+    this.envelope.description = desc;
   }
 
   get roomDescription() {
