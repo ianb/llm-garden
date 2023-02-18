@@ -64,11 +64,13 @@ const ConcreteIndex = ({
   }
   return (
     <div class="flex flex-wrap justify-between">
-      {children}
-      {models.value.map((m) => (
-        <Model model={m} onSelect={onSelect} />
-      ))}
-      {onAdd ? <Adder onAdd={onAdd} /> : null}
+      <div class="w-1/3 pl-2">{children}</div>
+      <div class="w-2/3 grid grid-cols-2 divide-y">
+        {models.value.map((m) => (
+          <Model model={m} onSelect={onSelect} />
+        ))}
+        {onAdd ? <Adder onAdd={onAdd} /> : null}
+      </div>
     </div>
   );
 };

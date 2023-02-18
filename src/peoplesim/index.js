@@ -7,7 +7,10 @@ import { peopleDb } from "./peopledb";
 export const PeopleSimIndex = () => {
   return (
     <ModelIndexPage title="People Sim" store={peopleDb} viewer={PeopleView}>
-      <InfoHeader title="Multi-person scene simulation">
+      <InfoHeader
+        title="Multi-person scene simulation"
+        logo="/assets/icons/peoplesim-logo.png"
+      >
         <P>
           This explores having multiple distinct entities (people) with their
           own moods and goals interacting in an environment.

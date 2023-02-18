@@ -388,13 +388,18 @@ export const DateView = ({ timestamp, class: _class }) => {
   return <span class={_class}>{dateString}</span>;
 };
 
-export const InfoHeader = ({ title, children, class: className }) => {
+export const InfoHeader = ({ title, logo, children, class: className }) => {
   className = twMerge("w-full", className);
   return (
     <div class={className}>
       <div class="max-w-2xl mx-auto bg-aqua-dark text-white m-5 rounded drop-shadow-lg p-4">
+        {logo ? (
+          <img src={logo} class="pl-1 pb-1 w-32 h-32 float-right" />
+        ) : null}
         <H1 class="text-aqua-lightest">
-          <icons.Info class="h-6 w-6 inline-block mr-1 mb-1 text-aqua-light" />
+          {logo ? null : (
+            <icons.Info class="h-6 w-6 inline-block mr-1 mb-1 text-aqua-light" />
+          )}
           {title}
         </H1>
         <div class="text-white">{children}</div>
@@ -431,3 +436,14 @@ export const FieldSet = ({
 export const HR = ({ class: className }) => {
   return <hr class={twMerge("border border-gray-400", className)} />;
 };
+
+export const YouTube = ({ videoId, class: className }) => (
+  <iframe
+    src={`https://www.youtube.com/embed/${videoId}`}
+    title="YouTube video player"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen
+    class={twMerge("mx-auto", className)}
+  ></iframe>
+);

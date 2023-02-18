@@ -12,7 +12,10 @@ export const StoryIndex = () => {
       viewer={InteractiveFictionView}
       noAdd={true}
     >
-      <InfoHeader title="Interactive Fiction: Freedom with Constraints">
+      <InfoHeader
+        title="Interactive Fiction: Freedom with Constraints"
+        logo="/assets/icons/interactive-fiction-logo.png"
+      >
         <P>
           In some games like{" "}
           <A

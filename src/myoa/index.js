@@ -11,7 +11,10 @@ export const AdventureIndex = () => {
       store={storyDb}
       viewer={StoryView}
     >
-      <InfoHeader title="Make your own Choose Your Own Adventure-style story">
+      <InfoHeader
+        title="Make your own Choose Your Own Adventure-style story"
+        logo="/assets/icons/myoa-logo.png"
+      >
         <P>
           This is a tool to build your own adventures using GPT. You'll setup
           the style of the story and GPT will create passages and possible

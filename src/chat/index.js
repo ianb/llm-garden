@@ -7,9 +7,12 @@ import { InfoHeader, P } from "../components/common";
 export const ChatIndex = () => {
   return (
     <ModelIndexPage title="Chat" store={chatDb} viewer={ChatView}>
-      <InfoHeader title="Talking with different personalities">
-        <P>These are all examples of more-or-less simple chat interfaces.</P>
-        <P></P>
+      <InfoHeader
+        title="Talking with different personalities"
+        logo="/assets/icons/chat-logo.png"
+      >
+        <P>These are all examples of different chat personalities.</P>
+        <P>Each chat has configurable prompts and persona names.</P>
       </InfoHeader>
     </ModelIndexPage>
   );

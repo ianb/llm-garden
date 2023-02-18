@@ -88,7 +88,7 @@ export const Home = () => {
     <PageContainer>
       <Header title="Large Language Model (GPT-3) Garden" />
       <div class="flex">
-        <InfoHeader title="An LLM (GPT) Garden" class="w-1/3">
+        <InfoHeader title="An LLM (GPT) Garden" class="w-1/3 ml-2">
           <div class="float-left">
             <img src="/assets/icons/llm-garden-logo.png" class="w-32 h-32" />
           </div>
