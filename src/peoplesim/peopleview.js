@@ -255,7 +255,7 @@ function PeopleSimPlayer({ model }) {
         {isStepping ? (
           <span>Running with {nextPerson}...</span>
         ) : (
-          <Button onClick={onStep}>Step with {nextPerson}</Button>
+          <Button onClick={onStep}>Continue action with {nextPerson}</Button>
         )}
         {!isStepping ? <Button onClick={onReset}>Reset</Button> : null}
       </div>
