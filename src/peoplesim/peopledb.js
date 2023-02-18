@@ -377,17 +377,19 @@ export class Person {
     const nameList = names.join(", ");
     const prompt =
       `
-We are predicting what ${this.name} will do next. Here's what's happened:
+Predicting what ${this.name} will do next. Here's what's happened:
 
 ${generalPrompt}
 
 ${this.name} can do any or multiple of these actions:
 
 Say: something ${this.name} says
-Change mood: change mood to happy/sad/angry/etc from ${this.mood}
 Do: something ${this.name} does
+Change mood: change mood to happy/sad/angry/etc from ${this.mood}
 Change goal: new goal
 Change relationship with [name]: new relationship with [name] as one of ${nameList}
+
+Mostly "Say:" and "Do:" things instead of changing. Long dialog is OK.
 
 What will ${this.name} do? Start each line with "Say:", "Change mood:", "Do:", "Change goal:" or "Change relationship with [name]:", or do nothing
 `.trim() + "\n";
