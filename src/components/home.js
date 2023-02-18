@@ -74,6 +74,13 @@ and make functions appear magically when you call them. As irresponsible as
 it is irresistible!
 `.trim(),
   },
+  "Key Management": {
+    link: "/key-management/",
+    logo: "/assets/icons/key-management-logo.png",
+    description: `
+Add, change, or remove your OpenAI (GPT/Dall-E), Replicate.com, and Thumbsnap keys
+`.trim(),
+  },
 };
 
 export const Home = () => {
