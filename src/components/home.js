@@ -52,6 +52,7 @@ Voice composer: a voice-centric text composition and editing tool
   },
   "People Sim": {
     link: "/peoplesim/",
+    logo: "/assets/icons/peoplesim-logo.png",
     status: "alpha",
     description: `
 Simulate a few people interacting in an environment
