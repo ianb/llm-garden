@@ -119,7 +119,7 @@ function PersonView({ model, person }) {
   }
   return (
     <FieldSet
-      legend={person.name}
+      legend={person.name || "Unnamed"}
       onClickLegend={() => person.toggleCollapsed()}
     >
       <Markdown text={`**Description:** ${person.description}`} />
@@ -135,27 +135,53 @@ function PersonView({ model, person }) {
 }
 
 function PersonEditor({ model, person }) {
-  if (!person) {
-    person = new Person({ collapsed: true });
+  const [editingPerson, setEditingPerson] = useState(person);
+  const nameRef = useRef();
+  if (!editingPerson) {
+    setEditingPerson(new Person({ collapsed: true }));
+    return;
   }
   function onCreate() {
-    model.domain.addPerson(person);
+    if (!editingPerson.name) {
+      nameRef.current.focus();
+      return;
+    }
+    model.domain.addPerson(editingPerson);
+    setEditingPerson(new Person({ collapsed: true }));
   }
   function onInput(fieldName, e) {
-    person[fieldName] = e.target.value;
-    if (person.sim) {
-      person.sim.updated();
+    editingPerson[fieldName] = e.target.value;
+    if (editingPerson.sim) {
+      editingPerson.sim.updated();
+    }
+  }
+  function onDelete() {
+    if (window.confirm("Are you sure you want to delete this person?")) {
+      model.domain.removePerson(editingPerson);
     }
   }
   return (
     <FieldSet
-      legend={person.name || "New person"}
-      onClickLegend={person.sim && (() => person.toggleCollapsed())}
+      legend={editingPerson.name || "New person"}
+      onClickLegend={
+        editingPerson.sim && (() => editingPerson.toggleCollapsed())
+      }
     >
       <Field>
-        Name:
+        <span>
+          Name:
+          {editingPerson.sim ? (
+            <span>
+              {" "}
+              <button onClick={onDelete}>
+                <icons.Trash class="h-2 w-2" />
+              </button>
+            </span>
+          ) : null}
+        </span>
         <TextInput
-          value={person.name}
+          inputRef={nameRef}
+          value={editingPerson.name || ""}
           placeholder="Unique name"
           onInput={onInput.bind(null, "name")}
         />
@@ -163,7 +189,7 @@ function PersonEditor({ model, person }) {
       <Field>
         Description:
         <TextArea
-          value={person.description}
+          value={editingPerson.description || ""}
           placeholder="Describe the person in detail."
           onInput={onInput.bind(null, "description")}
         />
@@ -171,7 +197,7 @@ function PersonEditor({ model, person }) {
       <Field>
         Mood:
         <TextInput
-          value={person.mood}
+          value={editingPerson.mood || ""}
           placeholder="How does the person feel?"
           onInput={onInput.bind(null, "mood")}
         />
@@ -179,7 +205,7 @@ function PersonEditor({ model, person }) {
       <Field>
         Goal:
         <TextInput
-          value={person.goal}
+          value={editingPerson.goal || ""}
           placeholder="What does the person want to accomplish?"
           onInput={onInput.bind(null, "goal")}
         />
@@ -189,12 +215,14 @@ function PersonEditor({ model, person }) {
           Relationships: (<code>Name: Relationship</code>)
         </span>
         <TextArea
-          value={person.relationshipString}
+          value={editingPerson.relationshipString || ""}
           placeholder="Person's name: relationship"
           onInput={onInput.bind(null, "relationshipString")}
         />
       </Field>
-      {!person.sim ? <Button onClick={onCreate}>Create Person</Button> : null}
+      {!editingPerson.sim ? (
+        <Button onClick={onCreate}>Create Person</Button>
+      ) : null}
     </FieldSet>
   );
 }
@@ -278,8 +306,9 @@ const actionDisplays = {
 
   MoodAction(action) {
     const same =
+      !action.moodSetter ||
       action.value.trim().toLowerCase() ===
-      action.moodSetter.trim().toLowerCase();
+        action.moodSetter.trim().toLowerCase();
     return (
       <div>
         <div>

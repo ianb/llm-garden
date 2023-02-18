@@ -274,6 +274,9 @@ export class Model {
         typeSlug: `${this.type}_${slug}`,
       });
       if (!existing || existing.id === this.id) {
+        if (this._slug === slug) {
+          return;
+        }
         console.log(
           `Changing slug to ${slug} from ${this._slug} for ${this.title}`
         );

@@ -22,6 +22,10 @@ class PeopleSim {
     if (props.people) {
       this._people = {};
       for (const person of props.people) {
+        if (!person.name) {
+          console.warn("Ignoring stored person with no name", person);
+          continue;
+        }
         this.people[person.name] = new Person(
           Object.assign({ sim: this }, person)
         );
@@ -68,6 +72,15 @@ class PeopleSim {
     this.updated();
   }
 
+  removePerson(person) {
+    console.log("deleting", person);
+    if (typeof person !== "string") {
+      person = person.name;
+    }
+    delete this.people[person];
+    this.updated();
+  }
+
   get frames() {
     return this._frames;
   }
@@ -94,11 +107,11 @@ class PeopleSim {
 
   async updateTitle() {
     const resp = await this.gpt.getCompletion(
-      `Make a title to describe a simulation of this scene: ${this.scenarioDescription}\n\nTitle:`
+      `Make a three-word title to describe a simulation of this scene: ${this.scenarioDescription}\n\nTitle:`
     );
     let title = resp.text.trim();
     title = title.replace(/^"*/, "");
-    title = title.replace(/"*$/, "");
+    title = title.replace(/[.,!?"]*$/, "");
     this.envelope.title = title.trim();
   }
 
@@ -220,10 +233,14 @@ class MoodAction extends Action {
     });
   }
   async fill(status) {
+    if (this.value.split().length < 3) {
+      return this;
+    }
+    const mood = status.people[this.personName].mood;
     const resp = await status.sim.gpt.getCompletion(
       `
-${this.value}
-${this.personName}'s mood is now:
+Change mood to: ${this.value}
+${this.personName}'s mood used to be ${mood}, but now can be described in 1-3 words as:
 `.trim()
     );
     this.moodSetter = this.value;
