@@ -481,10 +481,7 @@ class Status {
 
   prompt(personName) {
     const logs = this.logs
-      .filter(
-        (l) =>
-          personName === "*" || !l.personName || l.personName === personName
-      )
+      .filter((l) => personName === "*" || !l.person || l.person === personName)
       .map((l) => `* ${l.text}`)
       .join("\n");
     const people = [];
