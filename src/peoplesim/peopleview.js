@@ -136,6 +136,7 @@ function PersonView({ model, person }) {
 
 function PersonEditor({ model, person }) {
   const [editingPerson, setEditingPerson] = useState(person);
+  const [version, setVersion] = useState(0);
   const nameRef = useRef();
   if (!editingPerson) {
     setEditingPerson(new Person({ collapsed: true }));
@@ -153,6 +154,8 @@ function PersonEditor({ model, person }) {
     editingPerson[fieldName] = e.target.value;
     if (editingPerson.sim) {
       editingPerson.sim.updated();
+    } else {
+      setVersion(version + 1);
     }
   }
   function onDelete() {
@@ -186,42 +189,46 @@ function PersonEditor({ model, person }) {
           onInput={onInput.bind(null, "name")}
         />
       </Field>
-      <Field>
-        Description:
-        <TextArea
-          value={editingPerson.description || ""}
-          placeholder="Describe the person in detail."
-          onInput={onInput.bind(null, "description")}
-        />
-      </Field>
-      <Field>
-        Mood:
-        <TextInput
-          value={editingPerson.mood || ""}
-          placeholder="How does the person feel?"
-          onInput={onInput.bind(null, "mood")}
-        />
-      </Field>
-      <Field>
-        Goal:
-        <TextInput
-          value={editingPerson.goal || ""}
-          placeholder="What does the person want to accomplish?"
-          onInput={onInput.bind(null, "goal")}
-        />
-      </Field>
-      <Field>
-        <span>
-          Relationships: (<code>Name: Relationship</code>)
-        </span>
-        <TextArea
-          value={editingPerson.relationshipString || ""}
-          placeholder="Person's name: relationship"
-          onInput={onInput.bind(null, "relationshipString")}
-        />
-      </Field>
-      {!editingPerson.sim ? (
-        <Button onClick={onCreate}>Create Person</Button>
+      {editingPerson.sim || editingPerson.name ? (
+        <>
+          <Field>
+            Description:
+            <TextArea
+              value={editingPerson.description || ""}
+              placeholder="Describe the person in detail."
+              onInput={onInput.bind(null, "description")}
+            />
+          </Field>
+          <Field>
+            Mood:
+            <TextInput
+              value={editingPerson.mood || ""}
+              placeholder="How does the person feel?"
+              onInput={onInput.bind(null, "mood")}
+            />
+          </Field>
+          <Field>
+            Goal:
+            <TextInput
+              value={editingPerson.goal || ""}
+              placeholder="What does the person want to accomplish?"
+              onInput={onInput.bind(null, "goal")}
+            />
+          </Field>
+          <Field>
+            <span>
+              Relationships: (<code>Name: Relationship</code>)
+            </span>
+            <TextArea
+              value={editingPerson.relationshipString || ""}
+              placeholder="Person's name: relationship"
+              onInput={onInput.bind(null, "relationshipString")}
+            />
+          </Field>
+          {!editingPerson.sim ? (
+            <Button onClick={onCreate}>Create Person</Button>
+          ) : null}
+        </>
       ) : null}
     </FieldSet>
   );
