@@ -5,18 +5,6 @@ import { Markdown } from "../markdown";
 import * as icons from "./icons";
 
 const options = {
-  "Interactive Fiction": {
-    link: "/interactive-fiction/",
-    logo: "/assets/icons/interactive-fiction-logo.png",
-    status: "alpha",
-    description:
-      "Run GPT as a _player_ against one of the Zork text adventure games.",
-  },
-  Chat: {
-    link: "/chat/",
-    logo: "/assets/icons/chat-logo.png",
-    description: "Chat with one of several personalities run by GPT.",
-  },
   "Make Your Own Adventure": {
     link: "/myoa/",
     logo: "/assets/icons/myoa-logo.png",
@@ -34,6 +22,13 @@ A tool for generating a city, top-down: starting with the city description,
 neighborhoods, buildings, objects, and so on.
 `.trim(),
   },
+  "People Sim": {
+    link: "/peoplesim/",
+    logo: "/assets/icons/peoplesim-logo.png",
+    description: `
+Simulate a few people interacting in an environment
+`.trim(),
+  },
   "Tone Changer": {
     link: "/tone-changer/",
     logo: "/assets/icons/tone-changer-logo.png",
@@ -42,19 +37,24 @@ Act like you are someone else! Have your speech translated to a
 different tone (or language).
 `.trim(),
   },
+  Chat: {
+    link: "/chat/",
+    logo: "/assets/icons/chat-logo.png",
+    description: "Chat with one of several personalities run by GPT.",
+  },
+  "Interactive Fiction": {
+    link: "/interactive-fiction/",
+    logo: "/assets/icons/interactive-fiction-logo.png",
+    status: "alpha",
+    description:
+      "Run GPT as a _player_ against one of the Zork text adventure games.",
+  },
   "Voice Composer": {
     link: "/voice-composer/",
     logo: "/assets/icons/voice-composer-logo.png",
     status: "alpha",
     description: `
 Voice composer: a voice-centric text composition and editing tool
-`.trim(),
-  },
-  "People Sim": {
-    link: "/peoplesim/",
-    logo: "/assets/icons/peoplesim-logo.png",
-    description: `
-Simulate a few people interacting in an environment
 `.trim(),
   },
   "Image Generator": {
