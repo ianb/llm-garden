@@ -186,7 +186,7 @@ class PeopleSim {
 
 const actions = {};
 function registerAction(name, actionClass) {
-  actions[actionClass.name] = actionClass;
+  actions[name] = actionClass;
   actionClass.prototype.actionType = name;
 }
 
