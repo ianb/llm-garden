@@ -193,7 +193,7 @@ function registerAction(name, actionClass) {
 function instantiateAction(json) {
   const actionClass = actions[json.actionType];
   if (!actionClass) {
-    console.warn(`Unknown action type "${json.actionType}"`);
+    console.warn(`Unknown action type "${json.actionType}"`, actions);
     return null;
   }
   return new actionClass(json);
