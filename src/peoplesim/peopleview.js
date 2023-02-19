@@ -253,14 +253,14 @@ function PeopleSimPlayer({ model }) {
     setTimeout(() => setCopying(false), 1000);
   }
   const children = [];
+  children.push(
+    <div class="float-right">
+      <Button onClick={copyText}>
+        {copying ? "Copied!" : <icons.Copy class="w-6 h-6" />}
+      </Button>
+    </div>
+  );
   for (let i = 0; i < model.domain.frames.length + 1; i++) {
-    children.push(
-      <div class="float-right">
-        <Button onClick={copyText}>
-          {copying ? "Copied!" : <icons.Copy class="w-6 h-6" />}
-        </Button>
-      </div>
-    );
     children.push(<SimulationStatus model={model} index={i} />);
     if (i < model.domain.frames.length) {
       children.push(<HR />);
@@ -275,7 +275,9 @@ function PeopleSimPlayer({ model }) {
       {children}
       <div>
         {isStepping ? (
-          <span>Running with {nextPerson}...</span>
+          <div class="mx-auto rounded-lg border border-magenta text-center p-5 bg-white">
+            {nextPerson} is figuring out what to do...
+          </div>
         ) : (
           <Button onClick={onStep}>Continue action with {nextPerson}</Button>
         )}

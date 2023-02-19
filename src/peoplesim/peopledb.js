@@ -143,6 +143,9 @@ class PeopleSim {
     names = names.split(/\s+/);
     const result = [];
     for (const name of names) {
+      if (!name) {
+        continue;
+      }
       let found = false;
       for (const fullName of Object.keys(this.people)) {
         if (name.toLowerCase() === fullName.toLowerCase()) {
@@ -422,7 +425,7 @@ export class Person {
     const nameList = names.join(", ");
     const prompt =
       `
-Predicting what ${this.name} will do next. Here's what's happened:
+What will ${this.name} do next? Here's what's happened:
 
 ${generalPrompt}
 
@@ -436,7 +439,7 @@ Change relationship with [name]: new relationship with [name] as one of ${nameLi
 
 Mostly "Say:" and "Do:" things instead of changing. Long dialog is OK.
 
-What will ${this.name} do? Start each line with "Say:", "Change mood:", "Do:", "Change goal:" or "Change relationship with [name]:", or do nothing
+What will ${this.name} do? It's okay to be disagreeable or angry. Start each line with "Say:", "Change mood:", "Do:", "Change goal:" or "Change relationship with [name]:", or do nothing
 `.trim() + "\n";
     const resp = await status.sim.gpt.getCompletion(prompt);
     const lines = resp.text.split("\n");
@@ -562,12 +565,14 @@ class Status {
     }
     const peopleDescription = people.join("\n");
     return `
+
+${peopleDescription}
+
+${logs}
+
 ${this.sim.scenarioDescription}
 
 ${this.roomDescription}
-
-${peopleDescription}
-${logs}
 `.trim();
   }
 
