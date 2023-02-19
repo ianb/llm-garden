@@ -304,11 +304,6 @@ function SimulationStatus({ model, index }) {
 
 function FrameStatus({ model, index }) {
   const frame = model.domain.frames[index];
-  console.log(
-    "actions",
-    frame.actions,
-    frame.actions.map((a) => a.actionType)
-  );
   return (
     <div class="border-l-2 border-magenta-light pl-4">
       {frame.actions.map((action) => actionDisplays[action.actionType](action))}

@@ -73,7 +73,6 @@ class PeopleSim {
   }
 
   removePerson(person) {
-    console.log("deleting", person);
     if (typeof person !== "string") {
       person = person.name;
     }
@@ -250,7 +249,6 @@ class MoodAction extends Action {
   }
   async fill(status) {
     this.originalMood = status.people[this.personName].mood;
-    console.log("set mood to", this.originalMood, this.value);
     if (this.value.split().length < 3) {
       return this;
     }
