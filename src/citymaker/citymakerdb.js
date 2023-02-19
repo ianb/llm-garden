@@ -1328,7 +1328,7 @@ const builtins = [
   {
     title: "Babylon",
     description: "An imagined ancient city of Babylon",
-    fromExport: "/builtin-models/babylon.json",
+    fromExport: "/builtin-models/citymaker/babylon.json",
   },
 ];
 

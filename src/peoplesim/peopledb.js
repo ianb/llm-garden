@@ -530,8 +530,8 @@ What will ${this.name} do? It's okay to be disagreeable or angry. Start each lin
       actionType = actionType.trim();
       value = value.trim();
       if (/say/i.test(actionType)) {
-        value = value.replace(/^"+/g, "");
-        value = value.replace(/"+$/g, "");
+        value = value.replace(/^[“"]+/g, "");
+        value = value.replace(/["”]+$/g, "");
         actions.push(new SayAction({ personName: this.name, value: value }));
         continue;
       }
@@ -788,4 +788,13 @@ class Frame {
   }
 }
 
-export const peopleDb = new ModelTypeStore("peoplesim", PeopleSim, []);
+const builtins = [
+  {
+    title: "Orc vs Hobbit",
+    description:
+      "A dynamic struggle for survival between an intimidating orc and a helpless hobbit unfolds in a harrowing pit, as the audience cheers for the violence that ensues.",
+    fromExport: "/builtin-models/peoplesim/orc-vs-hobbit.json",
+  },
+];
+
+export const peopleDb = new ModelTypeStore("peoplesim", PeopleSim, builtins);

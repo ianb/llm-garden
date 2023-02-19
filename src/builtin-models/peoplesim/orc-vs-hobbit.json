@@ -1,0 +1,179 @@
+{
+  "exportType": "peoplesim",
+  "exportDate": 1676831940694,
+  "model": {
+    "id": "3f9d5a51-350d-4e5c-b5a8-6440faf8d9b6",
+    "type": "peoplesim",
+    "slug": "orc-vs-hobbit",
+    "title": "Orc vs Hobbit",
+    "archived": false,
+    "description": "A dynamic struggle for survival between an intimidating orc and a helpless hobbit unfolds in a harrowing pit, as the audience cheers for the violence that ensues.",
+    "dateCreated": 1676693152084,
+    "dateUpdated": 1676831872832,
+    "domain": {
+      "scenarioDescription": "A fearsome and cruel orc together with a small and timid hobbit, trapped together in a pit. Action progresses quickly with many impactful actions that move the action forward. The audience is demanding violence.",
+      "roomDescription": "There is a deep dirt pit. Above an audience looks down, jeering at the sacrifices inside the pit. The pit is deep and dug from dirt. On the north side of the pit the Orc is standing with a vicious look on its face. He is unarmed and healthy. On the south side of the pit the Hobbit is cowering, afraid. He is unarmed and healthy. On the ground there is a bag of magic seeds, a dull knife, and a rough wooden shield.",
+      "frames": [
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Hobbit",
+              "value": "Why have you brought me here? What do you want from me?"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Hobbit",
+              "value": "Hold up the wooden shield for protection.",
+              "oldRoomDescription": "There is a deep dirt pit. Above an audience looks down, jeering at the sacrifices inside the pit. The pit is deep and dug from dirt. On the north side of the pit the Orc is standing with a vicious look on its face. He is unarmed and healthy. On the south side of the pit the Hobbit is cowering, afraid. He is unarmed and healthy. On the ground there is a bag of magic seeds, a dull knife, and a rough wooden shield.",
+              "newRoomDescription": "The deep dirt pit is filled with jeering voices from the audience above. In the center of the pit stands an Orc with a vicious look on its face, unarmed and healthy. On the south side of the pit, the Hobbit crouches, armed with a wooden shield for protection. On the ground lie a bag of magic seeds, a dull knife, and a rough wooden shield. The tension in the pit is palpable as the fate of the two warriors hangs in the balance."
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Hobbit",
+              "value": "Angry",
+              "originalMood": "Scared and curious"
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "moment",
+              "originalRoomDescription": "The deep dirt pit is filled with jeering voices from the audience above. In the center of the pit stands an Orc with a vicious look on its face, unarmed and healthy. On the south side of the pit, the Hobbit crouches, armed with a wooden shield for protection. On the ground lie a bag of magic seeds, a dull knife, and a rough wooden shield. The tension in the pit is palpable as the fate of the two warriors hangs in the balance.",
+              "newRoomDescription": "The deep dirt pit is filled with a hushed silence, as the audience stares in anticipation. In the center of the pit, the Orc and the Hobbit stand facing each other. Both have drawn their weapons; the Orc is armed with a dull knife, while the Hobbit holds a wooden shield. On the ground lies a bag of magic seeds and a rough wooden shield, discarded in the heat of the fight. Tension hangs in the air as the two combatants prepare to do battle, and the audience waits with bated breath to see who will emerge victorious.",
+              "event": "The atmosphere in the pit has shifted from one of jeering to one of hushed anticipation, as the Orc and the Hobbit face off with weapons drawn, waiting for a decisive victory."
+            }
+          ]
+        },
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Orc",
+              "value": "You should be grateful that I'm giving you a chance to fight! Come on, let's see what you can do!"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Orc",
+              "value": "Grasp the knife with both hands and raise it high above his head, ready to strike.",
+              "oldRoomDescription": "The deep dirt pit is filled with a hushed silence, as the audience stares in anticipation. In the center of the pit, the Orc and the Hobbit stand facing each other. Both have drawn their weapons; the Orc is armed with a dull knife, while the Hobbit holds a wooden shield. On the ground lies a bag of magic seeds and a rough wooden shield, discarded in the heat of the fight. Tension hangs in the air as the two combatants prepare to do battle, and the audience waits with bated breath to see who will emerge victorious.",
+              "newRoomDescription": "The atmosphere in the deep dirt pit is electric as the Orc and the Hobbit prepare for battle. The Orc is armed with a dull knife, while the Hobbit holds a wooden shield. On the ground lies a bag of magic seeds and a rough wooden shield, discarded in their struggle. The Orc stands with the knife raised high above his head, ready to strike, as the audience watches in hushed anticipation. Who will emerge victorious? The suspense is palpable as the two combatants stand in a tense standoff."
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Orc",
+              "value": "Feeling confident and empowered.",
+              "originalMood": "Angry, confused"
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "moment",
+              "originalRoomDescription": "The atmosphere in the deep dirt pit is electric as the Orc and the Hobbit prepare for battle. The Orc is armed with a dull knife, while the Hobbit holds a wooden shield. On the ground lies a bag of magic seeds and a rough wooden shield, discarded in their struggle. The Orc stands with the knife raised high above his head, ready to strike, as the audience watches in hushed anticipation. Who will emerge victorious? The suspense is palpable as the two combatants stand in a tense standoff.",
+              "newRoomDescription": "The atmosphere in the deep dirt pit is still electric as the Orc and the Hobbit face off. The Orc is still armed with the dull knife while the Hobbit holds the wooden shield. The audience watch in anticipation as the Orc stands with the knife raised high, ready to strike. But before that can happen, the Hobbit suddenly grabs the bag of magic seeds and throws them into the air. As the seeds scatter, a magical force field appears, blocking the Orc's attack. The Hobbit then grabs the discarded wooden shield and blocks the Orc's next attack. After a long and grueling battle, the Hobbit finally emerges as the victor. The crowd erupts in cheers and the Orc hangs his head in defeat.",
+              "event": "The tension between the two combatants quickly shifted as the Hobbit took action and conjured a magical force field to protect themself, leading to a battle that ended with the Hobbit emerging as the triumphant victor."
+            }
+          ]
+        },
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Hobbit",
+              "value": "You may have won this battle Orc, but you won't win the war!"
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Hobbit",
+              "value": "Proud",
+              "originalMood": "Angry"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Hobbit",
+              "value": "Plant the magic seeds on the ground and cast a spell to create a magical wall to protect them both.",
+              "oldRoomDescription": "The atmosphere in the deep dirt pit is still electric as the Orc and the Hobbit face off. The Orc is still armed with the dull knife while the Hobbit holds the wooden shield. The audience watch in anticipation as the Orc stands with the knife raised high, ready to strike. But before that can happen, the Hobbit suddenly grabs the bag of magic seeds and throws them into the air. As the seeds scatter, a magical force field appears, blocking the Orc's attack. The Hobbit then grabs the discarded wooden shield and blocks the Orc's next attack. After a long and grueling battle, the Hobbit finally emerges as the victor. The crowd erupts in cheers and the Orc hangs his head in defeat.",
+              "newRoomDescription": "The Orc and the Hobbit are locked in a heated battle within the deep dirt pit. The Orc is still armed with the dull knife while the Hobbit holds the wooden shield. The audience watches with anticipation as the Orc stands with the knife raised high, ready to strike. Suddenly, the Hobbit grabs the bag of magic seeds and throws them into the air, creating a magical force field that thwarts the Orc's attack. The Hobbit then grabs the discarded wooden shield and blocks the Orc's next attack. After a long and grueling battle, the Hobbit ultimately emerges as the victor. Amidst the cheers from the crowd, the Orc hangs his head in defeat as the Hobbit plants the magic seeds on the ground and casts a spell to create a magical wall that now separates them."
+            },
+            {
+              "actionType": "ChangeGoalAction",
+              "personName": "Hobbit",
+              "value": "To escape the pit alive.",
+              "originalGoal": "He wants to escape from the pit"
+            },
+            {
+              "actionType": "ChangeRelationshipAction",
+              "personName": "Hobbit",
+              "value": {
+                "personName": "Orc",
+                "relationship": "The Hobbit begins to respect the Orc for his strength and courage in battle."
+              },
+              "originalRelationship": "the Hobbit is scared of the Orc, but has never met an Orc before"
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "moment",
+              "originalRoomDescription": "The Orc and the Hobbit are locked in a heated battle within the deep dirt pit. The Orc is still armed with the dull knife while the Hobbit holds the wooden shield. The audience watches with anticipation as the Orc stands with the knife raised high, ready to strike. Suddenly, the Hobbit grabs the bag of magic seeds and throws them into the air, creating a magical force field that thwarts the Orc's attack. The Hobbit then grabs the discarded wooden shield and blocks the Orc's next attack. After a long and grueling battle, the Hobbit ultimately emerges as the victor. Amidst the cheers from the crowd, the Orc hangs his head in defeat as the Hobbit plants the magic seeds on the ground and casts a spell to create a magical wall that now separates them.",
+              "newRoomDescription": "The Orc and the Hobbit stand on either side of a magical wall that has been created by the Hobbit's spell. The Orc hangs his head in defeat, while the Hobbit stands triumphant, having emerged victorious from their battle. The crowd cheers and celebrates the Hobbit's victory as the Orc retreats, leaving the pit forever. The magical seeds are planted in the ground, creating a barrier between them, ensuring that the Orc will never return.",
+              "event": "The Hobbit has emerged victorious from the battle, creating a magical wall to prevent the Orc from ever returning, and the crowd celebrates the Hobbit's triumph."
+            }
+          ]
+        },
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Orc",
+              "value": "This isn't over yet! I will be back!"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Orc",
+              "value": "Turn around and walk away, determined to return and avenge his defeat.",
+              "oldRoomDescription": "The Orc and the Hobbit stand on either side of a magical wall that has been created by the Hobbit's spell. The Orc hangs his head in defeat, while the Hobbit stands triumphant, having emerged victorious from their battle. The crowd cheers and celebrates the Hobbit's victory as the Orc retreats, leaving the pit forever. The magical seeds are planted in the ground, creating a barrier between them, ensuring that the Orc will never return.",
+              "newRoomDescription": "The celebration continues as the Orc turns away in defeat, walking down the path, leaving behind a magical wall that has been created by the Hobbit's spell. The Hobbit stands triumphant, having emerged victorious from the battle, as the crowd cheers and celebrates the victory. The magical seeds are planted in the ground, creating a barrier between them and ensuring that the Orc will never return. The Hobbits looks on, knowing that their victory is secure, as the Orc fades into the distance."
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Orc",
+              "value": "Angry and determined.",
+              "originalMood": "Feeling confident and empowered."
+            },
+            {
+              "actionType": "ChangeGoalAction",
+              "personName": "Orc",
+              "value": "Seek revenge against the Hobbits for this humiliation.",
+              "originalGoal": "He wants to get out of the pit"
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "moment",
+              "originalRoomDescription": "The celebration continues as the Orc turns away in defeat, walking down the path, leaving behind a magical wall that has been created by the Hobbit's spell. The Hobbit stands triumphant, having emerged victorious from the battle, as the crowd cheers and celebrates the victory. The magical seeds are planted in the ground, creating a barrier between them and ensuring that the Orc will never return. The Hobbits looks on, knowing that their victory is secure, as the Orc fades into the distance.",
+              "newRoomDescription": "The victory celebration is in full swing, as the Hobbits rejoice in their accomplishment. The magical wall created by the Hobbits' spell stands tall, protecting them from the Orc's return. Brightly-colored streamers fill the sky, and the smell of food and drink wafts through the air. The Hobbits cheer and dance in the streets, their joy palpable, as the magical seeds are planted in the ground, acting as a barrier to the Orc. The Hobbits stand proudly, knowing that their victory is secure and safe, as the Orc fades into the distance.",
+              "event": "The Hobbits have gone from a state of fear and worry to one of joyous celebration, as the magical wall and seeds provide a barrier of safety against the Orc's return."
+            }
+          ]
+        }
+      ],
+      "people": [
+        {
+          "name": "Hobbit",
+          "description": "The hobbit is three feet tall. He has grown up on a farm and is strong and stocky. He was captured and now is being forced to fight. He has always wondered if he had magic in him.",
+          "goal": "He wants to escape from the pit",
+          "mood": "Scared and curious",
+          "collapsed": true,
+          "relationshipString": "Orc: the Hobbit is scared of the Orc, but has never met an Orc before"
+        },
+        {
+          "name": "Orc",
+          "description": "The Orc is six foot tall and heavy-set. He was captured and has been tormented and angered until he was placed in this pit.",
+          "goal": "He wants to get out of the pit",
+          "mood": "Angry, confused",
+          "collapsed": true,
+          "relationshipString": ""
+        }
+      ],
+      "peopleOrderString": "Hobbit Orc",
+      "simulationStepLength": "moment",
+      "simulateBetweenEachPerson": true
+    },
+    "typeSlug": "peoplesim_orc-vs-hobbit"
+  }
+}

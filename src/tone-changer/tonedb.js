@@ -91,6 +91,8 @@ Output:`.trim();
 const builtins = [
   {
     title: "Posh English lady",
+    description:
+      "Change your tone to use fancy words and English colloquialisms.",
     domain: {
       prompt:
         "Change speech to sound like a posh and sophisticated English woman. Use fancy words and English colloquialisms.\n\nInput: bye\nOutput: Cheerio\n\nInput: $input\nOutput:",

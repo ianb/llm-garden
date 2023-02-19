@@ -347,7 +347,8 @@ const actionDisplays = {
   SayAction(action) {
     return (
       <div>
-        <strong>{action.personName}</strong> says: <em>{action.value}</em>
+        <strong>{action.personName}</strong> says:{" "}
+        <em class="font-bold">"{action.value}"</em>
       </div>
     );
   },

@@ -39,7 +39,8 @@ function LogItem({ gptcache, log, defaultOpen }) {
   function onClickHeader() {
     log.expanded.value = !open;
   }
-  function onDeleteItem() {
+  function onDeleteItem(e) {
+    e.stopPropagation();
     gptcache.deleteCache(log.body);
   }
   // FIXME: this might not be updated properly when the log item changes
@@ -65,12 +66,7 @@ function LogItem({ gptcache, log, defaultOpen }) {
           <icons.PlusCircle class="h-3 w-3 inline-block mr-2" />
         )}
         {log.fromCache ? "cached " : null}
-        {log.fromCache ? (
-          <icons.Trash
-            onClick={onDeleteItem}
-            class="h-3 w-3 inline-block mr-2"
-          />
-        ) : null}
+        <icons.Trash onClick={onDeleteItem} class="h-3 w-3 inline-block mr-2" />
         {log && log.time ? (log.time / 1000).toFixed(1) + "s" : null}
       </div>
       {open ? (
