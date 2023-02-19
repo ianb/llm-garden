@@ -217,6 +217,9 @@ class Action {
 
 class DoNothing extends Action {
   apply(status) {}
+  markdown() {
+    return null;
+  }
 }
 
 registerAction(DoNothing);
@@ -225,12 +228,18 @@ class SayAction extends Action {
   apply(status) {
     status.logs.push({ text: `${this.personName} says "${this.value}"` });
   }
+  markdown() {
+    return `**${this.personName}** says _"${this.value}"_`;
+  }
 }
 
 registerAction(SayAction);
 
 class MoodAction extends Action {
   apply(status) {
+    if (this.originalMood === this.value) {
+      return;
+    }
     status.people[this.personName].mood = this.value;
     status.logs.push({
       person: this.personName,
@@ -238,6 +247,8 @@ class MoodAction extends Action {
     });
   }
   async fill(status) {
+    this.originalMood = status.people[this.personName].mood;
+    console.log("set mood to", this.originalMood, this.value);
     if (this.value.split().length < 3) {
       return this;
     }
@@ -251,6 +262,12 @@ ${this.personName}'s mood used to be ${mood}, but now can be described in 1-3 wo
     this.moodSetter = this.value;
     this.value = resp.text.trim();
     return this;
+  }
+  markdown() {
+    if (this.originalMood === this.value) {
+      return null;
+    }
+    return `**${this.personName}** changes mood from _${this.originalMood}_ to **${this.value}**`;
   }
 }
 
@@ -271,8 +288,12 @@ ${this.personName} tries to ${this.value}
 The scene can now be described as:
 `.trim() + "\n"
     );
+    this.oldRoomDescription = status.roomDescription;
     this.newRoomDescription = resp.text.trim();
     return this;
+  }
+  markdown() {
+    return `**${this.personName}** tries to **${this.value}** <br />Then: _${this.newRoomDescription}_`;
   }
 }
 
@@ -280,11 +301,21 @@ registerAction(DoAction);
 
 class ChangeGoalAction extends Action {
   apply(status) {
+    if (this.originalGoal === this.value) {
+      return;
+    }
     status.people[this.personName].goal = this.value;
     status.logs.push({
       person: this.personName,
       text: `${this.personName} changes their goal to ${this.value}`,
     });
+  }
+  fill(status) {
+    this.originalGoal = status.people[this.personName].goal;
+    return this;
+  }
+  markdown() {
+    return `**${this.personName}** changes goal from _${this.originalGoal}_ to **${this.value}**`;
   }
 }
 
@@ -300,6 +331,15 @@ class ChangeRelationshipAction extends Action {
       person: this.personName,
       text: `${this.personName} changes their relationship with ${this.value.personName} to ${this.value.relationship}`,
     });
+  }
+  fill(status) {
+    this.originalRelationship = status.people[
+      this.personName
+    ].relationships.get(this.value.personName);
+    return this;
+  }
+  markdown() {
+    return `**${this.personName}** changes relationship with **${this.value.personName}** from _${this.originalRelationship}_ to **${this.value.relationship}**`;
   }
 }
 
@@ -571,6 +611,79 @@ ${logs}
       return `**${personName}** ${rest}`;
     }
     return `**${personName}** is ${person.description}`;
+  }
+
+  fullMarkdown() {
+    const cast = this.peopleMarkdown(this.sim.people);
+    const castConclusion = this.peopleMarkdown(this.people, this.sim.people);
+    const logs = [];
+    for (const frame of this.sim.frames) {
+      for (const action of frame.actions) {
+        const text = action.markdown();
+        if (text) {
+          logs.push(`* ${text}`);
+        }
+      }
+    }
+    const logFormatted = logs.join("\n");
+
+    return `
+# ${this.sim.envelope.title}
+
+> ${this.sim.scenarioDescription}
+
+The scenario begins with:
+
+> ${this.sim.roomDescription}
+
+## Cast
+
+${cast}
+
+## Action
+
+These things happen:
+
+${logFormatted}
+
+## Conclusion:
+
+In the end:
+
+${castConclusion}
+
+And the scenario is described as:
+
+> ${this.roomDescription}
+`.trim();
+  }
+
+  peopleMarkdown(people, prev) {
+    const cast = [];
+    for (const person of Object.values(people)) {
+      cast.push(`### ${person.name}`);
+      if (!prev || prev[person.name].description !== person.description) {
+        cast.push(`> ${person.description}`);
+      }
+      if (!prev || prev[person.name].mood !== person.mood) {
+        cast.push(`* **Mood**: ${person.mood}`);
+      }
+      if (!prev || prev[person.name].goal !== person.goal) {
+        cast.push(`* **Goal**: ${person.goal}`);
+      }
+      let hasHeader = false;
+      for (const [name, value] of person.relationships) {
+        if (!prev || prev[person.name].relationships.get(name) !== value) {
+          if (!hasHeader) {
+            cast.push(`\n* **Relationships**:`);
+            hasHeader = true;
+          }
+          cast.push(`  * **${name}**: ${value}`);
+        }
+      }
+      cast.push("");
+    }
+    return cast.join("\n");
   }
 }
 

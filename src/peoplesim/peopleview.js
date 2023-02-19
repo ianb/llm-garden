@@ -236,6 +236,7 @@ function PersonEditor({ model, person }) {
 
 function PeopleSimPlayer({ model }) {
   const [isStepping, setIsStepping] = useState(false);
+  const [copying, setCopying] = useState(false);
   function onReset() {
     model.domain.reset();
   }
@@ -244,8 +245,22 @@ function PeopleSimPlayer({ model }) {
     await model.domain.step();
     setIsStepping(false);
   }
+  function copyText() {
+    const status = model.domain.statusUntilFrame(model.domain.frames.length);
+    const text = status.fullMarkdown();
+    navigator.clipboard.writeText(text);
+    setCopying(true);
+    setTimeout(() => setCopying(false), 1000);
+  }
   const children = [];
   for (let i = 0; i < model.domain.frames.length + 1; i++) {
+    children.push(
+      <div class="float-right">
+        <Button onClick={copyText}>
+          {copying ? "Copied!" : <icons.Copy class="w-6 h-6" />}
+        </Button>
+      </div>
+    );
     children.push(<SimulationStatus model={model} index={i} />);
     if (i < model.domain.frames.length) {
       children.push(<HR />);
