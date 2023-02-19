@@ -187,7 +187,7 @@ class PeopleSim {
 const actions = {};
 function registerAction(name, actionClass) {
   actions[actionClass.name] = actionClass;
-  actionClass.prototype.actionType = actionClass.name;
+  actionClass.prototype.actionType = name;
 }
 
 function instantiateAction(json) {
