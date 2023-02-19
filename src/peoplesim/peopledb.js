@@ -193,7 +193,8 @@ function registerAction(name, actionClass) {
 function instantiateAction(json) {
   const actionClass = actions[json.actionType];
   if (!actionClass) {
-    throw new Error(`Unknown action type ${json.actionType}`);
+    console.warn(`Unknown action type "${json.actionType}"`);
+    return null;
   }
   return new actionClass(json);
 }
@@ -696,7 +697,9 @@ class Frame {
       if (!(a instanceof Action)) {
         a = instantiateAction(a);
       }
-      this.actions.push(a);
+      if (a) {
+        this.actions.push(a);
+      }
     }
   }
 
