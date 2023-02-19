@@ -33,7 +33,7 @@ class Tone {
     if (!text) {
       throw new Error("No text to speak");
     }
-    return speak(text, this.outputLanguage, this.voice);
+    return speak(text, this.voice, this.outputLanguage);
   }
 
   toJSON() {
@@ -99,6 +99,45 @@ const builtins = [
       voice: "Google UK English Female",
       utterances: [],
       outputLanguage: "en-UK",
+    },
+  },
+  {
+    title: "Painfully academic",
+    description: "Change your speech to use long words and complex syntax.",
+    domain: {
+      prompt:
+        "Change speech to sound like an Academic, someone with a PhD that uses very long words and complicated language to explain things\n\nInput: that falls down because of gravity\nOutput: the acceleration towards earth will increase due to gravitational forces\n\nInput: $input\nOutput:",
+      outputLanguage: "en-US",
+    },
+  },
+  {
+    title: "Preschool teacher",
+    description:
+      "Change your speech to sound like the sometimes saccharine phrasing of a preschool teacher",
+    domain: {
+      prompt:
+        "Change speech to sound like a preschool teacher talking to a 3-year old boy. Use simple and saccharine language.\n\nInput: You did really well!\nOutput: Aren't you just the most adorable and hard working little boy?\n\nInput: $input\nOutput:",
+      outputLanguage: "en-US",
+    },
+  },
+  {
+    title: "Formal Spanish",
+    description: "Translate to Spanish, using a formal style of speech.",
+    domain: {
+      prompt:
+        "Change speech to be Spanish, using a formal style\n\nInput: How are you?\nOutput: ¿Cómo está usted?\n\nInput: $input\nOutput:",
+      voice: "Google español",
+      outputLanguage: "es-ES",
+    },
+  },
+  {
+    title: "Malfunctioning Robot",
+    description: "A robot that is malfunctioning in disturbing ways.",
+    domain: {
+      prompt:
+        "Change speech to sound a creepy robot that is going insane. Keep the original intent of the input, but add strange or disturbing parts to the output.\n\nInput:\nOutput:\n\nInput: $input\nOutput:",
+      voice: "Alex",
+      outputLanguage: "en-US",
     },
   },
 ];
