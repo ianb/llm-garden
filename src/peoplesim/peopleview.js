@@ -307,13 +307,11 @@ function FrameStatus({ model, index }) {
   console.log(
     "actions",
     frame.actions,
-    frame.actions.map((a) => a.constructor.name)
+    frame.actions.map((a) => a.actionType)
   );
   return (
     <div class="border-l-2 border-magenta-light pl-4">
-      {frame.actions.map((action) =>
-        actionDisplays[action.constructor.name](action)
-      )}
+      {frame.actions.map((action) => actionDisplays[action.actionType](action))}
     </div>
   );
 }

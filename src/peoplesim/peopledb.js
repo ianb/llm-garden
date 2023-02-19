@@ -185,8 +185,9 @@ class PeopleSim {
 }
 
 const actions = {};
-function registerAction(actionClass) {
+function registerAction(name, actionClass) {
   actions[actionClass.name] = actionClass;
+  actionClass.prototype.actionType = actionClass.name;
 }
 
 function instantiateAction(json) {
@@ -205,7 +206,7 @@ class Action {
   toJSON() {
     return Object.assign(
       {
-        actionType: this.constructor.name,
+        actionType: this.actionType,
       },
       this
     );
@@ -222,7 +223,7 @@ class DoNothing extends Action {
   }
 }
 
-registerAction(DoNothing);
+registerAction("DoNothing", DoNothing);
 
 class SayAction extends Action {
   apply(status) {
@@ -233,7 +234,7 @@ class SayAction extends Action {
   }
 }
 
-registerAction(SayAction);
+registerAction("SayAction", SayAction);
 
 class MoodAction extends Action {
   apply(status) {
@@ -271,7 +272,7 @@ ${this.personName}'s mood used to be ${mood}, but now can be described in 1-3 wo
   }
 }
 
-registerAction(MoodAction);
+registerAction("MoodAction", MoodAction);
 
 class DoAction extends Action {
   apply(status) {
@@ -297,7 +298,7 @@ The scene can now be described as:
   }
 }
 
-registerAction(DoAction);
+registerAction("DoAction", DoAction);
 
 class ChangeGoalAction extends Action {
   apply(status) {
@@ -319,7 +320,7 @@ class ChangeGoalAction extends Action {
   }
 }
 
-registerAction(ChangeGoalAction);
+registerAction("ChangeGoalAction", ChangeGoalAction);
 
 class ChangeRelationshipAction extends Action {
   apply(status) {
@@ -343,7 +344,7 @@ class ChangeRelationshipAction extends Action {
   }
 }
 
-registerAction(ChangeRelationshipAction);
+registerAction("ChangeRelationshipAction", ChangeRelationshipAction);
 
 export class Person {
   constructor(props) {
