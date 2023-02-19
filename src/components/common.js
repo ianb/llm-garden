@@ -202,6 +202,24 @@ export const TextInput = (props) => {
   return <input {...newProps} />;
 };
 
+let dataListId = 0;
+
+export const SelectInput = (props) => {
+  const listId = `datalist-${dataListId++}`;
+  const list = props.list;
+  delete props.list;
+  return (
+    <>
+      <TextInput list={listId} {...props} />
+      <datalist id={listId}>
+        {list.map((item) => (
+          <option value={item} />
+        ))}
+      </datalist>
+    </>
+  );
+};
+
 export const TextArea = (props) => {
   const newProps = mergeProps(
     {

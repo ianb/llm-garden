@@ -8,6 +8,7 @@ import {
   TextArea,
   FieldSet,
   HR,
+  SelectInput,
 } from "../components/common";
 import Sidebar from "../components/sidebar";
 import { useState, useEffect, useRef } from "preact/hooks";
@@ -102,6 +103,31 @@ function PeopleSimView({ model }) {
             value={model.domain.peopleOrderString}
             onInput={(e) => (model.domain.peopleOrderString = e.target.value)}
             placeholder="Person1 Person2"
+          />
+        </Field>
+      </div>
+      <div>
+        <Field sideBySide={true}>
+          Simulation step length:
+          <SelectInput
+            onInput={(e) =>
+              (model.domain.simulationStepLength = e.target.value)
+            }
+            class="w-32"
+            value={model.domain.simulationStepLength || ""}
+            list={["none", "moment", "minute", "10 minutes", "hour"]}
+          />
+        </Field>
+      </div>
+      <div>
+        <Field sideBySide={true}>
+          Simulate between each person? (instead of each round)
+          <input
+            type="checkbox"
+            checked={model.domain.simulateBetweenEachPerson}
+            onChange={(e) =>
+              (model.domain.simulateBetweenEachPerson = e.target.checked)
+            }
           />
         </Field>
       </div>
@@ -321,7 +347,7 @@ const actionDisplays = {
   SayAction(action) {
     return (
       <div>
-        <strong>{action.personName}</strong> says: "{action.value}"
+        <strong>{action.personName}</strong> says: <em>{action.value}</em>
       </div>
     );
   },
@@ -334,7 +360,8 @@ const actionDisplays = {
     return (
       <div>
         <div>
-          <strong>{action.personName}</strong> begins to feel: {action.value}
+          <strong>{action.personName}</strong> begins to feel:{" "}
+          <strong>{action.value}</strong>
         </div>
         {!same ? <div class="pl-2">Set by: {action.moodSetter}</div> : null}
       </div>
@@ -345,7 +372,8 @@ const actionDisplays = {
     return (
       <div>
         <div>
-          <strong>{action.personName}</strong> does: {action.value}
+          <strong>{action.personName}</strong> does:{" "}
+          <strong>{action.value}</strong>
         </div>
         <div class="pl-2">Results in: {action.newRoomDescription}</div>
       </div>
@@ -366,6 +394,17 @@ const actionDisplays = {
         <strong>{action.personName}</strong> changes relationship with{" "}
         <strong>{action.value.personName}</strong> to:{" "}
         {action.value.relationship}
+      </div>
+    );
+  },
+  SimulateTimeStepAction(action) {
+    if (action.noChange) {
+      return <div>Simulate time step {action.value}: no change</div>;
+    }
+    return (
+      <div>
+        <div class="font-bold text-magenta-dark">{action.event}</div>
+        <div class="pl-2">Result: {action.newRoomDescription}</div>
       </div>
     );
   },

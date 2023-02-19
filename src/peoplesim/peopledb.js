@@ -19,6 +19,8 @@ class PeopleSim {
     this._scenarioDescription = props.scenarioDescription || "";
     this._roomDescription = props.roomDescription || "";
     this._peopleOrderString = props.peopleOrderString || "";
+    this._simulationStepLength = props.simulationStepLength || "";
+    this._simulateBetweenEachPerson = props.simulateBetweenEachPerson || false;
     if (props.people) {
       this._people = {};
       for (const person of props.people) {
@@ -52,6 +54,8 @@ class PeopleSim {
       frames: this.frames,
       people: Object.values(this.people),
       peopleOrderString: this.peopleOrderString,
+      simulationStepLength: this.simulationStepLength,
+      simulateBetweenEachPerson: this.simulateBetweenEachPerson,
     };
   }
 
@@ -91,6 +95,24 @@ class PeopleSim {
   set scenarioDescription(value) {
     this._scenarioDescription = value;
     this.updateTitleSoon();
+    this.updated();
+  }
+
+  get simulationStepLength() {
+    return this._simulationStepLength;
+  }
+
+  set simulationStepLength(value) {
+    this._simulationStepLength = value;
+    this.updated();
+  }
+
+  get simulateBetweenEachPerson() {
+    return this._simulateBetweenEachPerson;
+  }
+
+  set simulateBetweenEachPerson(value) {
+    this._simulateBetweenEachPerson = value;
     this.updated();
   }
 
@@ -171,6 +193,21 @@ class PeopleSim {
     const status = this.statusUntilFrame(this.frames.length);
     const frame = await status.step();
     this.frames.push(frame);
+    if (
+      this.simulationStepLength &&
+      this.simulationStepLength.toLowerCase() !== "none"
+    ) {
+      if (
+        this.simulateBetweenEachPerson ||
+        !(this.frames.length % this.peopleOrder.length)
+      ) {
+        status.updateFromFrame(frame);
+        const simFrame = await status.simulateTimeStep(
+          this.simulationStepLength
+        );
+        frame.actions = frame.actions.concat(simFrame.actions);
+      }
+    }
     this.updated();
   }
 
@@ -286,7 +323,7 @@ class DoAction extends Action {
       `
 The scene is: ${status.roomDescription}
 
-${this.personName} tries to ${this.value}
+As time progresses ${this.personName} does: ${this.value}
 
 The scene can now be described as:
 `.trim() + "\n"
@@ -347,6 +384,38 @@ class ChangeRelationshipAction extends Action {
 }
 
 registerAction("ChangeRelationshipAction", ChangeRelationshipAction);
+
+class SimulateTimeStepAction extends Action {
+  apply(status) {
+    status.logs.push({ text: `After ${this.value}: ${this.event}` });
+    status.roomDescription = this.newRoomDescription;
+  }
+  async fill(status) {
+    this.originalRoomDescription = status.roomDescription;
+    const resp = await status.sim.gpt.getCompletion(
+      `
+The scene is: ${status.roomDescription}
+
+After ${this.value} passes and events transpire, the scene can now be described as:
+`.trim() + "\n"
+    );
+    this.newRoomDescription = resp.text.trim();
+    const eventResp = await status.sim.gpt.getCompletion(
+      `
+First: ${this.originalRoomDescription}
+Then: ${this.newRoomDescription}
+Describe the change briefly but colorfully in 1-2 sentences:
+`.trim() + "\n"
+    );
+    this.event = eventResp.text.trim();
+    return this;
+  }
+  markdown() {
+    return `After ${this.value} passes: **${this.event}** <br />Then: _${this.newRoomDescription}_`;
+  }
+}
+
+registerAction("SimulateTimeStepAction", SimulateTimeStepAction);
 
 export class Person {
   constructor(props) {
@@ -539,6 +608,12 @@ class Status {
       concreteActions.push(await action.fill(this));
     }
     return new Frame({ actions: concreteActions });
+  }
+
+  async simulateTimeStep(time) {
+    const action = new SimulateTimeStepAction({ value: time });
+    const concreteAction = await action.fill(this);
+    return new Frame({ actions: [concreteAction] });
   }
 
   get nextPersonName() {
