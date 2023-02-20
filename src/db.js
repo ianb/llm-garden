@@ -84,9 +84,23 @@ export class Model {
   }
 
   set slug(v) {
+    this._updateOldSlug(this._slug, this.typeSlug);
     this._slug = v;
-    // FIXME: should set oldSlugs somehow
     this.updated();
+  }
+
+  _updateOldSlug(slug, oldTypeSlug) {
+    if (!slug) {
+      return;
+    }
+    db.oldSlugs.put({ oldTypeSlug, type: this.type, modelId: this.id }).then(
+      () => {
+        // console.log("old slug added", oldTypeSlug, this.id);
+      },
+      (error) => {
+        console.error("Adding old slug failed:", oldTypeSlug, error);
+      }
+    );
   }
 
   get builtin() {
@@ -277,6 +291,7 @@ export class Model {
         if (this._slug === slug) {
           return;
         }
+        this._updateOldSlug(this._slug, this.typeSlug);
         console.log(
           `Changing slug to ${slug} from ${this._slug} for ${this.title}`
         );
@@ -375,7 +390,7 @@ export class ModelTypeStore {
     const model = await db.models.get({ typeSlug: `${this.type}_${slug}` });
     if (!model) {
       const oldSlug = await db.oldSlugs.get({
-        oldTypeSlug: `${this.builtinstype}_${slug}`,
+        oldTypeSlug: `${this.type}_${slug}`,
       });
       if (oldSlug) {
         return this.getDataById(oldSlug.modelId);
