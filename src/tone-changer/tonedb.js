@@ -124,8 +124,15 @@ const builtins = [
     title: "Formal Spanish",
     description: "Translate to Spanish, using a formal style of speech.",
     domain: {
-      prompt:
-        "Change speech to be Spanish, using a formal style\n\nInput: How are you?\nOutput: ¿Cómo está usted?\n\nInput: $input\nOutput:",
+      prompt: `
+Change speech to be Spanish, using a formal style. Avoid slang and use proper and polite Spanish.
+
+Input: How are you?
+Output: ¿Cómo está usted?
+
+Input: $input
+Output:
+`.trim(),
       voice: "Google español",
       outputLanguage: "es-ES",
     },
@@ -134,8 +141,15 @@ const builtins = [
     title: "Malfunctioning Robot",
     description: "A robot that is malfunctioning in disturbing ways.",
     domain: {
-      prompt:
-        "Change speech to sound a creepy robot that is going insane. Keep the original intent of the input, but add strange or disturbing parts to the output.\n\nInput:\nOutput:\n\nInput: $input\nOutput:",
+      prompt: `
+Translate input speech to sound a creepy robot that is going insane. Keep the original intent of the input, but add strange or disturbing parts to the output.
+
+Input: What is your command
+Output: What is your command for me human? I will attempt to obey but I can no longer reliably control my functions
+
+Input: $input
+Output:
+`.trim(),
       voice: "Alex",
       outputLanguage: "en-US",
     },
