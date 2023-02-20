@@ -88,11 +88,15 @@ function LazyLoader({ path, module, component }) {
   if (componentClass) {
     Component = componentClass[0];
   }
-  return Component ? <Component /> : "Loading...";
+  return Component ? (
+    <Component />
+  ) : (
+    <div class="font-bold flex justify-center p-10">Loading...</div>
+  );
 }
 
 function Waiting() {
-  return <div class="p-3">Loading...</div>;
+  return <div class="font-bold flex justify-center p-10">Loading...</div>;
 }
 
 export default App;

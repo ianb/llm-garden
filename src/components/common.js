@@ -51,12 +51,12 @@ export const Card = ({
   if (buttons && buttons.length) {
     buttonContainer = <div class="flex justify-end">{buttons}</div>;
   }
-  _class = twMerge("relative w-72 p-2", _class);
+  _class = twMerge("relative min-w-72 p-2", _class);
   const footer = Array.isArray(children)
     ? children.find((c) => c && c.type === CardFooter)
     : null;
   if (footer) {
-    children = children.filter((c) => c.type !== CardFooter);
+    children = children.filter((c) => c && c.type !== CardFooter);
   }
   const innerClass = footer
     ? "min-h-2 p-1 bg-white overflow-auto"
@@ -465,3 +465,19 @@ export const YouTube = ({ videoId, class: className }) => (
     class={twMerge("mx-auto", className)}
   ></iframe>
 );
+
+export const LogoImg = ({ src, ...props }) => {
+  props = mergeProps(
+    {
+      class: "rounded-full overflow-hidden w-20 h-20",
+    },
+    props
+  );
+  const imgClass = twMerge("object-cover w-full h-full", props.imgClass);
+  delete props.imgClass;
+  return (
+    <div {...props}>
+      <img src={src} class={imgClass} />
+    </div>
+  );
+};

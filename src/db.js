@@ -1,5 +1,7 @@
 import Dexie from "dexie";
 import uuid from "./uuid";
+import { getGeneralLogoPrompt } from "./generallogoprompt";
+import { getDallECompletion } from "./imageapi/dalle";
 
 const db = new Dexie("llmGarden");
 window.db = db;
@@ -27,6 +29,8 @@ export class Model {
     title,
     archived,
     description,
+    logo,
+    logoPrompt,
     dateCreated,
     dateUpdated,
     dateImported,
@@ -43,6 +47,8 @@ export class Model {
     this._title = title;
     this._archived = archived || false;
     this._description = description;
+    this._logo = logo;
+    this._logoPrompt = logoPrompt;
     this._dateCreated = dateCreated;
     this._dateUpdated = dateUpdated;
     this._dateImported = dateImported;
@@ -136,6 +142,51 @@ export class Model {
   set description(v) {
     this._description = v;
     this.updated();
+  }
+
+  get logo() {
+    return this._logo;
+  }
+
+  set logo(v) {
+    this._logo = v;
+    this.updated();
+  }
+
+  get logoPrompt() {
+    return this._logoPrompt;
+  }
+
+  set logoPrompt(v) {
+    this._logoPrompt = v;
+    this.updated();
+  }
+
+  async generateLogoPrompt() {
+    if (this.domain && this.domain.generateLogoPrompt) {
+      const prompt = await this.domain.generateLogoPrompt();
+      if (prompt) {
+        this.logoPrompt = prompt;
+        return;
+      }
+    }
+    if (this.description) {
+      this.logoPrompt = `${this.title}: ${this.description}`;
+    } else {
+      this.logoPrompt = this.title;
+    }
+  }
+
+  async generateLogo() {
+    const prompt = getGeneralLogoPrompt() + "\n" + this.logoPrompt;
+    const resp = await getDallECompletion({
+      n: 1,
+      response_format: "b64_json",
+      prompt,
+      size: "256x256",
+    });
+    const b64 = resp.data[0].b64_json;
+    return `data:image/png;base64,${b64}`;
   }
 
   get dateCreated() {
@@ -244,7 +295,7 @@ export class Model {
   toJSON() {
     const o = {};
     const keys =
-      `id type slug title archived description dateCreated dateUpdated dateImported`.split(
+      `id type slug title archived description logo logoPrompt dateCreated dateUpdated dateImported`.split(
         " "
       );
     for (const key of keys) {

@@ -12,6 +12,7 @@ import {
   Field,
   TextInput,
   TextArea,
+  LogoImg,
 } from "./common";
 import { Header } from "./header";
 import * as icons from "./icons";
@@ -50,7 +51,7 @@ const ConcreteIndex = ({
   children,
 }) => {
   if (!models.value) {
-    return <div>Loading...</div>;
+    return <div class="font-bold flex justify-center p-10">Loading...</div>;
   }
   if (models.value.length === 0) {
     return (
@@ -105,6 +106,11 @@ const Model = ({ model, onSelect }) => {
         buttons={[model.builtin ? null : button]}
         class="hover:drop-shadow-xl"
       >
+        {model.logo ? (
+          <div>
+            <LogoImg src={model.logo} class="float-right mr-1 mb-1" />
+          </div>
+        ) : null}
         <Markdown class="p-2" text={model.description} />
         <CardFooter>
           {model.builtin ? (
@@ -160,7 +166,7 @@ export const ModelIndexPage = ({ title, store, viewer, noAdd, children }) => {
     }
     return (
       <ModelLoader model={model} viewer={viewer}>
-        Loading...
+        <div class="font-bold flex justify-center p-10">Loading...</div>
       </ModelLoader>
     );
   }

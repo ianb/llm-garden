@@ -106,6 +106,20 @@ class CityMaker {
       this.envelope.updated();
     }
   }
+
+  async generateLogoPrompt() {
+    const prompt = this.topLevelProperties.cityName.fillPromptTemplate(
+      `
+The city $cityName is a $cityType. $cityBackstories
+
+Visually describe the city in one sentence, including salient artistic details:
+      `.trim()
+    );
+    const resp = await this.gpt.getCompletion({
+      prompt,
+    });
+    return resp.text.trim();
+  }
 }
 
 const propertyClasses = {};
@@ -770,7 +784,9 @@ class Buildings extends Property {}
 Buildings.prototype.title = "Buildings";
 registerPropertyClass("buildings", Buildings);
 Buildings.prototype.prompt = `In the city $cityName that is a $cityType, $cityBackstories
+
 Create a list of buildings in $cityNeighborhood: $cityNeighborhood.description
+
 Including at least a few residences. Use colorful descriptions for the buildings, giving each building a distinct personality.
 
 Example:
@@ -788,6 +804,7 @@ Example:
 
 JSON list:`;
 Buildings.prototype.coercePrompt = `In the city $cityName that is $cityType. $cityBackstories
+
 Describe a building in $cityNeighborhood: $cityNeighborhood.description
 
 Example:
@@ -934,6 +951,7 @@ class Rooms extends Property {}
 Rooms.prototype.title = "Rooms";
 registerPropertyClass("rooms", Rooms);
 Rooms.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
+
 A list of rooms in $building ($building.description) in the $cityNeighborhood.
 
 Example:
@@ -1052,6 +1070,7 @@ class Furnitures extends Property {}
 Furnitures.prototype.title = "Furniture";
 registerPropertyClass("furnitures", Furnitures);
 Furnitures.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
+
 A list of furniture in the room $room.name in the building $building.name ($building.description).
 
 The room is described as $room.description.
@@ -1069,6 +1088,7 @@ Example:
 
 JSON list:`;
 Furnitures.prototype.coercePrompt = `The city $cityName is a $cityType. $cityBackstories
+
 Give furniture in the room $room.name in the building $building.name ($building.description).
 
 The room is described as $room.description.
@@ -1105,6 +1125,7 @@ class Items extends Property {}
 Items.prototype.title = "Items";
 registerPropertyClass("items", Items);
 Items.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
+
 A list of items in the room $room in the building $building.name ($building.description).
 
 The room is described as $room.description. It contains the furniture $room.furniture.
@@ -1124,6 +1145,7 @@ Example:
 
 JSON list:`;
 Items.prototype.coercePrompt = `The city $cityName is a $cityType. $cityBackstories
+
 An item in the room $room in the building $building.name ($building.description).
 
 The room is described as $room.description. It contains the furniture $room.furniture.
@@ -1328,6 +1350,7 @@ const builtins = [
   {
     title: "Babylon",
     description: "An imagined ancient city of Babylon",
+    logo: "/builtin-models/citymaker/babylon.png",
     fromExport: "/builtin-models/citymaker/babylon.json",
   },
 ];

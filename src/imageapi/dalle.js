@@ -3,9 +3,9 @@ import { holder } from "../key-management/key";
 export const availableSizes = ["256x256", "512x512", "1024x1024"];
 
 export const costs = {
-  "256x256": 0.02,
+  "256x256": 0.016,
   "512x512": 0.018,
-  "1024x1024": 0.016,
+  "1024x1024": 0.02,
 };
 
 export async function getDallECompletion(input, key = null) {

@@ -93,6 +93,7 @@ const builtins = [
     title: "Posh English lady",
     description:
       "Change your tone to use fancy words and English colloquialisms.",
+    logo: "/builtin-models/tone-changer/posh-english-lady.png",
     domain: {
       prompt:
         "Change speech to sound like a posh and sophisticated English woman. Use fancy words and English colloquialisms.\n\nInput: bye\nOutput: Cheerio\n\nInput: $input\nOutput:",
@@ -104,6 +105,7 @@ const builtins = [
   {
     title: "Painfully academic",
     description: "Change your speech to use long words and complex syntax.",
+    logo: "/builtin-models/tone-changer/painfully-academic.png",
     domain: {
       prompt:
         "Change speech to sound like an Academic, someone with a PhD that uses very long words and complicated language to explain things\n\nInput: that falls down because of gravity\nOutput: the acceleration towards earth will increase due to gravitational forces\n\nInput: $input\nOutput:",
@@ -114,6 +116,7 @@ const builtins = [
     title: "Preschool teacher",
     description:
       "Change your speech to sound like the sometimes saccharine phrasing of a preschool teacher",
+    logo: "/builtin-models/tone-changer/preschool-teacher.png",
     domain: {
       prompt:
         "Change speech to sound like a preschool teacher talking to a 3-year old boy. Use simple and saccharine language.\n\nInput: You did really well!\nOutput: Aren't you just the most adorable and hard working little boy?\n\nInput: $input\nOutput:",
@@ -123,6 +126,7 @@ const builtins = [
   {
     title: "Formal Spanish",
     description: "Translate to Spanish, using a formal style of speech.",
+    logo: "/builtin-models/tone-changer/formal-spanish.png",
     domain: {
       prompt: `
 Change speech to be Spanish, using a formal style. Avoid slang and use proper and polite Spanish.
@@ -140,6 +144,7 @@ Output:
   {
     title: "Malfunctioning Robot",
     description: "A robot that is malfunctioning in disturbing ways.",
+    logo: "/builtin-models/tone-changer/malfunctioning-robot.png",
     domain: {
       prompt: `
 Translate input speech to sound a creepy robot that is going insane. Keep the original intent of the input, but add strange or disturbing parts to the output.
