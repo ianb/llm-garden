@@ -1,6 +1,6 @@
 export default class LocalCache {
   constructor(storageName) {
-    this._storageName = storageName;
+    this._storageName = `cache-${storageName}`;
     this._cache = {};
     this._load();
     // should do: window.addEventListener("storage", ...)
@@ -37,3 +37,20 @@ export default class LocalCache {
     this._save();
   }
 }
+
+window.purgeAllCaches = function () {
+  console.info("Deleting cache...");
+  let total = 0;
+  let number = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith("cache-")) {
+      const value = localStorage.getItem(key);
+      total += value.length;
+      number++;
+      localStorage.removeItem(key);
+      console.info(`  Deleting ${key} for ${value.length} bytes`);
+    }
+  }
+  console.info(`Deleted ${number} items for ${total} bytes`);
+};
