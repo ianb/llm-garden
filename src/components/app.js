@@ -2,10 +2,15 @@
 import { useState, useEffect } from "preact/hooks";
 import { NotFound } from "./home";
 import Router from "preact-router";
+import hashSignal from "../hashsignal";
+
+function onChangeUrl() {
+  hashSignal.value = window.location.hash;
+}
 
 const App = () => {
   return (
-    <Router>
+    <Router onChange={onChangeUrl}>
       <LazyLoader path="/" module={() => import("./home")} component="Home" />
       <LazyLoader
         path="/key-management"

@@ -12,17 +12,12 @@ import {
 } from "../components/common";
 import Sidebar from "../components/sidebar";
 import { useState, useEffect, useRef } from "preact/hooks";
-import { signal } from "@preact/signals";
 import { QueryLog } from "../components/querylog";
 import * as icons from "../components/icons";
 import { ImportExportMenu } from "../components/modelmenu";
 import { Markdown } from "../markdown";
 import { Person } from "./peopledb";
-
-const hashSignal = signal(window.location.hash);
-window.addEventListener("hashchange", () => {
-  hashSignal.value = window.location.hash;
-});
+import hashSignal from "../hashsignal";
 
 export const PeopleView = ({ model }) => {
   const [version, setVersion] = useState(0);
