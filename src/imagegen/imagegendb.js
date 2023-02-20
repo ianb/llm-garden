@@ -174,6 +174,7 @@ class ImageGen {
     return {
       size: this.size,
       n: this.num_outputs,
+      response_format: "url",
     };
   }
 
@@ -233,6 +234,9 @@ class HistoryItem {
     if (this.type === "sd") {
       return this.response.output;
     } else if (this.type === "dalle") {
+      if (this.response.b64_json) {
+        console.warn("Appearing to get URL from a b64 JSON response");
+      }
       return this.response.data.map((d) => d.url);
     }
     throw new Error("Unknown type");
