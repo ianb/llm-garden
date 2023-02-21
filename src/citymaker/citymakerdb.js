@@ -1350,8 +1350,8 @@ const builtins = [
   {
     title: "Babylon",
     description: "An imagined ancient city of Babylon",
-    logo: "/builtin-models/citymaker/babylon.png",
-    fromExport: "/builtin-models/citymaker/babylon.json",
+    logo: "/assets/builtin-models/citymaker/babylon.png",
+    fromExport: "/assets/builtin-models/citymaker/babylon.json",
   },
 ];
 

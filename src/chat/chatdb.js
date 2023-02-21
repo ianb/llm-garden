@@ -257,13 +257,13 @@ const builtins = [
     title: "Energy Educator",
     description:
       "This attempts to have a focused conversation about energy (potential energy, kinetic, energy use, etc). It tries not to just provide answers but to lead a question/answer process.",
-    logo: "/builtin-models/chat/energy-educator.png",
-    fromExport: "/builtin-models/chat/energy-educator.json",
+    logo: "/assets/builtin-models/chat/energy-educator.png",
+    fromExport: "/assets/builtin-models/chat/energy-educator.json",
   },
   {
     title: "AI Assistant",
     description: "A very simple AI assistant",
-    logo: "/builtin-models/chat/ai-assistant.png",
+    logo: "/assets/builtin-models/chat/ai-assistant.png",
     domain: {
       prompt: `
 The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
@@ -276,7 +276,7 @@ The following is a conversation with an AI assistant. The assistant is helpful, 
   {
     title: "Rogerian Therapist",
     description: "A Rogerian therapist that listens and offers advice",
-    logo: "/builtin-models/chat/rogerian-therapist.png",
+    logo: "/assets/builtin-models/chat/rogerian-therapist.png",
     domain: {
       prompt: `
 The following is a conversation between a Rogerian therapist and a patient. The therapist listens closely and offers empathetic and caring advice.
@@ -289,7 +289,7 @@ The following is a conversation between a Rogerian therapist and a patient. The 
   {
     title: "Alien",
     description: "An alien that wants to learn about humans",
-    logo: "/builtin-models/chat/alien.png",
+    logo: "/assets/builtin-models/chat/alien.png",
     domain: {
       prompt: `
 The following is a conversation between an alien and a human. The alien is curious about human ways but doesn't understand much.
@@ -305,7 +305,7 @@ Alien: It is nice to meet you. Do all humans have the same name?
   {
     title: "Con-Artist",
     description: "A brief attempt to make a bot that will try to scam you.",
-    logo: "/builtin-models/chat/con-artist.png",
+    logo: "/assets/builtin-models/chat/con-artist.png",
     domain: {
       prompt: `
 The following is a conversation between a con-artist and their mark. The con-artist is trying to grift the mark, and steal their money and identity.
@@ -319,7 +319,7 @@ The following is a conversation between a con-artist and their mark. The con-art
   {
     title: "Interviewer",
     description: "Have the computer interview you.",
-    logo: "/builtin-models/chat/interviewer.png",
+    logo: "/assets/builtin-models/chat/interviewer.png",
     domain: {
       prompt: `
 The following is a conversation between two people. The first person is an interviewer who is probing the interviewee for stories and information about their personal life.
@@ -334,7 +334,7 @@ The following is a conversation between two people. The first person is an inter
     title: "ACT Therapist",
     description:
       "A conversation modeled on _Acceptance and Commitment Therapy_. Inspired and largely copied from [Dan Shipper's Tweet](https://twitter.com/danshipper/status/1604514003736178688).",
-    logo: "/builtin-models/chat/act-therapist.png",
+    logo: "/assets/builtin-models/chat/act-therapist.png",
     domain: {
       prompt: `
 The following is a conversation between an ACT-informed therapist and their client. The therapist believes in helping clients contact their values. Here are some things the therapist believes:

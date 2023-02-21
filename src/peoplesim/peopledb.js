@@ -793,8 +793,8 @@ const builtins = [
     title: "Orc vs Hobbit",
     description:
       "A dynamic struggle for survival between an intimidating orc and a helpless hobbit unfolds in a harrowing pit, as the audience cheers for the violence that ensues.",
-    fromExport: "/builtin-models/peoplesim/orc-vs-hobbit.json",
-    logo: "/builtin-models/peoplesim/orc-vs-hobbit.png",
+    fromExport: "/assets/builtin-models/peoplesim/orc-vs-hobbit.json",
+    logo: "/assets/builtin-models/peoplesim/orc-vs-hobbit.png",
   },
 ];
 
