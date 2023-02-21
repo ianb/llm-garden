@@ -168,6 +168,7 @@ class Chat {
       return;
     }
     this.history.push({ type: "user", text: input });
+    this.updated();
     await this.fetchChatResponse();
     this.updated();
   }
