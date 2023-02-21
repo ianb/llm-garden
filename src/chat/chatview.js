@@ -14,6 +14,7 @@ import {
 import { SpeechButton, SpeechControlButton } from "../components/speech";
 import * as icons from "../components/icons";
 import { ModelTitleDescriptionEditor } from "../components/modelindex";
+import { Markdown } from "../markdown";
 
 export const ChatView = ({ model }) => {
   const [version, setVersion] = useState(0);
@@ -68,6 +69,9 @@ function PromptEditor({ model }) {
   function onUndo() {
     model.domain.undo();
   }
+  function onRedo() {
+    model.domain.redo();
+  }
   function onInputIntro(event) {
     model.domain.intro = event.target.value;
   }
@@ -117,6 +121,7 @@ function PromptEditor({ model }) {
       </Field>
       <Button onClick={onClearHistory}>Clear Chat</Button>
       <Button onClick={onUndo}>Undo last chat</Button>
+      <Button onCLick={onRedo}>Redo chat</Button>
     </div>
   );
 }
@@ -179,8 +184,27 @@ function ChatHistory({ model }) {
               {item.text}
             </div>
           );
+        } else if (item.oldText && item.oldText !== item.text) {
+          return (
+            <div>
+              <table>
+                <tr>
+                  <td class="align-top text-orange-800 border-r pr-1 border-black w-1/2">
+                    <Markdown text={item.oldText} />
+                  </td>
+                  <td class="align-top w-1/2 pl-1">
+                    <Markdown text={item.text} />
+                  </td>
+                </tr>
+              </table>
+            </div>
+          );
         } else {
-          return <div>{item.text}</div>;
+          return (
+            <div>
+              <Markdown text={item.text} />
+            </div>
+          );
         }
       })}
     </div>

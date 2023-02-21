@@ -11,7 +11,7 @@ class Chat {
       logResults: true,
       defaultPromptOptions: {
         temperature: 0.5,
-        max_tokens: 120,
+        max_tokens: 300,
       },
     });
     this.prompt = props.prompt || defaultPrompt;
@@ -106,6 +106,32 @@ class Chat {
     this.updated();
   }
 
+  async redo() {
+    const oldHistory = this.history;
+    this.history = [];
+    this.updated();
+    for (let i = 0; i < oldHistory.length; i++) {
+      const item = oldHistory[i];
+      if (item.type === "user") {
+        await this.addUserInput(item.text);
+        const last = this.history[this.history.length - 1];
+        if (last.type === "robot") {
+          const oldText = oldHistory[this.history.length - 1].text;
+          if (oldText !== last.text) {
+            last.oldText = oldText;
+          }
+        } else {
+          console.warn(
+            "Unexpected history item",
+            last,
+            "expected robot to go with",
+            oldHistory[this.history.length - 1]
+          );
+        }
+      }
+    }
+  }
+
   toJSON() {
     const data = {
       prompt: this.prompt,
@@ -127,7 +153,7 @@ class Chat {
     }
   }
 
-  addUserInput(input) {
+  async addUserInput(input) {
     if (!input) {
       throw new Error("No user input given");
     }
@@ -142,7 +168,7 @@ class Chat {
       return;
     }
     this.history.push({ type: "user", text: input });
-    this.fetchChatResponse();
+    await this.fetchChatResponse();
     this.updated();
   }
 
@@ -183,8 +209,13 @@ class Chat {
     for (const line of lines) {
       if (line.startsWith("> ")) {
         result.push({ type: "user", text: line.slice(2).trim() });
-      } else if (line.trim()) {
-        result.push({ type: "robot", text: line.trim() });
+      } else {
+        const last = result[result.length - 1];
+        if (last && last.type === "robot") {
+          last.text += "\n" + line;
+        } else {
+          result.push({ type: "robot", text: line.trim() });
+        }
       }
     }
     return result;
@@ -222,6 +253,13 @@ How are you?
 `.trim();
 
 const builtins = [
+  {
+    title: "Energy Educator",
+    description:
+      "This attempts to have a focused conversation about energy (potential energy, kinetic, energy use, etc). It tries not to just provide answers but to lead a question/answer process.",
+    logo: "/builtin-models/chat/energy-educator.png",
+    fromExport: "/builtin-models/chat/energy-educator.json",
+  },
   {
     title: "AI Assistant",
     description: "A very simple AI assistant",

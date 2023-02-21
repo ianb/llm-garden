@@ -60,7 +60,7 @@ export function ImportExportMenu({ model }) {
     <div>
       <div>
         <Field>
-          Import
+          Import / Export
           <input type="file" onChange={onImport} />
         </Field>
         <a

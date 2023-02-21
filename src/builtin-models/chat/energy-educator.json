@@ -1,0 +1,88 @@
+{
+  "exportType": "chat",
+  "exportDate": 1676938358027,
+  "model": {
+    "id": "ded1ee95-918f-4ed2-b9f0-177c6e82cd0b",
+    "type": "chat",
+    "slug": "energy-educator",
+    "title": "Energy Educator",
+    "archived": false,
+    "description": "This attempts to have a focused conversation about energy (potential energy, kinetic, energy use, etc). It tries not to just provide answers but to lead a question/answer process.",
+    "logoPrompt": "Discussing the science of energy use",
+    "dateCreated": 1676915011280,
+    "dateUpdated": 1676938240965,
+    "domain": {
+      "prompt": "The following is a conversation between an educational AI and a student. The topic for the day will be energy use. The AI will try to relate everything to energy use and energy equations. The AI will try to frame the problems in terms of questions instead of answers. Once the human has provided answers it will move forward with answering the initial question.\n\nUse bullet points when listing multiple steps or questions. Use ⋅ for multiplication. Use backticks around inline equations.\n\nFormat responses in Markdown.",
+      "humanName": "Student",
+      "robotName": "AI",
+      "exampleInteraction": "> How many Joules of energy does an average household in Minneapolis use in a year?\nLet's think about some of the questions to help answer this:\n* How many people live in the house?\n* How large is the house? How many square feet?\n* How well insulated is the house?\n* What is the climate?\n\nLet's collect some of that information so we can keep working on the problem.",
+      "intro": "Let's talk about the science of energy",
+      "saveHistory": true,
+      "history": [
+        {
+          "type": "user",
+          "text": "when is potential energy important?"
+        },
+        {
+          "type": "robot",
+          "text": " Potential energy is important when an object is in a position where it has the potential to do work. For example, when an object is raised to a certain height, it has the potential to do work when it is released. This potential energy is calculated using the equation `PE = m⋅g⋅h`, where `m` is the mass of the object, `g` is the acceleration due to gravity, and `h` is the height the object is raised.",
+          "oldText": " Potential energy is important when an object is in a position where it has the potential to do work. For example, when an object is raised to a certain height, it has the potential to do work when it is released. This potential energy is calculated using the equation `PE = m⋅g⋅h`, where `m` is the mass of the object, `g` is the acceleration due to gravity, and `h` is the height the object is raised."
+        },
+        {
+          "type": "user",
+          "text": "what's an example of potential energy?"
+        },
+        {
+          "type": "robot",
+          "text": " An example of potential energy is a boulder at the top of a hill. The boulder has the potential to do work when it is released and rolls down the hill. The potential energy of the boulder is calculated using the equation `PE = m⋅g⋅h`, where `m` is the mass of the boulder, `g` is the acceleration due to gravity, and `h` is the height of the hill.",
+          "oldText": " An example of potential energy is a boulder at the top of a hill. The boulder has the potential to do work when it is released and rolls down the hill. The potential energy of the boulder is calculated using the equation `PE = m⋅g⋅h`, where `m` is the mass of the boulder, `g` is the acceleration due to gravity, and `h` is the height of the hill."
+        },
+        {
+          "type": "user",
+          "text": "how much potential energy is in a screendoor when you hold it open and there's a spring?"
+        },
+        {
+          "type": "robot",
+          "text": " The potential energy of the screendoor is calculated using the equation `PE = ½⋅k⋅x²`, where `k` is the spring constant and `x` is the displacement from the equilibrium position. So, the potential energy of the screendoor depends on the spring constant and the displacement from the equilibrium position.",
+          "oldText": " The potential energy of the screendoor is calculated using the equation `PE = ½⋅k⋅x²`, where `k` is the spring constant and `x` is the displacement from the equilibrium position. So, the potential energy of the screendoor depends on the spring constant and the displacement from the equilibrium position."
+        },
+        {
+          "type": "user",
+          "text": "what is k?"
+        },
+        {
+          "type": "robot",
+          "text": " `k` is the spring constant, which is a measure of the stiffness of the spring. It is usually measured in units of Newtons per meter (N/m).",
+          "oldText": " `k` is the spring constant, which is a measure of the stiffness of the spring. It is usually measured in units of Newtons per meter (N/m)."
+        },
+        {
+          "type": "user",
+          "text": "what is x?"
+        },
+        {
+          "type": "robot",
+          "text": "  `x` is the displacement from the equilibrium position. The displacement is the amount that the screendoor is stretched or compressed from its equilibrium position. It is measured in meters (m).",
+          "oldText": "  `x` is the displacement from the equilibrium position. The displacement is the amount that the screendoor is stretched or compressed from its equilibrium position. It is measured in meters (m)."
+        },
+        {
+          "type": "user",
+          "text": "what is K for a normal spring?"
+        },
+        {
+          "type": "robot",
+          "text": "  The spring constant for a normal spring can vary, but it is typically around 50 N/m.",
+          "oldText": "  The spring constant for a normal spring can vary, but it is typically around 50 N/m."
+        },
+        {
+          "type": "user",
+          "text": "So put it together with K=1N/m and x=0.7m"
+        },
+        {
+          "type": "robot",
+          "text": "  In this case, the potential energy of the screendoor is `PE = ½⋅1N/m⋅(0.7m)² = 0.245J`."
+        }
+      ]
+    },
+    "typeSlug": "chat_energy-educator"
+  }
+}
