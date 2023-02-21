@@ -43,7 +43,7 @@ export const ChatView = ({ model }) => {
 };
 
 function PromptEditor({ model }) {
-  // FIXME: this should be onUpdate or something, not onSubmit (i.e., no enter required):
+  const [collapsed, setCollapsed] = useState(false);
   function onSubmit(textarea) {
     model.domain.prompt = textarea.value;
     console.log("updating prompt", textarea.value, model.domain.prompt);
@@ -75,50 +75,67 @@ function PromptEditor({ model }) {
   function onInputIntro(event) {
     model.domain.intro = event.target.value;
   }
+  function toggleCollapsed() {
+    setCollapsed(!collapsed);
+  }
   return (
     <div>
-      <ModelTitleDescriptionEditor model={model} />
-      <Field>
-        <span>Prompt:</span>
-        <TextArea
-          onSubmit={onSubmit}
-          onInput={onInput}
-          defaultValue={model.domain.prompt}
-        />
-      </Field>
-      <Field>
-        <span>Human name:</span>
-        <TextInput
-          onInput={onUpdateHumanName}
-          defaultValue={model.domain.humanName}
-        />
-      </Field>
-      <Field>
-        <span>Robot name:</span>
-        <TextInput
-          onInput={onUpdateRobotName}
-          defaultValue={model.domain.robotName}
-        />
-      </Field>
-      <Field>
-        <span>Example interaction:</span>
-        <TextArea
-          onInput={onUpdateExampleInteraction}
-          defaultValue={model.domain.exampleInteraction}
-        />
-      </Field>
-      <Field>
-        <span>Intro:</span>
-        <TextArea onInput={onInputIntro} defaultValue={model.domain.intro} />
-      </Field>
-      <Field sideBySide={true}>
-        <span>Save chat history in model?</span>
-        <input
-          type="checkbox"
-          onChange={onChangeSaveHistory}
-          checked={model.domain.saveHistory}
-        />
-      </Field>
+      <div class="float-right">
+        {collapsed ? (
+          <icons.PlusCircle class="h-4 w-4" onClick={toggleCollapsed} />
+        ) : (
+          <icons.MinusCircle class="h-4 w-4" onClick={toggleCollapsed} />
+        )}
+      </div>
+      {!collapsed && (
+        <>
+          <ModelTitleDescriptionEditor model={model} />
+          <Field>
+            <span>Prompt:</span>
+            <TextArea
+              onSubmit={onSubmit}
+              onInput={onInput}
+              defaultValue={model.domain.prompt}
+            />
+          </Field>
+          <Field>
+            <span>Human name:</span>
+            <TextInput
+              onInput={onUpdateHumanName}
+              defaultValue={model.domain.humanName}
+            />
+          </Field>
+          <Field>
+            <span>Robot name:</span>
+            <TextInput
+              onInput={onUpdateRobotName}
+              defaultValue={model.domain.robotName}
+            />
+          </Field>
+          <Field>
+            <span>Example interaction:</span>
+            <TextArea
+              onInput={onUpdateExampleInteraction}
+              defaultValue={model.domain.exampleInteraction}
+            />
+          </Field>
+          <Field>
+            <span>Intro:</span>
+            <TextArea
+              onInput={onInputIntro}
+              defaultValue={model.domain.intro}
+            />
+          </Field>
+          <Field sideBySide={true}>
+            <span>Save chat history in model?</span>
+            <input
+              type="checkbox"
+              onChange={onChangeSaveHistory}
+              checked={model.domain.saveHistory}
+            />
+          </Field>
+        </>
+      )}
       <Button onClick={onClearHistory}>Clear Chat</Button>
       <Button onClick={onUndo}>Undo last chat</Button>
       <Button onCLick={onRedo}>Redo chat</Button>
