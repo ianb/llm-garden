@@ -143,10 +143,21 @@ const Adder = ({ onAdd }) => {
 };
 
 export const ModelLoader = ({ model, viewer, children }) => {
+  const [error, setError] = useState(null);
   const [loadedModel, setLoadedModel] = useState(null);
-  model.then((m) => {
-    setLoadedModel(m);
-  });
+  model
+    .then((m) => {
+      setLoadedModel(m);
+    })
+    .catch((e) => {
+      console.error("Error loading model:", e);
+      setError(e);
+    });
+  if (error) {
+    const link = new URL(location.href);
+    link.search = "";
+    return <Error error={error} link={link.href} linkText="Back to index" />;
+  }
   if (loadedModel === null) {
     return <>{children}</>;
   }
@@ -229,5 +240,24 @@ export function ModelTitleDescriptionEditor({ model }) {
         )}
       </Field>
     </>
+  );
+}
+
+function Error({ error, link, linkText }) {
+  return (
+    <div>
+      <div class="font-bold flex justify-center p-10 text-white bg-red-700">
+        Error: {error.message}
+      </div>
+      {link && (
+        <a
+          href={link}
+          class="text-blue-100 hover:text-white bg-blue-800 p-10 block flex justify-center"
+        >
+          {linkText || link}
+        </a>
+      )}
+      {error.stack && <pre class="m-4 text-xs">{error.stack}</pre>}
+    </div>
   );
 }
