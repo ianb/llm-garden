@@ -169,6 +169,7 @@ export const Field = ({ class: className, sideBySide, children }) => {
 
 export const TextInput = (props) => {
   let onKeyDown;
+  const hasOnSubmit = !!props.onSubmit;
   if (props.onSubmit) {
     const onSubmit = props.onSubmit;
     const onCancel = props.onCancel;
@@ -182,13 +183,14 @@ export const TextInput = (props) => {
     delete props.onSubmit;
     delete props.onCancel;
   }
+  console.log("rendering with", props);
   const newProps = mergeProps(
     {
       type: "text",
       class:
         "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline",
       onKeyDown,
-      enterKeyHint: props.onSubmit ? "enter" : null,
+      enterKeyHint: hasOnSubmit ? "enter" : undefined,
     },
     props
   );
