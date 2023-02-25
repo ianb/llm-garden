@@ -17,12 +17,6 @@ export const CityMakerIndex = () => {
           and its history (or you choose for yourself) and it will suggest
           neighborhoods, buildings, and residents for those buildings.
         </P>
-        <P>
-          You, the user, setup each scene; the characters, their initial goals
-          and moods, their relationships with each other, and the environment in
-          which they are acting. Then you can step forward in time and GPT will
-          generate the next action for each character.
-        </P>
         <YouTube videoId="YUEXo3wrf70" />
       </InfoHeader>
     </ModelIndexPage>
