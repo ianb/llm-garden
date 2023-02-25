@@ -41,6 +41,32 @@ html, body {
   max-width: 40%;
 }
 
+/* for citymaker specifically: */
+
+.nested-borders {
+	border-color: #f87171;
+}
+
+.nested-borders .nested-borders {
+	border-color: #fb923c;
+}
+
+.nested-borders .nested-borders .nested-borders {
+	border-color: #facc15;
+}
+
+.nested-borders .nested-borders .nested-borders .nested-borders {
+	border-color: #a3e635;
+}
+
+.nested-borders .nested-borders .nested-borders .nested-borders .nested-borders {
+	border-color: #22d3ee;
+}
+
+.nested-borders .nested-borders .nested-borders .nested-borders .nested-borders .nested-borders {
+	border-color: #a78bfa;
+}
+
 .gpt-response.unreset h1 {
   font-size: 1.1em;
 }
