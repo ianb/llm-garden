@@ -1353,6 +1353,13 @@ const builtins = [
     logo: "/assets/builtin-models/citymaker/babylon.png",
     fromExport: "/assets/builtin-models/citymaker/babylon.json",
   },
+  {
+    title: "Talamora",
+    description:
+      "A city filled with magic, sorcerers, noble protectors, and dark secrets",
+    logo: "/assets/builtin-models/citymaker/talamora.png",
+    fromExport: "/assets/builtin-models/citymaker/talamora.json",
+  },
 ];
 
 // FIXME: "tone" isn't the right type!
