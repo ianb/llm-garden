@@ -239,7 +239,7 @@ function PropertyEditorChoice({ model, property, onDone }) {
         </div>
       ) : null}
       <ol class="ml-4 list-decimal">
-        {property.choices
+        {(property.choices || [])
           .filter((c) => !property.hasChoice(c))
           .map((choice) => (
             <ChoiceItem

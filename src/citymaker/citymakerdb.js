@@ -863,14 +863,14 @@ OwnersOccupants.prototype.title = "Owners, Occupants, and Caretakers";
 registerPropertyClass("ownersOccupants", OwnersOccupants);
 OwnersOccupants.prototype.prompt = `The city $cityName that is $cityType. $cityBackstories
 
-A list of owners, caretakers, residents, tenants, and other inhabitants for $building ($building.description). Give each person an interesting and culturally appropriate name and a colorful background.
+A list of owners, caretakers, residents, tenants, and other inhabitants for $building ($building.description). Give each person an interesting and culturally appropriate name and a colorful background and personality.
 
 Example:
 [
   {
     type: "owner", // or "occupant" or "caretaker"
     name: "FirstName LastName",
-    description: "a wealthy merchant",
+    description: "[a description of the person, their profession or role, their personality, their history]]",
     arrives: "8am",
     leaves: "6pm",
   }
@@ -913,7 +913,7 @@ Visitors.prototype.title = "Visitors";
 registerPropertyClass("visitors", Visitors);
 Visitors.prototype.prompt = `The city $cityName is a $cityType. $cityBackstories
 
-A list of visitors, guests, patrons, or clients who might visit $building ($building.description). Give each an interesting and culturally appropriate name and colorful background.
+A list of visitors, guests, patrons, or clients who might visit $building ($building.description). Give each an interesting and culturally appropriate name and colorful background and personality.
 
 Example:
 [
