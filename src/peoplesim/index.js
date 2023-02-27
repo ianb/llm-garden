@@ -21,6 +21,7 @@ export const PeopleSimIndex = () => {
           which they are acting. Then you can step forward in time and GPT will
           generate the next action for each character.
         </P>
+        <YouTube videoId="nsIPC_eqfwg" />
       </InfoHeader>
     </ModelIndexPage>
   );
