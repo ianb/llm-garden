@@ -1,7 +1,7 @@
 /* eslint no-unused-vars: "off" */
 import { PeopleView } from "./peopleview";
 import { ModelIndexPage } from "../components/modelindex";
-import { InfoHeader, P } from "../components/common";
+import { YouTube, InfoHeader, P } from "../components/common";
 import { peopleDb } from "./peopledb";
 
 export const PeopleSimIndex = () => {
