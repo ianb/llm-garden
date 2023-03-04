@@ -884,7 +884,7 @@ Example:
   {
     type: $building.jobTypes|first|repr, // Or $building.jobTypes|rest
     name: "FirstName LastName",
-    description: "[a description of the person, their profession or role, their personality, their history]]",
+    description: "[a description of the person, their profession or role, their personality, their history]",
     arrives: "8am",
     leaves: "6pm",
   }
