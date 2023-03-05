@@ -43,6 +43,16 @@ const App = () => {
         component="ToneChangerIndex"
       />
       <LazyLoader
+        path="/p5drawing"
+        module={() => import("../p5drawing/index")}
+        component="P5DrawingIndex"
+      />
+      <LazyLoader
+        path="/p5drawing/iframe"
+        module={() => import("../p5drawing/iframeview")}
+        component="P5DrawingIframeView"
+      />
+      <LazyLoader
         path="/voice-composer"
         module={() => import("../voice-composer/index")}
         component="VoiceComposerIndex"

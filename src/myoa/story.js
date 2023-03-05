@@ -270,6 +270,8 @@ class Property {
     this._value = null;
     this.single = !!prompts[type + "Single"];
     this.fixupPrompt = prompts[type + "Fixup"];
+    this.takesExtraPrompt = !!prompts[type + "TakesExtraPrompt"];
+    this.promptExtraPrompt = (prompts[type + "ExtraPrompt"] || "").trim();
     this.chatResponsePrompt = prompts[type + "ChatResponse"] || "Response:";
     if (this.type === "passage") {
       this.id = uuid();
@@ -305,6 +307,7 @@ class Property {
           ? this.imageTrials
           : undefined,
       lastImagePrompt: this.lastImagePrompt || "",
+      extraPrmopt: this.extraPrompt || "",
     };
   }
 
@@ -352,6 +355,7 @@ class Property {
     const imageTrials = data.imageTrials || [];
     this.imageTrials = imageTrials ? imageTrials.map((x) => new Image(x)) : [];
     this.lastImagePrompt = data.lastImagePrompt || "";
+    this.extraPrompt = data.extraPrompt;
   }
 
   get value() {
@@ -393,6 +397,15 @@ class Property {
 
   set lastImagePrompt(v) {
     this._lastImagePrompt = v;
+    this.story.updated();
+  }
+
+  get extraPrompt() {
+    return this._extraPrompt;
+  }
+
+  set extraPrompt(v) {
+    this._extraPrompt = v;
     this.story.updated();
   }
 
@@ -599,6 +612,9 @@ class Property {
     const ob = { text: query, type: "init" };
     this.queries = [ob];
     this.story.updated();
+    if (this.takesExtraPrompt && !promptName) {
+      return;
+    }
     const response = await this.story.gpt.getCompletion({
       prompt: query,
       stop: ["You choose:"],
@@ -614,9 +630,10 @@ class Property {
     }
     this.queries.push({ text: input, type: "user" });
     this.story.updated();
-    console.log("trying query", this.queries, this.constructQuery());
+    const query = await this.constructQuery();
+    console.log("trying query", this.queries, query);
     const response = await this.story.gpt.getCompletion({
-      prompt: this.constructQuery(),
+      prompt: query,
       temperature: this.temperature,
     });
     const ob = {
@@ -647,7 +664,7 @@ class Property {
       // FIXME: this doesn't change the log response...
       delete this.queries[this.queries.length - 1].response;
       const response = await this.story.gpt.getCompletion({
-        prompt: this.constructQuery(),
+        prompt: await this.constructQuery(),
         temperature: 1.0,
       });
       const ob = {
@@ -661,11 +678,17 @@ class Property {
     return false;
   }
 
-  constructQuery() {
+  async constructQuery() {
     const result = [];
+    let extraPrompt = "";
     for (const item of this.queries) {
       if (item.type === "user") {
-        result.push(`\nRequest: ${item.text}\n${this.chatResponsePrompt}`);
+        if (!extraPrompt && this.takesExtraPrmopt) {
+          extraPrompt = this.promptExtraPrompt.replace("$prompt", item.text);
+          result.push(extraPrompt);
+        } else {
+          result.push(`\nRequest: ${item.text}\n${this.chatResponsePrompt}`);
+        }
       } else if (item.type === "response") {
         result.push(item.text + "\n");
       } else if (item.type === "init") {
@@ -866,6 +889,10 @@ export const prompts = {
   mainCharacter: `
   Describe the main character: their age, their motivations, and their personality. Ask if I'd like to make changes. Repeat the character description after each change.
   `,
+  mainCharacterTakesExtraPrompt: true,
+  mainCharacterExtraPrompt: `
+  Describe a character that fits this description: $prompt
+  `,
   mainCharacterChatResponse: `New character description:`,
   mainCharacterContext: `
   $value.
@@ -881,11 +908,19 @@ export const prompts = {
   `,
   introPassageChatResponse: `New version of the introductory passage:`,
   introPassageSingle: true,
+  introPassageTakesExtraPrompt: true,
+  introPassageExtraPrompt: `
+  Write the passage fitting this description: $prompt
+  `,
   passage: `
   Compose a passage of the story. Give the passage a title. The passage should end just before a critical choice. Do not specify choices. Write in the present tense.
   `,
   passageChatResponse: `New version of the passage:`,
   passageSingle: true,
+  passageTakesExtraPrompt: true,
+  passageExtraPrompt: `
+  Write the passage fitting this description: $prompt
+  `,
   general: `
 * Keep responses short, concise, and easy to understand.
 * Do not get ahead of yourself.

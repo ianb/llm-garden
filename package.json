@@ -43,11 +43,13 @@
     "local-cors-proxy": "^1.1.0",
     "marked": "^4.2.4",
     "onnxruntime-web": "^1.13.1",
+    "p5": "^1.6.0",
     "preact": "^10.11.3",
     "preact-async-route": "^2.2.1",
     "preact-render-to-string": "^5.2.6",
     "preact-router": "^4.1.0",
     "replicate-js": "github:nicholascelestin/replicate-js",
+    "sync-sha1": "^1.0.1",
     "tailwind-merge": "^1.8.0"
   }
 }

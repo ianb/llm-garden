@@ -209,7 +209,7 @@ function makeLink(model) {
   }
 }
 
-export function ModelTitleDescriptionEditor({ model }) {
+export function ModelTitleDescriptionEditor({ model, children }) {
   const [collapsed, setCollapsed] = useState(true);
   function onTitle(event) {
     model.title = event.target.value;
@@ -236,7 +236,13 @@ export function ModelTitleDescriptionEditor({ model }) {
           )}
         </span>
         {collapsed ? null : (
-          <TextArea onInput={onDescription} defaultValue={model.description} />
+          <>
+            <TextArea
+              onInput={onDescription}
+              defaultValue={model.description}
+            />
+            {children}
+          </>
         )}
       </Field>
     </>

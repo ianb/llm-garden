@@ -81,6 +81,12 @@ it is irresistible!
 Add, change, or remove your OpenAI (GPT/Dall-E), Replicate.com, and Thumbsnap keys
 `.trim(),
   },
+  "P5 Drawing": {
+    link: "/p5drawing/",
+    logo: "/assets/icons/p5drawing-logo.png",
+    description:
+      "Program in a p5.js drawing environment using natural language",
+  },
 };
 
 export const Home = () => {

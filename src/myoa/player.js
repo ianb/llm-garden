@@ -6,6 +6,7 @@ import { PageContainer, Button } from "../components/common";
 import { Header, HeaderButton } from "../components/header";
 import { PlayState } from "./playstate";
 import { Markdown } from "../markdown";
+import JSON5 from "json5";
 
 const hashSignal = signal(window.location.hash);
 window.addEventListener("hashchange", () => {
@@ -39,7 +40,7 @@ export function StoryPlayer({ model }) {
   let initState = model.domain.gameState.value;
   let playState;
   if (initState) {
-    initState = JSON.parse(initState);
+    initState = JSON5.parse(initState);
     playState = new PlayState(initState);
     playState.deserialize(state);
   }

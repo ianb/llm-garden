@@ -17,6 +17,7 @@ import { useState, useEffect, useRef, useCallback } from "preact/hooks";
 import { markdownToElement, elementToPreact, Markdown } from "../markdown";
 import * as icons from "../components/icons";
 import { QueryLog } from "../components/querylog";
+import { ImportExportMenu } from "../components/modelmenu";
 
 export function StoryView({ model }) {
   window.myModel = model;
@@ -47,7 +48,7 @@ export function StoryView({ model }) {
             <HeaderButton>Play</HeaderButton>
           </a>,
         ]}
-        menu={<ImportExportMenu story={story} />}
+        menu={<ImportExportMenu model={model} />}
         model={model}
       />
       <Sidebar>
@@ -708,7 +709,8 @@ function getQueryText(property) {
     if (query.type === "user") {
       result.push(`\n> *${query.text}*\n`);
     } else if (query.type === "init") {
-      result.push(query.response || "...");
+      const empty = property.takesExtraPrompt ? "" : "...";
+      result.push(query.response || empty);
     } else {
       result.push(query.text);
     }
@@ -786,42 +788,6 @@ function LogItem({ log, defaultOpen }) {
           )}
         </Pre>
       ) : null}
-    </div>
-  );
-}
-
-function ImportExportMenu({ story }) {
-  function onExport(event) {
-    const data = JSON.stringify(story, null, "  ");
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    event.target.href = url;
-  }
-  function onImport(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = e.target.result;
-      const storyJson = JSON.parse(data);
-      story.updateFromJSON(storyJson);
-    };
-    reader.readAsText(file);
-  }
-  return (
-    <div>
-      <Field>
-        Import
-        <input type="file" onChange={onImport} />
-      </Field>
-      <a
-        class="bg-magenta hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
-        href="#"
-        onClick={onExport}
-        download={story.title.value}
-      >
-        Export/download
-        <icons.Download class="h-4 w-4 inline-block ml-1" />
-      </a>
     </div>
   );
 }

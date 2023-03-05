@@ -34,5 +34,13 @@
   {
     "url": "/voice-composer",
     "title": "Voice Composer"
+  },
+  {
+    "url": "/p5drawing",
+    "title": "P5 Drawing"
+  },
+  {
+    "url": "/p5drawing/iframe",
+    "title": "P5 iframe"
   }
 ]

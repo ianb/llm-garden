@@ -183,7 +183,6 @@ export const TextInput = (props) => {
     delete props.onSubmit;
     delete props.onCancel;
   }
-  console.log("rendering with", props);
   const newProps = mergeProps(
     {
       type: "text",
