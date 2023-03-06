@@ -2,7 +2,7 @@
 import { CityMakerView } from "./citymakerview";
 import { ModelIndexPage } from "../components/modelindex";
 import { cityMakerDb } from "./citymakerdb";
-import { YouTube, InfoHeader, P } from "../components/common";
+import { YouTube, InfoHeader, InfoA, P } from "../components/common";
 
 export const CityMakerIndex = () => {
   return (
@@ -18,6 +18,13 @@ export const CityMakerIndex = () => {
           neighborhoods, buildings, and residents for those buildings.
         </P>
         <YouTube videoId="YUEXo3wrf70" />
+        <P>
+          The techniques are described in{" "}
+          <InfoA href="https://ianbicking.org/blog/2023/02/world-building-with-gpt.html">
+            World Building With GPT
+          </InfoA>
+          .
+        </P>
       </InfoHeader>
     </ModelIndexPage>
   );
