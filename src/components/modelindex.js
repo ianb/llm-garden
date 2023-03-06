@@ -55,9 +55,10 @@ const ConcreteIndex = ({
   }
   if (models.value.length === 0) {
     return (
-      <div>
+      <div class="flex flex-wrap justify-between">
+        <div class="w-1/3 pl-2">{children}</div>
         <Card title="No models yet!">
-          <P>Click the button below to add a new model.</P>
+          <P class="p-2">Click "Click to add a new model"</P>
         </Card>
         {onAdd ? <Adder onAdd={onAdd} /> : null}
       </div>
