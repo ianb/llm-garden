@@ -2,8 +2,11 @@
 import JSZM from "../vendor/jszm";
 
 export async function loadStoryData(filename) {
-  const resp = await fetch(`/interactive-fiction/z5s/${filename}`);
+  const url = `/interactive-fiction/z5s/${filename}`;
+  console.log("Loading story URL", url);
+  const resp = await fetch(url);
   const data = await resp.arrayBuffer();
+  console.log("Loaded bytes:", data.byteLength);
   return data;
 }
 
