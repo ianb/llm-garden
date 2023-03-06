@@ -39,6 +39,15 @@ export const A = ({ children, class: _class, ...props }) => {
   );
 };
 
+export const InfoA = ({ children, class: _class, ...props }) => {
+  _class = twMerge("text-blue-200 hover:text-blue-300", _class);
+  return (
+    <A class={_class} {...props}>
+      {children}
+    </A>
+  );
+};
+
 export const Card = ({
   title,
   onTitleEdit,
@@ -223,6 +232,10 @@ export const SelectInput = (props) => {
 };
 
 export const TextArea = (props) => {
+  const allowEnter = props.allowEnter;
+  delete props.allowEnter;
+  const noAutoShrink = props.noAutoShrink;
+  delete props.noAutoShrink;
   const newProps = mergeProps(
     {
       class:
@@ -256,10 +269,20 @@ export const TextArea = (props) => {
     return undefined;
   }
   function onKeyDown(event) {
-    if (event.key === "Enter" && !event.shiftKey) {
-      if (props.onSubmit) {
-        event.preventDefault();
-        return false;
+    if (allowEnter) {
+      if (event.key === "Enter" && event.shiftKey) {
+        if (props.onSubmit) {
+          props.onSubmit(event.target);
+          event.preventDefault();
+          return false;
+        }
+      }
+    } else {
+      if (event.key === "Enter" && !event.shiftKey) {
+        if (props.onSubmit) {
+          event.preventDefault();
+          return false;
+        }
       }
     }
     setTimeout(() => {
@@ -280,7 +303,9 @@ export const TextArea = (props) => {
   function fixHeight(el) {
     const prevLength = el.getAttribute("data-prev-length");
     if (!prevLength || parseInt(prevLength, 10) > el.value.length) {
-      el.style.height = "0";
+      if (!noAutoShrink) {
+        el.style.height = "0";
+      }
     }
     el.style.height = `${el.scrollHeight}px`;
     el.setAttribute("data-prev-length", el.value.length);
