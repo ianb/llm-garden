@@ -77,23 +77,23 @@ function launchCanvasWatcher(container, coord) {
 }
 
 let hasError = false;
+let lastError = null;
 
 window.onerror = (message, source, lineno, colno, error) => {
   console.log("Error", message, source, lineno, colno, error);
   hasError = true;
+  lastError = {
+    type: "error",
+    message,
+    source,
+    lineno,
+    colno,
+    stack: error.stack,
+    errorString: error.toString(),
+  };
   if (parent) {
-    parent.postMessage(
-      {
-        type: "error",
-        message,
-        source,
-        lineno,
-        colno,
-        stack: error.stack,
-        errorString: error.toString(),
-      },
-      location.origin
-    );
+    parent.postMessage(lastError, location.origin);
+    lastError = null;
   } else {
     console.warn("No parent to send error to");
   }
@@ -105,6 +105,10 @@ window.addEventListener("message", function (event) {
   if (!parent) {
     parent = event.source;
     parent.postMessage("hello-back", location.origin);
+    if (lastError) {
+      parent.postMessage(lastError, location.origin);
+      lastError = null;
+    }
   }
 });
 

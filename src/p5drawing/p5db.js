@@ -38,6 +38,7 @@ class P5Drawing {
 
   set script(value) {
     this._script = value;
+    this._lastError = null;
     this.updated();
   }
 
@@ -138,7 +139,7 @@ ${this.script}
       prompt,
       stop: ["*/"],
     });
-    const text = response.text.trim();
+    const text = response.text.trim().slice(0, 50);
     return text;
   }
 
@@ -173,7 +174,7 @@ ${this.script}
 
   /* end */
 
-  /* Recreate the entire script, but: ${request} */
+  /* Recreate the entire script with comments explaining the purpose of the code, but: ${request} */
   `;
     const response = await this.gpt.getCompletion({
       prompt,
@@ -200,6 +201,7 @@ function setup() {
 
 function draw() {
   background(220);
+  ellipse(200, 200, 100, 100);
 }`;
 
 const builtins = [];

@@ -9,13 +9,10 @@ import {
 } from "../components/common";
 import Sidebar from "../components/sidebar";
 import { useState, useEffect, useRef } from "preact/hooks";
-import { signal } from "@preact/signals";
 import { QueryLog } from "../components/querylog";
 import * as icons from "../components/icons";
 import { ImportExportMenu } from "../components/modelmenu";
 import { ModelTitleDescriptionEditor } from "../components/modelindex";
-import { Markdown } from "../markdown";
-import p5 from "p5";
 
 const start = Date.now();
 
@@ -65,11 +62,11 @@ const P5DrawingView = ({ model, scriptHash }) => {
     console.log("onSubmit", element);
     model.domain.script = element.value;
   };
-  const onRequest = (element) => {
-    console.log("onRequest", element);
+  const onRequest = async (element) => {
     const request = element.value;
+    element.value = `Processing: "${request}"...`;
+    await model.domain.processCommand(request);
     element.value = "";
-    model.domain.processCommand(request);
   };
   useEffect(() => {
     if (!iframeRef.current) {
@@ -77,6 +74,7 @@ const P5DrawingView = ({ model, scriptHash }) => {
     }
     const iframe = iframeRef.current;
     const onMessage = (event) => {
+      console.log("onMessage", event.data);
       if (event.data === "hello-back") {
         return;
       }
@@ -101,6 +99,18 @@ const P5DrawingView = ({ model, scriptHash }) => {
   return (
     <div>
       <div>
+        <Field>
+          <div>
+            Request:{" "}
+            <span class="text-s font-medium text-gray-400 pl-4">
+              also "undo", "redo", "fix"
+            </span>
+          </div>
+          <TextInput onSubmit={onRequest} placeholder="Enter a request" />
+        </Field>
+      </div>
+      <P5Error model={model} />
+      <div>
         <iframe
           class="w-full"
           style="height: 75vh"
@@ -111,14 +121,14 @@ const P5DrawingView = ({ model, scriptHash }) => {
         />
       </div>
       <div>
-        <Field>
-          Request:
-          <TextInput onSubmit={onRequest} placeholder="Enter a request" />
-        </Field>
-      </div>
-      <P5Error model={model} />
-      <div>
-        <TextArea defaultValue={model.domain.script} onSubmit={onSubmit} />
+        <TextArea
+          class="mt-2"
+          defaultValue={model.domain.script}
+          onSubmit={onSubmit}
+          allowEnter={true}
+          noAutoShrink={true}
+        />
+        <div class="text-xs text-gray-500 pl-2">Shift+Enter to run</div>
       </div>
     </div>
   );
