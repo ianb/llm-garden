@@ -19,6 +19,7 @@ export const P5DrawingIndex = () => {
           descriptions, and you will often see it produces results that are not
           what you asked for.
         </P>
+        <YouTube videoId="IMcvNIGayjo" />
       </InfoHeader>
     </ModelIndexPage>
   );
