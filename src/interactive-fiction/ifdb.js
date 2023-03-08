@@ -1,6 +1,6 @@
 import { ModelTypeStore } from "../db";
 import { GptCache } from "../gptservice/gptcache";
-import { signal } from "@preact/signals";
+import { signal, effect } from "@preact/signals";
 
 class InteractiveFiction {
   constructor(props) {
@@ -47,6 +47,20 @@ class InteractiveFiction {
     this.inputEnabledSignal.value = true;
   }
 
+  waitForReadValue(value) {
+    if (!!value === !!this.inputEnabledSignal.value) {
+      return;
+    }
+    return new Promise((resolve) => {
+      const dispose = effect(() => {
+        if (!!value === !!this.inputEnabledSignal.value) {
+          dispose();
+          resolve();
+        }
+      });
+    });
+  }
+
   /**** Filling in ****/
 
   fillIn() {
@@ -65,27 +79,57 @@ class InteractiveFiction {
     if (num <= 0) {
       return undefined;
     }
-    const text = this.constructPrompt();
-    console.log("Doing request for", text);
-    const resp = await this.gpt.getCompletion(text);
-    const completion = resp.text.split("\n")[0];
+    const messages = this.constructPrompt();
+    console.log("Doing request for", messages, num);
+    const resp = await this.gpt.getChat({
+      messages,
+      // FIXME: this is causing 500 errors:
+      stop: "\\n",
+    });
+    let completion = resp.text.split("\n")[0];
+    completion = completion.trim().replace(/^>+/, "").trim();
     console.log("Got response:", resp, completion);
     this.completionSignal.value = completion;
     if (complete) {
       this.onInput(completion);
+      await this.waitForReadValue(false);
     }
+    await this.waitForReadValue(true);
     return this.doFill(complete, num - 1);
   }
 
   /**** Prompts ****/
 
+  // From this helpful list: https://zork.fandom.com/wiki/Command_List
+  commandList = `
+    north south east west
+    northeast northwest southeast southwest
+    up down climb
+    look
+    enter in out
+
+    get throw
+    open close
+    read drop put
+    turn
+    move attack examine
+    inventory
+    eat shout
+    tie pick break kill pray drink smell cut listen
+  `.split(/\s+/g);
+
   constructPrompt() {
     const history = 20;
-    const result = this.filterChunks(this.io, history);
-    return `Playing a text adventure:\n\n${result.trimEnd()}`;
+    const messages = this.filteredChunks(this.io, history);
+    const commands = this.commandList.map((c) => c.toUpperCase()).join(" ");
+    messages.unshift({
+      role: "system",
+      content: `You are a player in a Zork text adventure and the user is Zork itself. Do not speak to the user. Use commands like: ${commands}`,
+    });
+    return messages;
   }
 
-  filterChunks(io, count) {
+  filteredChunks(io, count) {
     const originalCount = count;
     io = [...io];
     const result = [];
@@ -108,17 +152,27 @@ class InteractiveFiction {
       }
       let v = io[last].value;
       if (io[last].type === "input") {
-        v += "\n";
+        result.unshift({
+          role: "assistant",
+          content: v,
+        });
+      } else {
+        v = v.trim().replace(/>+$/, "").trim();
+        result.unshift({
+          role: "user",
+          content: v,
+        });
       }
-      result.unshift(v);
       io.pop();
       count--;
     }
-    return result.join("");
+    return result;
   }
 
   badResponse(output) {
-    return /I don't know the word|You can't go that way/i.test(output);
+    return /I don't know the word|You can't go that way|That sentence isn't one I recognize/i.test(
+      output
+    );
   }
 
   /**** IO ****/
