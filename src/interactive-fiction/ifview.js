@@ -150,7 +150,12 @@ const Completer = ({ model }) => {
         Fill & Submit input
       </Button>
       <div>
-        <TextInput class="w-24" type="number" defaultValue="10" ref={number} />
+        <TextInput
+          class="w-24"
+          type="number"
+          defaultValue="10"
+          inputRef={number}
+        />
         <Button onClick={doMany}>Do many steps</Button>
       </div>
       <pre>{completionText.value}</pre>
