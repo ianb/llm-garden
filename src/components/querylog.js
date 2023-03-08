@@ -50,9 +50,27 @@ function LogItem({ gptcache, log, defaultOpen }) {
     text = log.body.prompt;
   } else if (log.type === "edit") {
     text = log.body.input + "\n=> " + log.body.instruction + "\n";
+  } else if (log.type === "chat") {
+    const lines = [];
+    for (const msg of log.body.messages) {
+      const contentLines = msg.content.split("\n");
+      for (let i = 0; i < contentLines.length; i++) {
+        const line = contentLines[i];
+        if (i === 0) {
+          lines.push(`${msg.role}: ${line}`);
+        } else {
+          lines.push(`  ${line}`);
+        }
+      }
+    }
+    text = lines.join("\n") + "\n";
   } else {
     console.warn("Unknown log type", log.type);
     text = "Error";
+  }
+  let responseText = log.response;
+  if (log.type === "chat") {
+    responseText = `assistant: ${log.response}`;
   }
   return (
     <div>
@@ -73,7 +91,7 @@ function LogItem({ gptcache, log, defaultOpen }) {
         <Pre class="text-xs">
           {text}
           {log.response ? (
-            <span class="text-red-800">{log.response}</span>
+            <span class="text-red-800">{responseText}</span>
           ) : (
             <span class="text-red-300">...</span>
           )}

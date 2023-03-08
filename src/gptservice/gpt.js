@@ -3,6 +3,9 @@ export async function getGptCompletion(prompt, key) {
   if (typeof prompt === "string") {
     prompt = { prompt };
   }
+  if (prompt.system || prompt.messages) {
+    throw new Error("Use getGptChat() for chat prompts");
+  }
   const body = Object.assign({}, defaultBody, prompt);
   console.log("Sending GPT request:", body.prompt, body);
   const resp = await fetch(url, {
@@ -79,6 +82,64 @@ export const defaultEditBody = {
   model: "text-davinci-edit-001",
   temperature: 0.05,
   n: 1,
+};
+
+export async function getGptChat(prompt, key) {
+  const url = "https://api.openai.com/v1/chat/completions";
+  prompt = normalizeGptChatPrompt(prompt);
+  console.log("Sending ChatGPT request:", prompt);
+  const resp = await fetch(url, {
+    method: "POST",
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify(prompt),
+  });
+  if (!resp.ok) {
+    const body = await resp.json();
+    console.error("Error from ChatGPT:", body);
+    const exc = new Error(
+      `ChatGPT request failed: ${resp.status} ${resp.statusText}: ${body.error.message}`
+    );
+    exc.request = resp;
+    exc.errorData = body;
+    throw exc;
+  }
+  const data = await resp.json();
+  console.log("Got ChatGPT response:", data);
+  addTokens(data.usage.total_tokens);
+  return data;
+}
+
+export function normalizeGptChatPrompt(prompt) {
+  if (typeof prompt === "string") {
+    prompt = { prompt };
+  }
+  if (prompt.prompt) {
+    // Simulate a GPT completion using a text prompt
+    if (prompt.messages) {
+      throw new Error("Cannot specify both prompt and messages");
+    }
+    prompt.messages = [{ role: "user", content: prompt.prompt }];
+    delete prompt.prompt;
+  }
+  if (prompt.system) {
+    console.log("Bad prompt:", prompt);
+    if (prompt.messages[0].role === "system") {
+      throw new Error(
+        "Cannot specify both system and messages[0].role==system"
+      );
+    }
+    prompt.messages.unshift({ role: "system", content: prompt.system });
+    delete prompt.system;
+  }
+  return Object.assign({}, defaultChatBody, prompt);
+}
+
+export const defaultChatBody = {
+  model: "gpt-3.5-turbo",
 };
 
 let sessionTokens = 0;

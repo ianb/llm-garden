@@ -1,4 +1,4 @@
-import { getGptCompletion, getGptEdit, defaultBody } from "./gpt";
+import { getGptCompletion, getGptEdit, defaultBody, getGptChat } from "./gpt";
 import { holder } from "../key-management/key";
 import { tokenCostTracker } from "./tokencost";
 
@@ -26,6 +26,18 @@ export async function getEdit(prompt, usagePaths) {
     throw new Error("No GPT API key is set");
   }
   const resp = await getGptEdit(prompt, holder.getKey());
+  tokenCostTracker.trackUsage(usagePaths, resp.usage, prompt.model);
+  return resp;
+}
+
+export async function getChat(prompt, usagePaths) {
+  if (!holder.hasKey()) {
+    if (window.confirm("No GPT API key is set. Set one now?")) {
+      window.location = "/key-management";
+    }
+    throw new Error("No GPT API key is set");
+  }
+  const resp = await getGptChat(prompt, holder.getKey());
   tokenCostTracker.trackUsage(usagePaths, resp.usage, prompt.model);
   return resp;
 }
