@@ -508,3 +508,28 @@ export const LogoImg = ({ src, ...props }) => {
     </div>
   );
 };
+
+export const Tabs = ({ tabs, selectedTabIndex, onTabSelect, children }) => {
+  console.log("render", tabs, selectedTabIndex);
+  const inactive =
+    "bg-white inline-block border-b py-2 px-4 text-blue-500 hover:text-blue-800 font-semibold cursor-default";
+  const active =
+    "bg-white inline-block border-l border-t border-r rounded-t py-2 px-4 text-blue-700 font-semibold cursor-default";
+  return (
+    <div class="border-b">
+      <ul class="flex">
+        <li class="border-b inline-block w-2"></li>
+        {tabs.map((tab, i) => (
+          <li
+            class={i === selectedTabIndex ? active : inactive}
+            onClick={() => onTabSelect(i)}
+          >
+            {tab}
+          </li>
+        ))}
+        <li class="flex-grow inline-block border-b py-2"></li>
+      </ul>
+      <div class="p-4">{children}</div>
+    </div>
+  );
+};

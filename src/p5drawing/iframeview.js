@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { ModelLoader } from "../components/modelindex";
 import { p5Db } from "./p5db";
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import p5 from "p5";
 
 window.p5 = p5;
@@ -36,7 +36,8 @@ function P5Iframe({ model }) {
     const script = document.createElement("script");
     window.p5element = containerRef.current;
     const scriptText =
-      model.domain.script + "\n\nwindow.p5object = new p5(null, p5element);";
+      model.domain.script.source +
+      "\n\nwindow.p5object = new p5(null, p5element);";
     launchCanvasWatcher(containerRef.current, coordRef.current);
     script.textContent = scriptText;
     console.log("Adding script", scriptText);
