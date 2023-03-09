@@ -62,7 +62,6 @@ function startRunner(filename, model) {
   runnerPromise = (async function () {
     const data = await loadStoryData(filename);
     const runner = createStory(data, model);
-    console.log("got runner", runner);
     const generator = runner.run();
     setInterval(() => {
       generator.next();

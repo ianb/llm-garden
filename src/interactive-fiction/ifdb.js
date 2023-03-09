@@ -27,6 +27,8 @@ class InteractiveFiction {
     this.statusSummarySignal = signal("");
     this.completionSignal = signal("");
     this.inputEnabledSignal = signal(false);
+    this.unknownWords = new Set();
+    this.unknownWords.add("towards");
   }
 
   toJSON() {
@@ -80,7 +82,6 @@ class InteractiveFiction {
       return undefined;
     }
     const messages = this.constructPrompt();
-    console.log("Doing request for", messages, num);
     const resp = await this.gpt.getChat({
       messages,
       // FIXME: this is causing 500 errors:
@@ -88,7 +89,7 @@ class InteractiveFiction {
     });
     let completion = resp.text.split("\n")[0];
     completion = completion.trim().replace(/^>+/, "").trim();
-    console.log("Got response:", resp, completion);
+    completion = this.trimResponse(completion);
     this.completionSignal.value = completion;
     if (complete) {
       this.onInput(completion);
@@ -96,6 +97,21 @@ class InteractiveFiction {
     }
     await this.waitForReadValue(true);
     return this.doFill(complete, num - 1);
+  }
+
+  trimResponse(text) {
+    // GPT has a way of saying "GO EAST blah blah" and that's never correct
+    if (/^\s*go\s+(east|west|north|south)/i.test(text)) {
+      return text.trim().split(/\s+/g).slice(0, 2).join(" ");
+    }
+    return text;
+  }
+
+  checkUnknown(responseText) {
+    const match = /I don't know the word "([^"]+)"/i.exec(responseText);
+    if (match) {
+      this.unknownWords.add(match[1]);
+    }
   }
 
   /**** Prompts ****/
@@ -121,25 +137,29 @@ class InteractiveFiction {
   constructPrompt() {
     const history = 20;
     const messages = this.filteredChunks(this.io, history);
+    const unknownWords = [...this.unknownWords].join(" ");
     const commands = this.commandList.map((c) => c.toUpperCase()).join(" ");
     messages.unshift({
       role: "system",
-      content: `You are a player in a Zork text adventure and the user is Zork itself. Do not speak to the user. Use commands like: ${commands}`,
+      content: `You are a player in a Zork text adventure and the user is Zork itself. Do not speak to the user. Do not apologize. Use commands like: ${commands}\nDo not use these words: ${unknownWords}`,
     });
     return messages;
   }
 
   filteredChunks(io, count) {
-    const originalCount = count;
     io = [...io];
     const result = [];
+    let hasSeenGoodOutput = false;
     while (count > 0) {
       if (io.length === 0) {
         break;
       }
       const last = io.length - 1;
+      if (io[last].type === "output") {
+        this.checkUnknown(io[last].value);
+      }
       if (
-        count !== originalCount &&
+        hasSeenGoodOutput &&
         io.length >= 2 &&
         io[last].type === "output" &&
         this.badResponse(io[last].value) &&
@@ -149,6 +169,12 @@ class InteractiveFiction {
         io.pop();
         io.pop();
         continue;
+      } else if (
+        io.length >= 2 &&
+        io[last].type === "output" &&
+        !this.badResponse(io[last].value)
+      ) {
+        hasSeenGoodOutput = true;
       }
       let v = io[last].value;
       if (io[last].type === "input") {
