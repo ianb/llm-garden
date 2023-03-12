@@ -141,7 +141,7 @@ class InteractiveFiction {
     const commands = this.commandList.map((c) => c.toUpperCase()).join(" ");
     messages.unshift({
       role: "system",
-      content: `You are a player in a Zork text adventure and the user is Zork itself. Do not speak to the user. Do not apologize. Use commands like: ${commands}\nDo not use these words: ${unknownWords}`,
+      content: `You are a player in a Zork text adventure and the user is Zork itself. Do not speak to the user. Do not apologize. Use commands like: ${commands}\nDo not use these words: ${unknownWords}\nRespond with only 1-4 words`,
     });
     return messages;
   }
