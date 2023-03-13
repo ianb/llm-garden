@@ -45,7 +45,6 @@ different tone (or language).
   "Interactive Fiction": {
     link: "/interactive-fiction/",
     logo: "/assets/icons/interactive-fiction-logo.png",
-    status: "alpha",
     description:
       "Run GPT as a _player_ against one of the Zork text adventure games.",
   },
