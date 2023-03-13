@@ -10,6 +10,8 @@ import {
   TextArea,
   TextInput,
   Button,
+  Alert,
+  Select,
 } from "../components/common";
 import { SpeechButton, SpeechControlButton } from "../components/speech";
 import * as icons from "../components/icons";
@@ -18,6 +20,7 @@ import { Markdown } from "../markdown";
 
 export const ChatView = ({ model }) => {
   const [version, setVersion] = useState(0);
+  const [chatView, setChatView] = useState("Normal view");
   model.addOnUpdate(() => {
     setVersion(version + 1);
   });
@@ -32,33 +35,22 @@ export const ChatView = ({ model }) => {
         menu={<ImportExportMenu model={model} />}
       />
       <Sidebar>
-        <PromptEditor model={model} />
+        <PromptEditor model={model} onChangeView={setChatView} />
         <QueryLog gptcache={model.domain.gpt} />
       </Sidebar>
       <div class="p-2">
-        <Chat model={model} />
+        <Chat model={model} chatView={chatView} />
       </div>
     </PageContainer>
   );
 };
 
-function PromptEditor({ model }) {
+function PromptEditor({ model, onChangeView }) {
   const [collapsed, setCollapsed] = useState(false);
-  function onSubmit(textarea) {
-    model.domain.prompt = textarea.value;
-    console.log("updating prompt", textarea.value, model.domain.prompt);
-  }
+  const [hooksError, setHooksError] = useState(null);
+  const [hooks, setHooks] = useState(null);
   function onInput(event) {
     model.domain.prompt = event.target.value;
-  }
-  function onUpdateHumanName(event) {
-    model.domain.humanName = event.target.value;
-  }
-  function onUpdateRobotName(event) {
-    model.domain.robotName = event.target.value;
-  }
-  function onUpdateExampleInteraction(event) {
-    model.domain.exampleInteraction = event.target.value;
   }
   function onChangeSaveHistory(event) {
     model.domain.saveHistory = event.target.checked;
@@ -75,8 +67,23 @@ function PromptEditor({ model }) {
   function onInputIntro(event) {
     model.domain.intro = event.target.value;
   }
+  function onChangeExcludeIntro(event) {
+    model.domain.excludeIntroFromHistory = event.target.checked;
+  }
   function toggleCollapsed() {
     setCollapsed(!collapsed);
+  }
+  function onInputHooksSource(event) {
+    let exports = {};
+    try {
+      exports = model.domain.evalHooks(event.target.value);
+      setHooksError(null);
+      setHooks(exports);
+      model.domain.hooksSource = event.target.value;
+    } catch (e) {
+      setHooksError(e);
+      setHooks(null);
+    }
   }
   return (
     <div>
@@ -90,33 +97,15 @@ function PromptEditor({ model }) {
       {!collapsed && (
         <>
           <ModelTitleDescriptionEditor model={model} />
+          <Field sideBySide={true}>
+            View:
+            <Select options={["Normal view", "GPT values", "Raw values"]} onChange={(event) => onChangeView(event.target.value)} />
+          </Field>
           <Field>
             <span>Prompt:</span>
             <TextArea
-              onSubmit={onSubmit}
               onInput={onInput}
               defaultValue={model.domain.prompt}
-            />
-          </Field>
-          <Field>
-            <span>Human name:</span>
-            <TextInput
-              onInput={onUpdateHumanName}
-              defaultValue={model.domain.humanName}
-            />
-          </Field>
-          <Field>
-            <span>Robot name:</span>
-            <TextInput
-              onInput={onUpdateRobotName}
-              defaultValue={model.domain.robotName}
-            />
-          </Field>
-          <Field>
-            <span>Example interaction:</span>
-            <TextArea
-              onInput={onUpdateExampleInteraction}
-              defaultValue={model.domain.exampleInteraction}
             />
           </Field>
           <Field>
@@ -127,6 +116,14 @@ function PromptEditor({ model }) {
             />
           </Field>
           <Field sideBySide={true}>
+            <span>Exclude intro from messages?</span>
+            <input
+              type="checkbox"
+              onChange={onChangeExcludeIntro}
+              checked={model.domain.excludeIntroFromHistory}
+            />
+          </Field>
+          <Field sideBySide={true}>
             <span>Save chat history in model?</span>
             <input
               type="checkbox"
@@ -134,6 +131,14 @@ function PromptEditor({ model }) {
               checked={model.domain.saveHistory}
             />
           </Field>
+          <Field>
+            <span>Hooks (<span class="text-xs"><code title="modifyUser({content: ...})">exports.modifyUser</code>, <code title="modifyAssistant({content: ...})">exports.modifyAssistant</code>, <code title="modifyPrompt([{role: &quote;system&quote;, content: &quote;prompt&quot;}, {role: &quot;assistant&quot;, ...}, ...])">exports.modifyPrompt</code>, <code title="afterAssistant([history])">exports.afterAssistant</code></span>):</span>
+            <TextArea defaultValue={model.domain.hooksSource} onInput={onInputHooksSource} />
+          </Field>
+          {hooksError && (<Alert title="Error in hooks"><pre class="max-w-full whitespace-pre-wrap text-xs">{hooksError.toString()}{"\n"}{hooksError.stack}</pre></Alert>)}
+          {hooks && (<div>
+            Defines: <code>{Object.keys(hooks).join(", ")}</code>
+          </div>)}
         </>
       )}
       <Button onClick={onClearHistory}>Clear Chat</Button>
@@ -145,7 +150,7 @@ function PromptEditor({ model }) {
 
 let recentHistoryLength = -1;
 
-function Chat({ model }) {
+function Chat({ model, chatView }) {
   const textareaRef = useRef();
   function onSubmit(element) {
     model.domain.addUserInput(element.value);
@@ -168,7 +173,7 @@ function Chat({ model }) {
   });
   return (
     <>
-      <ChatHistory model={model} />
+      <ChatHistory model={model} chatView={chatView} />
       <div class="flex">
         <icons.ChevronRight class="w-8 h-8 pt-1" />
         <TextArea textareaRef={textareaRef} onSubmit={onSubmit} />
@@ -186,31 +191,65 @@ function Chat({ model }) {
   );
 }
 
-function ChatHistory({ model }) {
+function ChatHistory({ model, chatView }) {
   const history = model.domain.history;
+  console.log("history", history);
+  let intro;
+  if (model.domain.intro) {
+    const hooks = model.domain.hooks;
+    let item = { role: "assistant", content: model.domain.intro };
+    if (hooks && hooks.modifyAssistant) {
+      const newIntro = hooks.modifyAssistant(item);
+      if (newIntro) {
+        item = newIntro;
+      }
+    }
+    intro = <Markdown text={item.displayContent || item.content} />;
+  }
+  function getContent(item) {
+    if (chatView === "Normal view") {
+      return item.displayContent || item.content;
+    } else if (chatView === "GPT values") {
+      return item.gptContent || item.content;
+    } else {
+      return item.content;
+    }
+  }
+  function getOldContent(item) {
+    if (chatView === "Normal view") {
+      return item.oldDisplayContent || item.oldContent;
+    } else if (chatView === "GPT values") {
+      return item.oldGptContent || item.oldContent;
+    } else {
+      return item.oldContent;
+    }
+  }
   return (
     <div class="overflow-y-auto h-5/6">
-      {model.domain.introWithoutName ? (
-        <div>{model.domain.introWithoutName}</div>
-      ) : null}
+      {intro}
       {history.map((item, i) => {
-        if (item.type === "user") {
+        if (item.role === "user") {
           return (
-            <div class="text-blue-600">
-              {"> "}
-              {item.text}
+            <div class="bg-blue-500 text-white px-4 py-2 rounded-lg mb-2 mr-10 shadow-xl">
+              {getContent(item)}
             </div>
           );
-        } else if (item.oldText && item.oldText !== item.text) {
+        } else if (item.role === "alert") {
           return (
-            <div>
+            <div class="bg-red-500 text-white px-4 py-2 rounded-lg mb-2 mx-16 shadow-xl">
+              {getContent(item)}
+            </div>
+          );
+        } else if (item.oldContent && item.oldContent !== item.content) {
+          return (
+            <div class="bg-gray-100 px-4 py-2 rounded-lg ml-10 mb-2 shadow-xl">
               <table>
                 <tr>
                   <td class="align-top text-orange-800 border-r pr-1 border-black w-1/2">
-                    <Markdown text={item.oldText} />
+                    <Markdown text={getOldContent(item)} />
                   </td>
                   <td class="align-top w-1/2 pl-1">
-                    <Markdown text={item.text} />
+                    <Markdown text={getContent(item)} />
                   </td>
                 </tr>
               </table>
@@ -218,8 +257,8 @@ function ChatHistory({ model }) {
           );
         } else {
           return (
-            <div>
-              <Markdown text={item.text} />
+            <div class="bg-white px-4 py-2 rounded-lg ml-10 mb-2 shadow-xl">
+              <Markdown text={getContent(item)} />
             </div>
           );
         }
@@ -227,3 +266,36 @@ function ChatHistory({ model }) {
     </div>
   );
 }
+
+/*
+
+const happiness = /happiness change:\s*([^\n]+)/i;
+
+exports.modifyAssistant = (item) => {
+  if (happiness.test(item.content)) {
+    item.gptContent = item.content + "\nHappiness change: 0";
+  }
+  const text = item.content.replace(happiness, "");
+  item.displayContent = text;
+};
+
+exports.modifyUser = (item) => {
+  item.gptContent = item.content + "\nFinish your response with:\nHappiness change: [number]";
+};
+
+exports.afterAssistant = (history) => {
+  history = history.filter((i) => i.role !== "alert");
+  const h = 0;
+  for (const item of history) {
+    if (item.role !== "assistant") {
+      continue;
+    }
+    const match = happiness.test(item.content);
+    if (match) {
+      const val = parseFloat(match[1]);
+      h += val;
+    }
+  }
+  history.push({ role: "alert", content: `Happiness: ${h}` });
+  return history;
+};*/

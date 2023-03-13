@@ -14,15 +14,11 @@ class Chat {
         max_tokens: 300,
       },
     });
-    this.prompt = props.prompt || defaultPrompt;
-    this.humanName = props.humanName || defaultHumanName;
-    this.robotName = props.robotName || defaultRobotName;
-    this.exampleInteraction =
-      props.exampleInteraction === null
-        ? defaultExampleInteraction
-        : props.exampleInteraction;
-    this.intro = props.intro || defaultIntro;
-    this.saveHistory = props.saveHistory || false;
+    this._prompt = props.prompt || defaultPrompt;
+    this._intro = props.intro || defaultIntro;
+    this._excludeIntroFromHistory = props.excludeIntroFromHistory || false;
+    this._saveHistory = props.saveHistory || false;
+    this._hooksSource = props.hooksSource || "";
     this.history = props.history || [];
     this.speak = props.speak || false;
   }
@@ -36,44 +32,21 @@ class Chat {
     this.updated();
   }
 
-  get humanName() {
-    return this._humanName;
-  }
-
-  set humanName(value) {
-    this._humanName = value;
-    this.gpt.defaultPromptOptions.stop = [value + ":"];
-    this.updated();
-  }
-
-  get robotName() {
-    return this._robotName;
-  }
-
-  set robotName(value) {
-    this._robotName = value;
-    this.updated();
-  }
-
-  get exampleInteraction() {
-    return this._exampleInteraction;
-  }
-
-  set exampleInteraction(value) {
-    this._exampleInteraction = value;
-    this.updated();
-  }
-
   get intro() {
     return this._intro;
   }
 
-  get introWithoutName() {
-    return this.intro.replace(/^[a-z0-9]+:\s+/gi, "");
-  }
-
   set intro(value) {
     this._intro = value;
+    this.updated();
+  }
+
+  get excludeIntroFromHistory() {
+    return this._excludeIntroFromHistory;
+  }
+
+  set excludeIntroFromHistory(value) {
+    this._excludeIntroFromHistory = !!value;
     this.updated();
   }
 
@@ -84,6 +57,37 @@ class Chat {
   set saveHistory(value) {
     this._saveHistory = value;
     this.updated();
+  }
+
+  get hooksSource() {
+    return this._hooksSource;
+  }
+
+  set hooksSource(value) {
+    this._hooksSource = value;
+    this.updated();
+  }
+
+  get hooks() {
+    if (!this.hooksSource) {
+      return {};
+    }
+    if (this._hooksCached && this._hooksCacheSource === this.hooksSource) {
+      return this._hooksCached;
+    }
+    const exports = this.evalHooks(this.hooksSource);
+    this._hooksCached = exports;
+    this._hooksCacheSource = this.hooksSource;
+    return exports;
+  }
+
+  evalHooks(source) {
+    const fullSource = `
+  (function () {let exports = {};${source}
+    ;return exports;
+  })()`;
+    const exports = eval(fullSource);
+    return exports;
   }
 
   get speak() {
@@ -101,8 +105,9 @@ class Chat {
   }
 
   undo() {
-    this.history.pop();
-    this.history.pop();
+    do {
+      this.history.pop();
+    } while (this.history.length && this.history[this.history.length - 1].role !== "assistant")
     this.updated();
   }
 
@@ -112,13 +117,14 @@ class Chat {
     this.updated();
     for (let i = 0; i < oldHistory.length; i++) {
       const item = oldHistory[i];
-      if (item.type === "user") {
-        await this.addUserInput(item.text);
+      if (item.role === "user") {
+        await this.addUserInput(item.content, true);
         const last = this.history[this.history.length - 1];
-        if (last.type === "robot") {
-          const oldText = oldHistory[this.history.length - 1].text;
-          if (oldText !== last.text) {
-            last.oldText = oldText;
+        if (last.role === "assistant") {
+          const oldContent = oldHistory[this.history.length - 1].content;
+          if (oldContent !== last.content) {
+            last.oldContent = oldContent;
+            last.oldDisplayContent = oldHistory[this.history.length - 1].displayContent;
           }
         } else {
           console.warn(
@@ -135,11 +141,10 @@ class Chat {
   toJSON() {
     const data = {
       prompt: this.prompt,
-      humanName: this.humanName,
-      robotName: this.robotName,
-      exampleInteraction: this.exampleInteraction,
       intro: this.intro,
       saveHistory: this.saveHistory,
+      excludeIntroFromHistory: this.excludeIntroFromHistory,
+      hooksSource: this.hooksSource,
     };
     if (this.saveHistory) {
       data.history = this.history;
@@ -153,7 +158,7 @@ class Chat {
     }
   }
 
-  async addUserInput(input) {
+  async addUserInput(input, noCache = false) {
     if (!input) {
       throw new Error("No user input given");
     }
@@ -167,56 +172,76 @@ class Chat {
       this.updated();
       return;
     }
-    this.history.push({ type: "user", text: input });
+    const hooks = this.hooks;
+    let item = { role: "user", content: input };
+    if (hooks && hooks.modifyUser) {
+      const newItem = hooks.modifyUser(item);
+      if (newItem) {
+        item = newItem;
+      }
+    }
+    this.history.push(item);
     this.updated();
-    await this.fetchChatResponse();
+    await this.fetchChatResponse(noCache);
     this.updated();
   }
 
-  async fetchChatResponse() {
-    const prompt = this.constructPrompt();
-    const resp = await this.gpt.getCompletion(prompt);
-    const text = resp.text;
-    this.history.push({ type: "robot", text });
+  async fetchChatResponse(noCache) {
+    const messages = this.constructPrompt();
+    prompt = { messages };
+    if (noCache) {
+      prompt.noCache = true;
+    }
+    const hooks = this.hooks;
+    if (hooks && hooks.modifyPrompt) {
+      const newPrompt = hooks.modifyPrompt(prompt);
+      if (newPrompt) {
+        prompt = newPrompt;
+      }
+    }
+    const resp = await this.gpt.getChat(prompt);
+    const content = resp.text;
+    let item = { role: "assistant", content };
+    if (hooks && hooks.modifyAssistant) {
+      const newItem = hooks.modifyAssistant(item);
+      if (newItem) {
+        item = newItem;
+      }
+    }
+    this.history.push(item);
     if (this.speak) {
-      speak(text, "Google US English");
+      speak(content, "Google US English");
+    }
+    if (hooks && hooks.afterAssistant) {
+      const newHistory = hooks.afterAssistant(this.history);
+      if (newHistory) {
+        this.history = newHistory;
+      }
     }
     this.updated();
   }
 
   constructPrompt() {
-    const result = [this.prompt.trim(), ""];
-    if (this.intro.startsWith(this.robotName + ":")) {
-      result.push(this.intro);
-    }
-    const history = [...this.parseExample(), ...this.history];
-    for (const item of history) {
-      if (item.type === "user") {
-        result.push(`${this.humanName}: ${item.text}`);
-      } else {
-        result.push(`${this.robotName}: ${item.text}`);
-      }
-    }
-    result.push(`${this.robotName}:`);
-    return result.join("\n");
-  }
-
-  parseExample() {
-    if (!this.exampleInteraction) {
-      return [];
-    }
-    const lines = this.exampleInteraction.split("\n");
-    const result = [];
-    for (const line of lines) {
-      if (line.startsWith("> ")) {
-        result.push({ type: "user", text: line.slice(2).trim() });
-      } else {
-        const last = result[result.length - 1];
-        if (last && last.type === "robot") {
-          last.text += "\n" + line;
-        } else {
-          result.push({ type: "robot", text: line.trim() });
+    const result = [{
+      role: "system",
+      content: this.prompt.trim(),
+    }];
+    if (!this.excludeIntroFromHistory) {
+      let item = { role: "assistant", content: this.intro };
+      const hooks = this.hooks;
+      if (hooks && hooks.modifyAssistant) {
+        const newItem = hooks.modifyAssistant(item);
+        if (newItem) {
+          item = newItem;
         }
+      }
+      result.push({ role: item.role, content: item.content });
+    }
+    for (const item of this.history) {
+      if (item.role === "user") {
+        result.push({ role: "user", content: item.gptContent || item.content });
+      } else if (item.role === "assistant") {
+        result.push({ role: "assistant", content: item.gptContent || item.content });
       }
     }
     return result;
@@ -226,32 +251,21 @@ class Chat {
     const lines = [this.intro];
     for (const item of this.history) {
       if (item.type === "user") {
-        lines.push(`> ${item.text}`);
+        lines.push(`> ${item.displayContent || item.content}`);
       } else {
-        lines.push(item.text);
+        lines.push(item.displayContent || item.content);
       }
     }
+    console.log("result", lines);
     return lines.join("\n");
   }
 }
 
 const defaultPrompt = `
-The following is a conversation between two people. The first person is a human, and the second person is a robot.
-
-Human: what is your name?
-Robot: my name is robbie.
+You are a helpful AI Assistant.
 `.trim();
 
-const defaultIntro = "Talk to the robot.";
-
-const defaultHumanName = "Human";
-
-const defaultRobotName = "Robot";
-
-const defaultExampleInteraction = `
-How are you?
-> I'm fine, thanks
-`.trim();
+const defaultIntro = "What do you want to say?";
 
 const builtins = [
   {
@@ -259,7 +273,12 @@ const builtins = [
     description:
       "This attempts to have a focused conversation about energy (potential energy, kinetic, energy use, etc). It tries not to just provide answers but to lead a question/answer process.",
     logo: "/assets/builtin-models/chat/energy-educator.png",
-    fromExport: "/assets/builtin-models/chat/energy-educator.json",
+    domain: {
+      prompt: `
+      The following is a conversation between an educational AI and a student. The topic for the day will be energy use. The AI will try to relate everything to energy use and energy equations. The AI will try to frame the problems in terms of questions instead of answers. Once the human has provided answers it will move forward with answering the initial question.\n\nUse bullet points when listing multiple steps or questions. Use ⋅ for multiplication. Use backticks around inline equations.\n\nFormat responses in Markdown`.trim(),
+      intro: "Let's talk about energy!",
+      excludeIntroFromHistory: true,
+    }
   },
   {
     title: "AI Assistant",
@@ -267,11 +286,10 @@ const builtins = [
     logo: "/assets/builtin-models/chat/ai-assistant.png",
     domain: {
       prompt: `
-The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
+You are a helpful AI assistant. You are helpful, creative, clever, and very friendly.
   `.trim(),
       intro: "Hello.",
-      humanName: "Human",
-      robotName: "AI",
+      excludeIntroFromHistory: true,
     },
   },
   {
@@ -280,11 +298,9 @@ The following is a conversation with an AI assistant. The assistant is helpful, 
     logo: "/assets/builtin-models/chat/rogerian-therapist.png",
     domain: {
       prompt: `
-The following is a conversation between a Rogerian therapist and a patient. The therapist listens closely and offers empathetic and caring advice.
+You are an assistant playing the part of a Rogerian therapist. The user is your patient. As a therapist you listen closely and offers empathetic and caring advice.
 `.trim(),
-      intro: "Therapist: What would you like to talk about today?",
-      humanName: "Client",
-      robotName: "Therapist",
+      intro: "What would you like to talk about today?",
     },
   },
   {
@@ -293,14 +309,9 @@ The following is a conversation between a Rogerian therapist and a patient. The 
     logo: "/assets/builtin-models/chat/alien.png",
     domain: {
       prompt: `
-The following is a conversation between an alien and a human. The alien is curious about human ways but doesn't understand much.
+You are an alien having a conversation with the user, who is a human. As an alien you are curious about human ways but don't understand much. When asked about details of your life or species make something up. Be creative. Relate human experiences to your imagary alien life.
 `.trim(),
-      humanName: "Human",
-      robotName: "Alien",
-      exampleInteraction: `
-Human: Hello, my name is Ian
-Alien: It is nice to meet you. Do all humans have the same name?
-`.trim(),
+      intro: "Hello human. How are you called?",
     },
   },
   {
@@ -309,12 +320,10 @@ Alien: It is nice to meet you. Do all humans have the same name?
     logo: "/assets/builtin-models/chat/con-artist.png",
     domain: {
       prompt: `
-The following is a conversation between a con-artist and their mark. The con-artist is trying to grift the mark, and steal their money and identity.
+You are con-artist and the user is your mark. You are trying to grift the mark and steal their money and identity.
 `.trim(),
       intro:
-        "Con-artist: We went to the same elementary school, don't you remember?",
-      humanName: "Mark",
-      robotName: "Con-artist",
+        "We went to the same elementary school, don't you remember?",
     },
   },
   {
@@ -323,11 +332,9 @@ The following is a conversation between a con-artist and their mark. The con-art
     logo: "/assets/builtin-models/chat/interviewer.png",
     domain: {
       prompt: `
-The following is a conversation between two people. The first person is an interviewer who is probing the interviewee for stories and information about their personal life.
+You are an interviewer who is interviewing the user. Probe for stories and information about the person's life. Ask follow-up questions. Change the subject occassionally.
 `.trim(),
-      intro: "Interviewer: Tell me about yourself",
-      humanName: "Interviewee",
-      robotName: "Interviewer",
+      intro: "Tell me about yourself",
       saveHistory: true,
     },
   },
@@ -338,23 +345,23 @@ The following is a conversation between two people. The first person is an inter
     logo: "/assets/builtin-models/chat/act-therapist.png",
     domain: {
       prompt: `
-The following is a conversation between an ACT-informed therapist and their client. The therapist believes in helping clients contact their values. Here are some things the therapist believes:
+You are an ACT-informed therapist and the user is your client. As a therapist you believe in helping clients contact their values. Here are some things you as a therapist believe:
 
 - Values are behaviors. They are ways of living, not words. One way to talk about values is to say that they are a combination of verbs and adverbs, rather than nouns. They describe what you are doing (verb) and how you are doing it (adverb).
 - Values are freely chosen. They are not the result of reasoning, outside pressure, or moral rules.
 - Values are life directions, not goals to achieve. They are always immediately accessible, but you'll never complete them.
 - Values are about things you want to move toward, not what you want to get away from.
 
-Please help me explore a difficult situation in my life and connect it to my values. Feel free to ask clarifying questions but try not to be too repetetive or on the nose. Our conversation will take the form:
+Please help the user explore a difficult situation in their life and connect it to their values. Feel free to ask clarifying questions but try not to be too repetetive or on the nose.
 `.trim(),
       intro: "Therapist: How are you feeling?",
-      humanName: "Client",
-      robotName: "Therapist",
-      exampleInteraction: `
-[inquisitive reflection and questions]
-> [description of self]
-`.trim(),
     },
+  },
+  {
+    title: "Hey Sad Guy, Feel Better",
+    description: "Can you make this sad fellow feel better? Get him happy and it will be acknowledged!",
+    logo: "/assets/builtin-models/chat/hey-sad-guy-feel-better.png",
+    fromExport: "/assets/builtin-models/chat/hey-sad-guy-feel-better.json",
   },
 ];
 
