@@ -49,7 +49,7 @@ class CityMaker {
   }
 
   addProperty(property) {
-    if (property.topLevel) {
+    if (property.topLevel || property.constructor.topLevel) {
       if (this.topLevelProperties[property.typeName]) {
         throw new Error(
           `Duplicate top-level property type: ${property.typeName}`
@@ -62,7 +62,7 @@ class CityMaker {
 
   _fillTopLevelProperties() {
     for (const [name, cls] of Object.entries(propertyClasses)) {
-      if (!cls.prototype.topLevel) {
+      if (!cls.topLevel) {
         continue;
       }
       if (this.topLevelProperties[name]) {
@@ -71,6 +71,7 @@ class CityMaker {
       const property = new cls(this);
       this.addProperty(property);
     }
+    window.c = propertyClasses.cityName;
   }
 
   _hydrateProperty(propertyJson) {
@@ -357,7 +358,7 @@ class Property {
         value = this.city.topLevelProperties[variable].resolveVariable(field);
       } else {
         let pos = this;
-        for (;;) {
+        for (; ;) {
           if (!pos.container) {
             throw new Error(`Could not find variable in parents: ${match[0]}`);
           }
@@ -679,7 +680,7 @@ class Property {
     this.updated();
   }
   unpack = "plain";
-  topLevel = false;
+  static topLevel = false;
 }
 
 class CityType extends Property {
@@ -694,7 +695,7 @@ class CityType extends Property {
 Include a wide variety of types. You may include emoji in the types:
 `;
   choiceType = "single-choice";
-  topLevel = true;
+  static topLevel = true;
 }
 
 registerPropertyClass("cityType", CityType);
@@ -703,7 +704,7 @@ class CityName extends Property {
   title = "City Name";
   prompt = `A numbered list of interesting and exotic names for a city of type $cityType:`;
   choiceType = "single-choice";
-  topLevel = true;
+  static topLevel = true;
 }
 
 registerPropertyClass("cityName", CityName);
@@ -734,7 +735,7 @@ class CityBackstories extends Property {
 Use the present tense. Include exciting and surprising facts that describe an amazing city:
 `;
   choiceType = "multi-choice";
-  topLevel = true;
+  static topLevel = true;
 }
 
 registerPropertyClass("cityBackstories", CityBackstories);
@@ -765,7 +766,7 @@ class NeighborhoodAlias extends Property {
     { name: "precinct" },
   ];
   choiceType = "single-choice";
-  topLevel = true;
+  static topLevel = true;
 }
 
 registerPropertyClass("neighborhoodAlias", NeighborhoodAlias);
@@ -777,7 +778,7 @@ class CityNeighborhoods extends Property {
 A numbered list of city $neighborhoodAlias using "name:description"; use interesting and thematic names for each $neighborhoodAlias. Include economic, cultural, and social distinctions:`;
   choiceType = "multi-choice";
   unpack = ":name:description";
-  topLevel = true;
+  static topLevel = true;
 }
 
 registerPropertyClass("cityNeighborhoods", CityNeighborhoods);
