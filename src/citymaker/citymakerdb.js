@@ -614,22 +614,14 @@ class Property {
   }
 
   toJSON() {
-    const result = {};
-    for (const key of Object.keys(this)) {
-      if (key.startsWith("_") || key === "city" || key === "choices") {
-        continue;
-      }
-      if (!Object.prototype.hasOwnProperty.call(this, key)) {
-        continue;
-      }
-      if (this[key] instanceof Property) {
-        result[key] = this[key].id;
-      } else {
-        result[key] = this[key];
-      }
-    }
-    result.typeName = this.typeName;
-    result.additionalChoicePrompt = this.additionalChoicePrompt || undefined;
+    const result = {
+      id: this.id,
+      name: this.name,
+      attributes: this.attributes,
+      typeName: this.typeName,
+      additionalChoicePrompt: this.additionalChoicePrompt || undefined,
+      children: this.children,
+    };
     if (result.children) {
       result.children = result.children.filter((x) => x).map((c) => c.id);
     }
@@ -679,13 +671,33 @@ class Property {
     }
     this.updated();
   }
-  unpack = "plain";
+  static unpack = "plain";
   static topLevel = false;
+
+  get unpack() {
+    return this.constructor.unpack;
+  }
+
+  get title() {
+    return this.constructor.title;
+  }
+
+  get prompt() {
+    return this.constructor.prompt;
+  }
+
+  get choiceType() {
+    return this.constructor.choiceType;
+  }
+
+  get coercePrompt() {
+    return this.constructor.coercePrompt;
+  }
 }
 
 class CityType extends Property {
-  title = "City Type";
-  prompt = `A numbered list of types of historical or fantastical cities, such as these examples:
+  static title = "City Type";
+  static prompt = `A numbered list of types of historical or fantastical cities, such as these examples:
 
 * A medieval city during a time of plague
 * A high fantasy city with a magical university
@@ -694,16 +706,16 @@ class CityType extends Property {
 
 Include a wide variety of types. You may include emoji in the types:
 `;
-  choiceType = "single-choice";
+  static choiceType = "single-choice";
   static topLevel = true;
 }
 
 registerPropertyClass("cityType", CityType);
 
 class CityName extends Property {
-  title = "City Name";
-  prompt = `A numbered list of interesting and exotic names for a city of type $cityType:`;
-  choiceType = "single-choice";
+  static title = "City Name";
+  static prompt = `A numbered list of interesting and exotic names for a city of type $cityType:`;
+  static choiceType = "single-choice";
   static topLevel = true;
 }
 
@@ -717,8 +729,8 @@ class CityBackstories extends Property {
     return super.resolveVariable(field);
   }
 
-  title = "City Backstory";
-  prompt = `Brainstorm a numbered list of one-sentence descriptions of the city $cityName that is $cityType. Include one or more examples describing:
+  static title = "City Backstory";
+  static prompt = `Brainstorm a numbered list of one-sentence descriptions of the city $cityName that is $cityType. Include one or more examples describing:
 
 * Climate, including occassional extreme weather
 * The year when the city was most prosperous or most dangerous
@@ -734,14 +746,14 @@ class CityBackstories extends Property {
 
 Use the present tense. Include exciting and surprising facts that describe an amazing city:
 `;
-  choiceType = "multi-choice";
+  static choiceType = "multi-choice";
   static topLevel = true;
 }
 
 registerPropertyClass("cityBackstories", CityBackstories);
 
 class CityBackstory extends Property {
-  title = "City Backstory";
+  static title = "City Backstory";
 }
 
 registerPropertyClass("cityBackstory", CityBackstory);
@@ -754,8 +766,8 @@ class NeighborhoodAlias extends Property {
     }
     return `Neighborhoods are called "${choice.name}"`;
   }
-  title = "Neighborhoods are called";
-  prompt = null;
+  static title = "Neighborhoods are called";
+  static prompt = null;
   choices = [
     { name: "neighborhood" },
     { name: "district" },
@@ -765,27 +777,27 @@ class NeighborhoodAlias extends Property {
     { name: "tract" },
     { name: "precinct" },
   ];
-  choiceType = "single-choice";
+  static choiceType = "single-choice";
   static topLevel = true;
 }
 
 registerPropertyClass("neighborhoodAlias", NeighborhoodAlias);
 
 class CityNeighborhoods extends Property {
-  title = "City Neighborhoods";
-  prompt = `The city $cityName is a $cityType. $cityBackstories
+  static title = "City Neighborhoods";
+  static prompt = `The city $cityName is a $cityType. $cityBackstories
 
 A numbered list of city $neighborhoodAlias using "name:description"; use interesting and thematic names for each $neighborhoodAlias. Include economic, cultural, and social distinctions:`;
-  choiceType = "multi-choice";
-  unpack = ":name:description";
+  static choiceType = "multi-choice";
+  static unpack = ":name:description";
   static topLevel = true;
 }
 
 registerPropertyClass("cityNeighborhoods", CityNeighborhoods);
 
 class CityNeighborhood extends Property {
-  title = "Neighborhood";
-  unpack = ":name:description";
+  static title = "Neighborhood";
+  static unpack = ":name:description";
 }
 
 registerPropertyClass("cityNeighborhood", CityNeighborhood);
@@ -793,8 +805,8 @@ registerPropertyClass("cityNeighborhood", CityNeighborhood);
 CityNeighborhoods.prototype.creates = CityNeighborhood;
 
 class Buildings extends Property {
-  title = "Buildings";
-  prompt = `In the city $cityName that is a $cityType, $cityBackstories
+  static title = "Buildings";
+  static prompt = `In the city $cityName that is a $cityType, $cityBackstories
 
 Create a list of buildings in $cityNeighborhood: $cityNeighborhood.description
 
@@ -816,7 +828,7 @@ Example:
 ]
 
 JSON list:`;
-  coercePrompt = `In the city $cityName that is $cityType. $cityBackstories
+  static coercePrompt = `In the city $cityName that is $cityType. $cityBackstories
 
 Describe a building in $cityNeighborhood: $cityNeighborhood.description
 
@@ -836,8 +848,8 @@ Example:
 A JSON description of another building described as "$prompt":
 
 `;
-  choiceType = "multi-choice";
-  unpack = "json";
+  static choiceType = "multi-choice";
+  static unpack = "json";
 }
 
 registerPropertyClass("buildings", Buildings);
@@ -867,16 +879,16 @@ class Building extends Property {
     "widthInMeters&!depthInMeters": "**width**: ${widthInMeters}m",
     "depthInMeters&!depthInMeters": "**depth**: ${depthInMeters}m",
   };
-  title = "Building";
-  unpack = "json";
+  static title = "Building";
+  static unpack = "json";
 }
 
 registerPropertyClass("building", Building);
 Buildings.prototype.creates = Building;
 
 class OwnersOccupants extends Property {
-  title = "Owners, Occupants, and Caretakers";
-  prompt = `The city $cityName that is $cityType. $cityBackstories
+  static title = "Owners, Occupants, and Caretakers";
+  static prompt = `The city $cityName that is $cityType. $cityBackstories
 
 A list of $building.jobTypes and other inhabitants for $building ($building.description). Give each person an interesting and culturally appropriate name and a colorful background and personality. Include negative attributes.
 
@@ -892,7 +904,7 @@ Example:
 ]
 
 JSON list:`;
-  coercePrompt = `In $cityName is a $cityType, an $building.jobTypes and other inhabitant for $building ($building.description). Give the person an interesting and culturally appropriate name. Include negative attributes.
+  static coercePrompt = `In $cityName is a $cityType, an $building.jobTypes and other inhabitant for $building ($building.description). Give the person an interesting and culturally appropriate name. Include negative attributes.
 
 Example:
 
@@ -906,8 +918,8 @@ Example:
 
 A JSON description of another person described as "$prompt":
 `;
-  choiceType = "multi-choice";
-  unpack = "json";
+  static choiceType = "multi-choice";
+  static unpack = "json";
 }
 
 registerPropertyClass("ownersOccupants", OwnersOccupants);
@@ -918,8 +930,8 @@ class Person extends Property {
     "arrives&!leaves": "arrives $arrives",
     "leaves&!arrives": "leaves $leaves",
   };
-  title = "Person";
-  unpack = "json";
+  static title = "Person";
+  static unpack = "json";
 }
 
 registerPropertyClass("person", Person);
@@ -927,8 +939,8 @@ registerPropertyClass("person", Person);
 OwnersOccupants.prototype.creates = Person;
 
 class Visitors extends Property {
-  title = "Visitors";
-  prompt = `The city $cityName is a $cityType. $cityBackstories
+  static title = "Visitors";
+  static prompt = `The city $cityName is a $cityType. $cityBackstories
 
 A list of $building.visitorTypes who might visit $building ($building.description). Give each an interesting and culturally appropriate name and colorful background and personality. Include negative attributes.
 
@@ -944,7 +956,7 @@ Example:
 ]
 
 JSON list:`;
-  coercePrompt = `In city $cityName is a $cityType. $cityBackstories
+  static coercePrompt = `In city $cityName is a $cityType. $cityBackstories
 
 A person is a $building.visitorTypes visiting $building ($building.description). Give the person an interesting and culturally appropriate name. Include negative attributes.
 
@@ -959,16 +971,16 @@ Example:
 
 A JSON description of another visitor described as "$prompt":
 `;
-  choiceType = "multi-choice";
-  unpack = "json";
+  static choiceType = "multi-choice";
+  static unpack = "json";
   creates = Person;
 }
 
 registerPropertyClass("visitors", Visitors);
 
 class Rooms extends Property {
-  title = "Rooms";
-  prompt = `The city $cityName is a $cityType. $cityBackstories
+  static title = "Rooms";
+  static prompt = `The city $cityName is a $cityType. $cityBackstories
 
 A list of rooms in $building ($building.description) in the $cityNeighborhood.
 
@@ -985,7 +997,7 @@ Example:
 ]
 
 JSON list:`;
-  coercePrompt = `The city $cityName is a $cityType.
+  static coercePrompt = `The city $cityName is a $cityType.
 Give a room in $building ($building.description) in the $cityNeighborhood.
 
 Example:
@@ -1000,8 +1012,8 @@ Example:
 
 A JSON description of another room described as "$prompt":
 `;
-  choiceType = "multi-choice";
-  unpack = "json";
+  static choiceType = "multi-choice";
+  static unpack = "json";
 }
 
 registerPropertyClass("rooms", Rooms);
@@ -1027,8 +1039,8 @@ class Room extends Property {
     "widthInMeters&!depthInMeters": "**width**: ${widthInMeters}m",
     "depthInMeters&!depthInMeters": "**depth**: ${depthInMeters}m",
   };
-  title = "Room";
-  unpack = "json";
+  static title = "Room";
+  static unpack = "json";
 }
 
 registerPropertyClass("room", Room);
@@ -1060,8 +1072,8 @@ class RoomConnections extends Property {
   asChoice() {
     return { connections: this.connections };
   }
-  title = "Room Connections";
-  prompt = `A list of connections between rooms in $building.roomListRegular.
+  static title = "Room Connections";
+  static prompt = `A list of connections between rooms in $building.roomListRegular.
 
 Example:
 
@@ -1074,8 +1086,8 @@ Example:
 ]
 
 JSON with the room names $building.roomListQuoted:`;
-  choiceType = "accept";
-  unpack = "json";
+  static choiceType = "accept";
+  static unpack = "json";
 }
 
 registerPropertyClass("roomConnections", RoomConnections);
@@ -1088,8 +1100,8 @@ Building.prototype.createChildren = [
 ];
 
 class Furnitures extends Property {
-  title = "Furniture";
-  prompt = `The city $cityName is a $cityType. $cityBackstories
+  static title = "Furniture";
+  static prompt = `The city $cityName is a $cityType. $cityBackstories
 
 A list of furniture in the room $room.name in the building $building.name ($building.description).
 
@@ -1107,7 +1119,7 @@ Example:
 ]
 
 JSON list:`;
-  coercePrompt = `The city $cityName is a $cityType. $cityBackstories
+  static coercePrompt = `The city $cityName is a $cityType. $cityBackstories
 
 Give furniture in the room $room.name in the building $building.name ($building.description).
 
@@ -1124,8 +1136,8 @@ Example:
 
 A JSON description of another piece of furniture described as "$prompt":
 `;
-  choiceType = "multi-choice";
-  unpack = "json";
+  static choiceType = "multi-choice";
+  static unpack = "json";
 }
 
 registerPropertyClass("furnitures", Furnitures);
@@ -1137,16 +1149,16 @@ class Furniture extends Property {
     "widthInMeters&!depthInMeters": "**width**: ${widthInMeters}m",
     "depthInMeters&!depthInMeters": "**depth**: ${depthInMeters}m",
   };
-  title = "Furniture";
-  unpack = "json";
+  static title = "Furniture";
+  static unpack = "json";
 }
 
 registerPropertyClass("furniture", Furniture);
 Furnitures.prototype.creates = Furniture;
 
 class Items extends Property {
-  title = "Items";
-  prompt = `The city $cityName is a $cityType. $cityBackstories
+  static title = "Items";
+  static prompt = `The city $cityName is a $cityType. $cityBackstories
 
 A list of items in the room $room in the building $building.name ($building.description).
 
@@ -1166,7 +1178,7 @@ Example:
 ]
 
 JSON list:`;
-  coercePrompt = `The city $cityName is a $cityType. $cityBackstories
+  static coercePrompt = `The city $cityName is a $cityType. $cityBackstories
 
 An item in the room $room in the building $building.name ($building.description).
 
@@ -1183,8 +1195,8 @@ Example:
 
 A JSON description of another item described as "$prompt":
 `;
-  choiceType = "multi-choice";
-  unpack = "json";
+  static choiceType = "multi-choice";
+  static unpack = "json";
 }
 
 registerPropertyClass("items", Items);
@@ -1196,8 +1208,8 @@ class Item extends Property {
     weightInKg: "${weightInKg}kg",
     size: "$size",
   };
-  title = "Item";
-  unpack = "json";
+  static title = "Item";
+  static unpack = "json";
 }
 
 registerPropertyClass("item", Item);
