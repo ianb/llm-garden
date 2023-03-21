@@ -158,8 +158,11 @@ class LayerCraft {
 
   async fillChoices(parent, type, noCache = false) {
     const field = this.getField(type);
-    if (field.defaultValue && this.canAddChild(parent, type)) {
-      return this.fillDefaultValue(parent, type);
+    if (field.defaultValue) {
+      if (this.canAddChild(parent, type)) {
+        return this.fillDefaultValue(parent, type);
+      }
+      return;
     }
     if (parent.choices && parent.choices[type]) {
       return;

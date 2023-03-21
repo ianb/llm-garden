@@ -128,6 +128,9 @@ const FILTERS = {
 };
 
 export function dedent(template) {
+  if (template === null || template === undefined) {
+    throw new Error("Template is null or undefined");
+  }
   template = template.trim();
   let lines = template.split("\n");
   const firstLine = lines[0];
