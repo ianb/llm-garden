@@ -95,10 +95,28 @@ class LayerCraft {
     return parent.children.filter((child) => child.type === type);
   }
 
+  hasAnyChildrenByType(parent, type) {
+    if (parent.children) {
+      for (const child of parent.children) {
+        if (child.type === type) {
+          return true;
+        }
+      }
+    }
+    if (parent.uncommittedChildren) {
+      for (const child of parent.uncommittedChildren) {
+        if (child.type === type) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   canAddChild(parent, type) {
     const field = this.getField(type);
     if (field.choiceType === "single-choice" || field.choiceType === "auto") {
-      return !this.childrenByType(parent, type).length;
+      return !this.hasAnyChildrenByType(parent, type);
     }
     return true;
   }
@@ -140,7 +158,7 @@ class LayerCraft {
 
   async fillChoices(parent, type, noCache = false) {
     const field = this.getField(type);
-    if (field.defaultValue) {
+    if (field.defaultValue && this.canAddChild(parent, type)) {
       return this.fillDefaultValue(parent, type);
     }
     if (parent.choices && parent.choices[type]) {
@@ -204,7 +222,9 @@ class LayerCraft {
       }
       if (field.choiceType === "auto") {
         parent.choices[type] = [];
-        this.addChild(parent, type, choices[0]);
+        if (this.canAddChild(parent, type)) {
+          this.addChild(parent, type, choices[0]);
+        }
         return;
       }
       parent.choices[type] = choices;
@@ -214,7 +234,7 @@ class LayerCraft {
     }
   }
 
-  async fillDefaultValue(parent, type, noCache = false) {
+  async fillDefaultValue(parent, type) {
     const template = this.getField(type).defaultValue;
     const name = fillTemplate(
       template,
@@ -223,7 +243,12 @@ class LayerCraft {
       this.repr.bind(this)
     );
     const ob = { type, name };
-    this.addChild(parent, type, ob);
+    if (this.canAddChild(parent, type)) {
+      this.addChild(parent, type, ob);
+    }
+    if (!parent.choices) {
+      parent.choices = {};
+    }
     parent.choices[type] = [];
   }
 

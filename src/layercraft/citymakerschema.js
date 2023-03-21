@@ -314,6 +314,7 @@ export const cityMakerSchema = {
       `,
       choiceType: "multi-choice",
       unpack: "json",
+      showImage: true,
     },
     {
       name: "ownerOccupants",
@@ -585,18 +586,22 @@ export const cityMakerSchema = {
       `,
       display: "`/imagine prompt:` top-down game map of: $name",
       choiceType: "single-choice",
+      attachImage: true,
+      showImage: true,
     },
     {
       name: "characterImagePrompt",
       title: "Character Image Prompt",
       defaultValue: "Full body portrait of:",
       display: "Character portrait: `/imagine prompt:` $name ...",
+      choiceType: "auto",
     },
     {
       name: "buildingImagePromptPrefix",
       title: "Building Image Prompt",
       defaultValue: "Digital art street view of a building:",
       display: "Building image: `/imagine prompt:` $name ...",
+      choiceType: "auto",
     },
   ],
 };

@@ -290,11 +290,11 @@ function PropertyImage({ model, object }) {
     <div class="float-right">
       <img class="w-36 rounded-xl pr-1" onClick={() => setZoomed(true)} src={imageUrl} />
     </div>
-    {zoomed ? <ZoomedImage imageUrl={imageUrl} onClose={() => setZoomed(false)} /> : null}
+    {zoomed ? <ZoomedImage imageUrl={imageUrl} object={object} onClose={() => setZoomed(false)} /> : null}
   </>;
 }
 
-function ZoomedImage({ imageUrl, onClose }) {
+function ZoomedImage({ imageUrl, object, onClose }) {
   const imageRef = useRef();
   // useEffect(() => {
   //   if (!imageRef.current) {
@@ -323,6 +323,10 @@ function ZoomedImage({ imageUrl, onClose }) {
     return () => document.removeEventListener("keydown", onKey);
   });
   return <div class="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={onClose}>
-    <img ref={imageRef} src={imageUrl} class="fixed max-h-full max-w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer" />
+    <img
+      ref={imageRef}
+      src={imageUrl}
+      class="fixed max-h-full max-w-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+    />
   </div>;
 }
