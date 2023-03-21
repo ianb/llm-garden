@@ -73,6 +73,14 @@ and make functions appear magically when you call them. As irresponsible as
 it is irresistible!
 `.trim(),
   },
+  "LayerCraft": {
+    link: "/layercraft/",
+    description: `
+A general authoring tool for building up in layers, building context and structure.
+Based on specific schemas that guide the authoring process, such as world building.
+`.trim(),
+    logo: "/assets/icons/layercraft-logo.png",
+  },
   "Key Management": {
     link: "/key-management/",
     logo: "/assets/icons/key-management-logo.png",

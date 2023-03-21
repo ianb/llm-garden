@@ -2,6 +2,8 @@ import Dexie from "dexie";
 import uuid from "./uuid";
 import { getGeneralLogoPrompt } from "./generallogoprompt";
 import { getDallECompletion } from "./imageapi/dalle";
+import { signal } from "@preact/signals";
+
 
 const db = new Dexie("llmGarden");
 window.db = db;
@@ -67,6 +69,7 @@ export class Model {
     }
     this._onUpdates = [];
     this._dirty = false;
+    this.updateVersion = signal(0);
   }
 
   get id() {
@@ -245,6 +248,7 @@ export class Model {
         console.error(`Error ${this}.updated for ${func}: ${e}`);
       }
     }
+    this.updateVersion.value += 1;
     this._saveToDbSoon();
   }
 
@@ -326,7 +330,7 @@ export class Model {
       return;
     }
     let index = 0;
-    for (;;) {
+    for (; ;) {
       let slug = makeSlug(this.title);
       if (this.builtin) {
         // No duplicate test for builtins
@@ -472,7 +476,7 @@ export class ModelTypeStore {
   }
 }
 
-function recursiveToJSON(o, limit = 10) {
+function recursiveToJSON(o, limit = 20) {
   if (limit <= 0) {
     console.warn("Depth too far trying to deserialize object", o);
     throw new Error("toJSON recursion limit exceeded");

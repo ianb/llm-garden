@@ -42,5 +42,9 @@
   {
     "url": "/p5drawing/iframe",
     "title": "P5 iframe"
+  },
+  {
+    "url": "/layercraft",
+    "title": "LayerCraft"
   }
 ]

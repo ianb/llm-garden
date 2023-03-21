@@ -38,7 +38,7 @@ module.exports = {
     }),
     variants: {
       extend: {
-        display: ["group-hover"],
+        display: ["group-hover", "group2-hover"],
       },
     },
   },

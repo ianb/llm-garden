@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 
-html, body {
+html,
+body {
 	height: 100%;
 	width: 100%;
 	padding: 0;
@@ -31,20 +32,26 @@ html, body {
 }
 
 .sidebar {
-  margin-top: 80px;
-  padding: 20px 20px 20px 20px;
-  position: relative;
-  float: right;
-  border: 2px solid #000;
-  border-radius: 4px;
-  width: 40em;
-  max-width: 40%;
+	margin-top: 80px;
+	padding: 20px 20px 20px 20px;
+	position: relative;
+	float: right;
+	border: 2px solid #000;
+	border-radius: 4px;
+	width: 40em;
+	max-width: 40%;
 }
 
 /* for citymaker specifically: */
 
+/*
 .nested-borders {
 	border-color: #f87171;
+}
+*/
+
+.nested-border {
+	border-color: inherit;
 }
 
 .nested-borders .nested-borders {
@@ -68,15 +75,24 @@ html, body {
 }
 
 .gpt-response.unreset h1 {
-  font-size: 1.1em;
+	font-size: 1.1em;
 }
 
 /* This keeps the top-level <p> in Markdown from adding a top/bottom margin */
-.unreset > div > p:first-child {
+.unreset>div>p:first-child {
 	margin-top: 0;
 }
 
-.unreset > div > p:last-child {
+.unreset>div>h1,
+.unreset>div>h2,
+.unreset>div>h3,
+.unreset>div>h4,
+.unreset>div>h5,
+.unreset>div>h6 {
+	margin-top: 0;
+}
+
+.unreset>div>p:last-child {
 	margin-bottom: 0;
 }
 
@@ -93,292 +109,328 @@ html, body {
  * Doctor, or Tim Murtaugh's HTML5 Reset.
  */
 
-html {
-	box-sizing: content-box;
-}
-
-body {
-	margin: 8px;
-	line-height: normal;
-}
-
-p {
-	margin: 1em 0;
-}
-
-blockquote,
-figure {
-	margin: 1em 40px;
-}
-
-q {
-	quotes: "“" "”" "‘" "’";
-
-	&:before {
-		content: open-quote;
+	html {
+		box-sizing: content-box;
 	}
 
-	&:after {
-		content: close-quote;
+	body {
+		margin: 8px;
+		line-height: normal;
 	}
-}
 
-hr {
-	border: 1px inset;
-	box-sizing: border-box;
-	margin: 0.5em auto;
-}
+	p {
+		margin: 1em 0;
+	}
 
-h1 {
-	font-size: 2em;
-	font-weight: bold;
-	margin: 0.67em 0;
-}
+	blockquote,
+	figure {
+		margin: 1em 40px;
+	}
 
-h2 {
-	font-size: 1.5em;
-	font-weight: bold;
-	margin: 0.83em 0;
-}
+	q {
+		quotes: "“" "”" "‘" "’";
 
-h3 {
-	font-size: 1.17em;
-	font-weight: bold;
-	margin: 1em 0;
-}
+		&:before {
+			content: open-quote;
+		}
 
-h4 {
-	font-size: 1.00em;
-	font-weight: bold;
-	margin: 1.33em 0;
-}
+		&:after {
+			content: close-quote;
+		}
+	}
 
-h5 {
-	font-size: 0.83em;
-	font-weight: bold;
-	margin: 1.67em 0;
-}
-
-h6 {
-	font-size: 0.67em;
-	font-weight: bold;
-	margin: 2.33em 0;
-}
-
-article, aside, nav, section {
+	hr {
+		border: 1px inset;
+		box-sizing: border-box;
+		margin: 0.5em auto;
+	}
 
 	h1 {
+		font-size: 2em;
+		font-weight: bold;
+		margin: 0.67em 0;
+	}
+
+	h2 {
 		font-size: 1.5em;
 		font-weight: bold;
 		margin: 0.83em 0;
 	}
 
-	article, aside, nav, section {
+	h3 {
+		font-size: 1.17em;
+		font-weight: bold;
+		margin: 1em 0;
+	}
+
+	h4 {
+		font-size: 1.00em;
+		font-weight: bold;
+		margin: 1.33em 0;
+	}
+
+	h5 {
+		font-size: 0.83em;
+		font-weight: bold;
+		margin: 1.67em 0;
+	}
+
+	h6 {
+		font-size: 0.67em;
+		font-weight: bold;
+		margin: 2.33em 0;
+	}
+
+	article,
+	aside,
+	nav,
+	section {
 
 		h1 {
-			font-size: 1.17em;
+			font-size: 1.5em;
 			font-weight: bold;
-			margin: 1em 0;
+			margin: 0.83em 0;
 		}
 
-		article, aside, nav, section {
+		article,
+		aside,
+		nav,
+		section {
 
 			h1 {
-				font-size: 1.00em;
+				font-size: 1.17em;
 				font-weight: bold;
-				margin: 1.33em 0;
+				margin: 1em 0;
 			}
 
-			article, aside, nav, section {
+			article,
+			aside,
+			nav,
+			section {
 
 				h1 {
-					font-size: 0.83em;
+					font-size: 1.00em;
 					font-weight: bold;
-					margin: 1.67em 0;
+					margin: 1.33em 0;
 				}
 
-				article, aside, nav, section {
+				article,
+				aside,
+				nav,
+				section {
 
 					h1 {
-						font-size: 0.67em;
+						font-size: 0.83em;
 						font-weight: bold;
-						margin: 2.33em 0;
+						margin: 1.67em 0;
+					}
+
+					article,
+					aside,
+					nav,
+					section {
+
+						h1 {
+							font-size: 0.67em;
+							font-weight: bold;
+							margin: 2.33em 0;
+						}
 					}
 				}
 			}
 		}
 	}
-}
 
-table {
-	border-collapse: separate;
-	border-spacing: 2px;
-	border-color: gray;
-}
-
-thead,
-tbody,
-tfoot,
-tr {
-	border-color: inherit;
-	vertical-align: middle;
-}
-
-td, th {
-	padding: 1px;
-	vertical-align: inherit;
-}
-
-th {
-	font-weight: bold
-}
-
-caption {
-	text-align: center;
-}
-
-ul, menu {
-	list-style-type: disc;
-	margin: 1em 0;
-	padding: 0 0 0 40px;
-}
-
-ol {
-	list-style-type: decimal;
-	margin: 1em 0;
-	padding: 0 0 0 40px;
-}
-
-ul, ol {
-
-	ul {
-		list-style-type: circle;
+	table {
+		border-collapse: separate;
+		border-spacing: 2px;
+		border-color: gray;
 	}
 
-	ul, ol {
+	thead,
+	tbody,
+	tfoot,
+	tr {
+		border-color: inherit;
+		vertical-align: middle;
+	}
+
+	td,
+	th {
+		padding: 1px;
+		vertical-align: inherit;
+	}
+
+	th {
+		font-weight: bold
+	}
+
+	caption {
+		text-align: center;
+	}
+
+	ul,
+	menu {
+		list-style-type: disc;
+		margin: 1em 0;
+		padding: 0 0 0 40px;
+	}
+
+	ol {
+		list-style-type: decimal;
+		margin: 1em 0;
+		padding: 0 0 0 40px;
+	}
+
+	ul,
+	ol {
 
 		ul {
-			list-style-type: square;
+			list-style-type: circle;
+		}
+
+		ul,
+		ol {
+
+			ul {
+				list-style-type: square;
+			}
 		}
 	}
-}
 
-dd {
-	margin: 0 0 0 40px;
-}
-
-dl {
-	margin: 1em 0;
-}
-
-ul, ol, menu, dl {
-
-	ul, ol, menu, dl {
-		margin: 0;
+	dd {
+		margin: 0 0 0 40px;
 	}
-}
 
-legend {
-	padding: 0 2px;
-}
-
-fieldset {
-	border-style: groove;
-	border-width: 2px;
-	border: 2px groove ThreeDFace;
-	margin: 0 2px;
-	padding: 0 2px 3px;
-	-webkit-padding-before: 0.35em;
-	-webkit-padding-start: 0.75em;
-	-webkit-padding-end: 0.75em;
-	-webkit-padding-after: 0.625em;
-}
-
-ins {
-	background-color: transparent;
-	font-weight: inherit;
-	text-decoration: underline;
-}
-
-b, strong {
-	font-weight: bold;
-}
-
-i, cite, em, var, address, dfn {
-	font-style: italic;
-	font-weight: inherit;
-}
-
-abbr[title], dfn[title] {
-	border-bottom: 0;
-	cursor: default;
-	font-weight: inherit;
-}
-
-tt, code, kbd, samp {
-	font-family: monospace;
-	font-weight: inherit;
-}
-
-pre {
-	font-family: monospace;
-	margin: 1em 0;
-	white-space: pre;
-}
-
-mark {
-	background-color: yellow;
-	color: black;
-	font-style: normal;
-	font-weight: inherit;
-}
-
-big {
-	font-size: larger;
-	font-weight: inherit;
-}
-
-small {
-	font-size: smaller;
-	font-weight: inherit;
-}
-
-sub, sup {
-	font-weight: inherit;
-	line-height: inherit;
-	position: static;
-}
-
-sub {
-	font-size: smaller;
-	bottom: 0;
-	vertical-align: sub;
-}
-
-sup {
-	font-size: smaller;
-	top: 0;
-	vertical-align: super;
-}
-
-ruby {
-
-	> rt {
-		font-size: 50%;
+	dl {
+		margin: 1em 0;
 	}
-}
 
-iframe {
-	border: 2px inset;
-}
+	ul,
+	ol,
+	menu,
+	dl {
 
-a {
-  color: #3b82f6;
-	text-decoration: underline;
-}
+		ul,
+		ol,
+		menu,
+		dl {
+			margin: 0;
+		}
+	}
 
-a:hover {
-  color: #1d4ed8;
-}
+	legend {
+		padding: 0 2px;
+	}
+
+	fieldset {
+		border-style: groove;
+		border-width: 2px;
+		border: 2px groove ThreeDFace;
+		margin: 0 2px;
+		padding: 0 2px 3px;
+		-webkit-padding-before: 0.35em;
+		-webkit-padding-start: 0.75em;
+		-webkit-padding-end: 0.75em;
+		-webkit-padding-after: 0.625em;
+	}
+
+	ins {
+		background-color: transparent;
+		font-weight: inherit;
+		text-decoration: underline;
+	}
+
+	b,
+	strong {
+		font-weight: bold;
+	}
+
+	i,
+	cite,
+	em,
+	var,
+	address,
+	dfn {
+		font-style: italic;
+		font-weight: inherit;
+	}
+
+	abbr[title],
+	dfn[title] {
+		border-bottom: 0;
+		cursor: default;
+		font-weight: inherit;
+	}
+
+	tt,
+	code,
+	kbd,
+	samp {
+		font-family: monospace;
+		font-weight: inherit;
+	}
+
+	pre {
+		font-family: monospace;
+		margin: 1em 0;
+		white-space: pre;
+	}
+
+	mark {
+		background-color: yellow;
+		color: black;
+		font-style: normal;
+		font-weight: inherit;
+	}
+
+	big {
+		font-size: larger;
+		font-weight: inherit;
+	}
+
+	small {
+		font-size: smaller;
+		font-weight: inherit;
+	}
+
+	sub,
+	sup {
+		font-weight: inherit;
+		line-height: inherit;
+		position: static;
+	}
+
+	sub {
+		font-size: smaller;
+		bottom: 0;
+		vertical-align: sub;
+	}
+
+	sup {
+		font-size: smaller;
+		top: 0;
+		vertical-align: super;
+	}
+
+	ruby {
+
+		>rt {
+			font-size: 50%;
+		}
+	}
+
+	iframe {
+		border: 2px inset;
+	}
+
+	a {
+		color: #3b82f6;
+		text-decoration: underline;
+	}
+
+	a:hover {
+		color: #1d4ed8;
+	}
 
 }

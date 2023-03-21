@@ -72,6 +72,11 @@ const App = () => {
         module={() => import("../peoplesim/index")}
         component="PeopleSimIndex"
       />
+      <LazyLoader
+        path="/layercraft"
+        module={() => import("../layercraft/index")}
+        component="LayerCraftIndex"
+      />
       <NotFound default />
     </Router>
   );
