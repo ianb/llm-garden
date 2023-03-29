@@ -133,7 +133,7 @@ function Property({ model, object, uncommitted }) {
         <TextArea
           value={model.domain.textValue(object)}
           onSubmit={onSubmitEdit}
-          onInput={(e) => model.domain.setTextValue(object, e.target.value)} />
+          onInput={(e) => { console.log("heya"); model.domain.setTextValue(object, e.target.value) }} />
         :
         <>
           {!editValue && field.showImage ? <PropertyImage model={model} object={object} /> : null}
@@ -146,6 +146,35 @@ function Property({ model, object, uncommitted }) {
     {field.attachImage && !uncommitted ? <ImageAttach model={model} object={object} /> : null}
     {field.chat && !uncommitted ? <Chat model={model} object={object} /> : null}
   </div>;
+}
+
+function EditText({ model, object, onDone }) {
+  const textareaRef = useRef();
+  async function onApplyEdit(el) {
+    if (!textareaRef.ref) {
+      console.warn("Edit text with no textarea");
+      return;
+    }
+    const text = el.value;
+    const replText = el.value = `Running "${text}"...`;
+    const newText = await model.domain.applyNaturalEdit(object, text);
+    if (el.value === reprText) {
+      el.value = "";
+    }
+    textareaRef.current.value = newText;
+  }
+  return <>
+    <div>
+      <TextArea
+        value={model.domain.textValue(object)}
+        onSubmit={onDone}
+        onInput={(e) => model.domain.setTextValue(object, e.target.value)}
+        textareaRef={textareaRef} />
+    </div>
+    <div>
+      <TextInput placeholder="... or describe what you want changed" onSubmit={onApplyEdit} />
+    </div>
+  </>;
 }
 
 function AddProperty({ model, parent, type }) {
@@ -164,7 +193,7 @@ function AddProperty({ model, parent, type }) {
   }
   if (!parent.choices || !parent.choices[type]) {
     model.domain.fillChoices(parent, type);
-    return <div class="bg-blue-800 text-white rounded-md mx-4 p-2">Loading...</div>;
+    return <div class="bg-blue-800 text-white rounded-md mx-4 my-1 p-2">Loading...</div>;
   }
   let choices = parent.choices[type];
   choices = choices.filter((choice) => !model.domain.hasChildByName(parent, type, choice.name));
@@ -196,17 +225,17 @@ function AddProperty({ model, parent, type }) {
   return <div>
     {field.choiceType === "single-choice" && <h3>Choose {model.domain.getField(type).title}:</h3>}
     <ol class="ml-8 list-decimal">
-      {choices.map((choice) => <li class="cursor-default hover:bg-gray-300" onClick={() => onChoice(choice)}>
+      {choices.map((choice) => <li class="cursor-default hover:bg-opacity-10 hover:bg-black" onClick={() => onChoice(choice)}>
         <Markdown text={model.domain.renderFieldDisplay(choice)} />
       </li>)}
-      <li class="cursor-default hover:bg-gray-300">
+      <li class="cursor-default hover:bg-opacity-10 hover:bg-black">
         <span class="cursor-default hover:bg-gray-300" onClick={onReroll}>
           Reroll
           {instructions && <span> with instructions "{instructions}"</span>}</span>
         <Button class="m-0 px-3 py-1 ml-1" onClick={onEditInstructions}><icons.Edit class="h-2 w-2" /></Button>
         {editingInstructions && <InstructionEditor model={model} parent={parent} type={type} onClose={onCloseEditing} />}
       </li>
-      {field.choiceType === "multi-choice" && <li class="cursor-default hover:bg-gray-300" onClick={onDone}>Done</li>}
+      {field.choiceType === "multi-choice" && <li class="cursor-default hover:bg-opacity-10 hover:bg-black" onClick={onDone}>Done</li>}
     </ol>
   </div >;
 }

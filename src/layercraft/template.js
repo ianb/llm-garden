@@ -24,6 +24,7 @@ export function fillTemplate(template, getVariable, getVariablePath, reprFunctio
         filterName = filterName.split(":")[0];
       }
       if (!FILTERS[filterName]) {
+        console.warn("Unknown filter", filterName, "from", filter);
         throw new Error(`Unknown filter: ${filter}`);
       }
       try {
@@ -49,7 +50,8 @@ export function templateVariables(template) {
     const expr = match[1] || match[2];
     const parts = expr.split("|");
     const path = parts[0].split(".");
-    const variable = path[0];
+    let variable = path[0];
+    variable = variable.split(":")[0];
     if (!(variable in result)) {
       result[variable] = match[0];
     }
@@ -124,6 +126,25 @@ const FILTERS = {
       return v.name;
     }
     return `${v.name} (${attrs.map((attr) => attr === "name" ? v.name : v.attributes[attr]).join(": ")})`;
+  },
+
+  get(v, repr, ...attrs) {
+    if (!v) {
+      return "";
+    }
+    const result = [];
+    for (const ob of v) {
+      let value = ob;
+      for (const attr of attrs) {
+        value = value.attributes[attr] || value[attr];
+      }
+      if (Array.isArray(value)) {
+        result.push(...value);
+      } else {
+        result.push(value);
+      }
+    }
+    return result;
   }
 };
 

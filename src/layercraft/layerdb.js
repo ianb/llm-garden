@@ -21,6 +21,7 @@ class LayerCraft {
       },
     });
     this._document = props.document || { type: "document", children: [] };
+    this._cleanDocument();
     this._schemaName = props.schemaName || null;
     this._pendingTypeChoices = new Map();
     this._images = props.images || [];
@@ -33,6 +34,22 @@ class LayerCraft {
   set document(value) {
     this._document = value;
     this.updated();
+  }
+
+  _cleanDocument() {
+    function clean(ob) {
+      if (ob.children) {
+        ob.children = ob.children.filter((child) => child);
+        if (!ob.children.length) {
+          delete ob.children;
+        } else {
+          for (const child of ob.children) {
+            clean(child);
+          }
+        }
+      }
+    }
+    clean(this._document);
   }
 
   get schemaName() {
@@ -79,6 +96,22 @@ class LayerCraft {
     this.updated();
   }
 
+  getAllObjects() {
+    const result = [];
+    function getObjects(ob) {
+      for (const child of ob.children || []) {
+        result.push(child);
+        getObjects(child);
+      }
+      for (const child of ob.uncommittedChildren || []) {
+        result.push(child);
+        getObjects(child);
+      }
+    }
+    getObjects(this._document);
+    return result;
+  }
+
   childrenByType(parent, type, uncommitted = false) {
     if (!parent) {
       throw new Error("No parent");
@@ -92,13 +125,13 @@ class LayerCraft {
     if (!parent.children) {
       return [];
     }
-    return parent.children.filter((child) => child.type === type);
+    return parent.children.filter((child) => child && child.type === type);
   }
 
   hasAnyChildrenByType(parent, type) {
     if (parent.children) {
       for (const child of parent.children) {
-        if (child.type === type) {
+        if (child && child.type === type) {
           return true;
         }
       }
@@ -125,14 +158,23 @@ class LayerCraft {
     if (!parent) {
       throw new Error("No parent");
     }
-    const template = this.getField(type).prompt;
+    const field = this.getField(type);
+    const template = field.prompt;
     const variables = templateVariables(template);
     for (const variable in variables) {
       const full = variables[variable];
       if (full.includes("|optional")) {
         continue;
       }
-      const value = this.getVariable(parent, variable, type);
+      if (field.variables && field.variables[variable]) {
+        continue;
+      }
+      let value;
+      if (full.includes(":anywhere")) {
+        value = this.findAll(variable);
+      } else {
+        value = this.getVariable(parent, variable, type);
+      }
       if (value === undefined || Array.isArray(value) && !value.length) {
         return false;
       }
@@ -144,11 +186,20 @@ class LayerCraft {
     if (!parent) {
       throw new Error("No parent");
     }
-    const template = this.getField(type).prompt;
+    const field = this.getField(type);
+    const template = field.prompt;
     const variables = templateVariables(template);
     const missing = [];
-    for (const variable in variables) {
-      const value = this.getVariable(parent, variable, type);
+    for (let variable in variables) {
+      let value;
+      if (field.variables && field.variables[variable]) {
+        continue;
+      }
+      if (variables[variable].includes(":anywhere")) {
+        value = this.findAll(variable);
+      } else {
+        value = this.getVariable(parent, variable, type);
+      }
       if (value === undefined || Array.isArray(value) && !value.length) {
         missing.push(variable);
       }
@@ -199,6 +250,9 @@ class LayerCraft {
       if (JSON.stringify(query).length > 500) {
         query.max_tokens = 1100;
       }
+      if (field.max_tokens) {
+        query.max_tokens = field.max_tokens;
+      }
       const result = await this.gpt.getChat(query);
       let choices = this.parseResponse(result.text, this.getField(type).unpack);
       choices = choices.map((choice) => {
@@ -213,7 +267,7 @@ class LayerCraft {
           );
         }
         if (instructions) {
-          ob.instructions = instructions;
+          ob.creationInstructions = instructions;
         }
         if (Object.keys(choice).length) {
           ob.attributes = choice;
@@ -285,9 +339,12 @@ class LayerCraft {
       variable = variable.split(":")[0];
       anywhere = true;
     }
-    const field = this.getField(variable);
-    if (!field) {
-      throw new Error(`No such field: ${variable}`);
+    let field;
+    try {
+      field = this.getField(variable);
+    } catch (e) {
+      console.info("Could not resolve", variable, e);
+      return "N/A";
     }
     if (anywhere) {
       return this.findAll(variable);
@@ -514,7 +571,7 @@ class LayerCraft {
       return JSON.stringify(ob);
     }
     const field = this.getField(ob.type);
-    if (ob.name.startsWith("Error: ")) {
+    if (typeof ob.name === "string" && ob.name.startsWith("Error: ")) {
       return ob.name;
     }
     const props = Object.assign({ name: ob.name }, ob.attributes);
@@ -542,13 +599,18 @@ class LayerCraft {
       }
       extra = ` – (${attrs.join("; ")})`;
     }
-    const result = fillTemplate(
-      template,
-      (variable) => this.getVariable(ob, variable, ob.type, props),
-      this.getVariablePath.bind(this),
-      reprFunction
-    ) + extra;
-    return result;
+    try {
+      const result = fillTemplate(
+        template,
+        (variable) => this.getVariable(ob, variable, ob.type, props),
+        this.getVariablePath.bind(this),
+        reprFunction
+      ) + extra;
+      return result;
+    } catch (e) {
+      console.warn("Failed to render template", template, ob);
+      throw e;
+    }
   }
 
   getChatMessages(object) {
@@ -656,9 +718,8 @@ class LayerCraft {
   }
 
   setTextValue(object, value) {
-    if (!object.attributes || !Object.keys(object.attributes).length) {
-      object.name = value;
-    } else if (Object.keys(object.attributes).length === 1 && object.attributes.description) {
+    const field = this.getField(object.type);
+    if (field.unpack === "$name:$description" || (object.attibutes && Object.keys(object.attributes).length === 1 && object.attributes.description)) {
       const parts = value.split(/:/);
       if (!parts[1]) {
         object.name = value.trim();
@@ -667,6 +728,8 @@ class LayerCraft {
         object.name = parts[0].trim();
         object.attributes.description = parts[1].trim();
       }
+    } else if (!object.attributes || !Object.keys(object.attributes).length) {
+      object.name = value;
     } else {
       const lines = value.split("\n");
       for (const line of lines) {
@@ -686,7 +749,17 @@ class LayerCraft {
         }
       }
     }
+    this.updated();
+  }
 
+  applyNaturalEdit(object, edit) {
+    const prompt = `Make this change to the text below, "${edit}":\n\n${this.textValue(object)}`;
+    const messages = [
+      { role: "system", content: this.schema.systemPrompt },
+      { role: "user", content: prompt },
+    ];
+    const response = this.gpt.getChat({ messages });
+    return response.text.trim();
   }
 
   toJSON() {
