@@ -209,6 +209,8 @@ export const cityMakerSchema = {
 
       The user is also playing a character in this world.
       
+      $factionMember is a member of $faction ($faction.description)
+
       $name
 
       Stay in the character of $factionMember.
@@ -440,6 +442,8 @@ export const cityMakerSchema = {
       chatSystemPrompt: `You are playing the part of the character $ownerOccupants in a city $cityName with the theme $cityPeriod
 
       The user is also playing a character in this world.
+
+      $ownerOccupants is a $ownerOccupants.type in $building ($building.description) in the neighborhood $neighborhood ($neighborhood.description)
       
       $name
 
@@ -545,6 +549,26 @@ export const cityMakerSchema = {
       unpack: "plain",
       attachImage: true,
       showImage: true,
+    },
+    {
+      name: "buildingSceneDescription",
+      parent: "building",
+      title: "Scene (narrative)",
+      prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
+
+      In $neighborhood ($neighborhood.description) there is a building $building described as: $building.description
+
+      These characters are in the building:
+      $ownerOccupants|nameDescription|markdownList
+
+      You are a fantasy author who is introducing these characters. Describe a scene as though the reader is entering the building for the first time. Describe the scene in 2-3 paragraphs. Use the characters' full names and descriptions to help the reader visualize the scene. Use Markdown and write each character's name as **FirstName LastName**.
+      `,
+      display: `## $building.name Scene
+
+      $name
+      `,
+      unpack: "plain",
+      choiceType: "auto",
     },
     {
       name: "landmark",
@@ -1086,6 +1110,54 @@ $murderRelationships
       title: "Landmark Image Prompt",
       defaultValue: "Digital fantasy art of:",
       display: "Landmark image prompt: `/imagine prompt: ` $name ...",
+      choiceType: "auto",
+    },
+    {
+      name: "cityDescription",
+      title: "City description (narrative)",
+      prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
+
+      You are a fantasy author introducing the reader to this new city and world. Describe the city in 2-3 paragraphs.
+      `,
+      display: `## $cityName.name
+
+      $name
+      `,
+      unpack: "plain",
+      choiceType: "auto",
+    },
+    {
+      name: "factionsDescription",
+      title: "Factions description (narrative)",
+      prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
+
+      In this city are the following factions:
+      $faction|nameDescription|markdownList
+
+      You are a fantasy author who is introducing these factions to the reader. Describe all the factions in 2-3 paragraphs. Format using Markdown and put each faction name in **bold**.
+      `,
+      display: `## $cityName.name Factions
+
+      $name
+      `,
+      unpack: "plain",
+      choiceType: "auto",
+    },
+    {
+      name: "neighborhoodssDescription",
+      title: "Neighborhoods description (narrative)",
+      prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
+
+      In this city are the following neighborhoods:
+      $neighborhood|nameDescription|markdownList
+
+      You are a fantasy author who is introducing these neighborhoods to the reader. Describe all the neighborhoods in 2-3 paragraphs. Format using Markdown and put each faction name in **bold**.
+      `,
+      display: `## $cityName.name Neighborhoods
+
+      $name
+      `,
+      unpack: "plain",
       choiceType: "auto",
     },
   ],
