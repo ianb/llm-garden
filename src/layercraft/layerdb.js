@@ -405,7 +405,7 @@ class LayerCraft {
   findAll(type) {
     const result = [];
     function findIn(parent) {
-      for (const child of parent.children) {
+      for (const child of parent.children || []) {
         if (child.type === type) {
           result.push(child);
         }
