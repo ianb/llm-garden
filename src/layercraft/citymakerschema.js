@@ -213,7 +213,7 @@ export const cityMakerSchema = {
 
       $name
 
-      Stay in the character of $factionMember.
+      Stay in the character of $factionMember. Usually respond with 1-2 sentences.
       `,
       chat: true,
     },
@@ -447,7 +447,7 @@ export const cityMakerSchema = {
       
       $name
 
-      Stay in the character of $ownerOccupants.
+      Stay in the character of $ownerOccupants. Usually respond with 1-2 sentences.
       `,
       chat: true,
     },
@@ -705,7 +705,7 @@ export const cityMakerSchema = {
         }
       ]
       `,
-      display: `** $name **: $plotRelation`,
+      display: `**$name**: $plotRelation`,
       choiceType: "multi-choice",
       unpack: "json",
     },

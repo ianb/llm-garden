@@ -213,6 +213,9 @@ function AddProperty({ model, parent, type }) {
   function onReroll() {
     model.domain.rerollChoices(parent, type);
   }
+  function onReroll4() {
+    model.domain.rerollChoices(parent, type, 4);
+  }
   function onEditInstructions(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -233,6 +236,7 @@ function AddProperty({ model, parent, type }) {
           Reroll
           {instructions && <span> with instructions "{instructions}"</span>}</span>
         <Button class="m-0 px-3 py-1 ml-1" onClick={onEditInstructions}><icons.Edit class="h-2 w-2" /></Button>
+        <Button class="m-0 ml-4 px-3 py-1" onClick={onReroll4}><icons.Sparkles class="h-2 w-2" /></Button>
         {editingInstructions && <InstructionEditor model={model} parent={parent} type={type} onClose={onCloseEditing} />}
       </li>
       {field.choiceType === "multi-choice" && <li class="cursor-default hover:bg-opacity-10 hover:bg-black" onClick={onDone}>Done</li>}

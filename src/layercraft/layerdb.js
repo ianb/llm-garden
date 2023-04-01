@@ -207,7 +207,7 @@ class LayerCraft {
     return missing;
   }
 
-  async fillChoices(parent, type, noCache = false) {
+  async fillChoices(parent, type, noCache = false, modelType = null) {
     const field = this.getField(type);
     if (field.defaultValue) {
       if (this.canAddChild(parent, type)) {
@@ -247,6 +247,9 @@ class LayerCraft {
         messages,
         noCache,
       };
+      if (modelType === 4) {
+        query.model = "gpt-4";
+      }
       if (JSON.stringify(query).length > 500) {
         query.max_tokens = 1100;
       }
@@ -309,12 +312,12 @@ class LayerCraft {
     parent.choices[type] = [];
   }
 
-  async rerollChoices(parent, type) {
+  async rerollChoices(parent, type, modelType) {
     if (parent.choices) {
       delete parent.choices[type];
     }
     this.updated();
-    await this.fillChoices(parent, type, true);
+    await this.fillChoices(parent, type, true, modelType);
     this.updated();
   }
 
