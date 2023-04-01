@@ -26,7 +26,7 @@ export const LayerCraftView = ({ model }) => {
   window.model = model;
   model.updateVersion.value;
   return (
-    <PageContainer>
+    <PageContainer version={model.updateVersion.value}>
       <Header
         title={model.title || "? Doc ?"}
         section="LayerCraft"
