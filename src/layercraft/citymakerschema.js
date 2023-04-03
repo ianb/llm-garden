@@ -1160,5 +1160,22 @@ $murderRelationships
       unpack: "plain",
       choiceType: "auto",
     },
+    {
+      name: "neighboringKingdoms",
+      title: "Neighboring Kingdoms",
+      prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
+
+      Create a numbered list of 10 neighboring kingdoms, city states, countries, etc. Format each as "name:description". Describe each in 2-3 sentences.
+
+      * Use a variety of languages and cultures
+      * In the description indicate if relations are friendly, hostile, or neutral
+      * Describe any economic relations, political relationships, history, important marriages, etc.
+      `,
+      unpack: "$name:$description",
+      display: `## $name
+      
+      $description`,
+      choiceType: "multi-choice",
+    },
   ],
 };
