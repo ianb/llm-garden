@@ -119,7 +119,8 @@ function Property({ model, object, uncommitted }) {
   function onEdit() {
     setEditValue(true);
   }
-  function onSubmitEdit() {
+  function onSubmitEdit(el) {
+    model.domain.setTextValue(object, el.value);
     setEditValue(false);
   }
   const field = model.domain.getField(object.type);
@@ -131,9 +132,8 @@ function Property({ model, object, uncommitted }) {
       </div>
       {editValue ?
         <TextArea
-          value={model.domain.textValue(object)}
-          onSubmit={onSubmitEdit}
-          onInput={(e) => { console.log("heya"); model.domain.setTextValue(object, e.target.value) }} />
+          defaultValue={model.domain.textValue(object)}
+          onSubmit={onSubmitEdit} />
         :
         <>
           {!editValue && field.showImage ? <PropertyImage model={model} object={object} /> : null}
