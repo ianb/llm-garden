@@ -77,6 +77,11 @@ const App = () => {
         module={() => import("../layercraft/index")}
         component="LayerCraftIndex"
       />
+      <LazyLoader
+        path="/cityplayer"
+        module={() => import("../cityplayer/index")}
+        component="CityPlayerIndex"
+      />
       <NotFound default />
     </Router>
   );

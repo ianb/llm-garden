@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { signal } from "@preact/signals";
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import {
   Button,
   CardButton,
@@ -18,8 +18,16 @@ import { Header } from "./header";
 import * as icons from "./icons";
 import { Markdown } from "../markdown";
 
-export const ModelIndex = ({ store, onSelect, onAdd, children }) => {
+export const ModelIndex = ({ store, onSelect, onAdd, extraOptions, children }) => {
   const [includeArchive, setIncludeArchive] = useState(false);
+  const [concreteExtraOptions, setConcreteExtraOptions] = useState(null);
+  useEffect(() => {
+    if (typeof extraOptions === "function") {
+      extraOptions().then((options) => {
+        setConcreteExtraOptions(options);
+      });
+    }
+  }, []);
   const models = signal(null);
   store.getSummaries(includeArchive).then((m) => {
     models.value = m;
@@ -29,10 +37,15 @@ export const ModelIndex = ({ store, onSelect, onAdd, children }) => {
     setIncludeArchive(v);
     models.value = await store.getSummaries(v);
   }
+  let reallyConcreteExtraOptions = concreteExtraOptions;
+  if (extraOptions && typeof extraOptions !== "function") {
+    reallyConcreteExtraOptions = extraOptions;
+  }
   return (
     <ConcreteIndex
       onSelect={onSelect}
       onAdd={onAdd}
+      extraOptions={reallyConcreteExtraOptions}
       includeArchive={includeArchive}
       setIncludeArchive={onSetIncludeArchive}
       models={models}
@@ -45,6 +58,7 @@ export const ModelIndex = ({ store, onSelect, onAdd, children }) => {
 const ConcreteIndex = ({
   onSelect,
   onAdd,
+  extraOptions,
   includeArchive,
   setIncludeArchive,
   models,
@@ -53,17 +67,39 @@ const ConcreteIndex = ({
   if (!models.value) {
     return <div class="font-bold flex justify-center p-10">Loading...</div>;
   }
+  const extraChildren = extraOptions && extraOptions.map((option) => (
+    <a href="#" onClick={(event) => {
+      event.preventDefault();
+      option.onAdd(option);
+    }}>
+      <Card
+        title={option.title}
+        class="hover:drop-shadow-xl"
+      >
+        {option.logo ? (
+          <div>
+            <LogoImg src={model.logo} class="float-right mr-1 mb-1" />
+          </div>
+        ) : null}
+        <Markdown class="p-2" text={option.description} />
+      </Card>
+    </a>
+  ));
   if (models.value.length === 0) {
     return (
       <div class="flex flex-wrap justify-between">
         <div class="w-1/3 pl-2">{children}</div>
-        <Card title="No models yet!">
-          <P class="p-2">Click "Click to add a new model"</P>
-        </Card>
-        {onAdd ? <Adder onAdd={onAdd} /> : null}
+        <div class="w-2/3 grid grid-cols-2 divide-y">
+          {extraChildren}
+          {onAdd ? <Adder onAdd={onAdd} /> : null}
+          <Card title="No models yet!">
+            <P class="p-2">Click "Click to add a new model"</P>
+          </Card>
+        </div>
       </div>
     );
   }
+  extraOptions = extraOptions || [];
   return (
     <div class="flex flex-wrap justify-between">
       <div class="w-1/3 pl-2">{children}</div>
@@ -71,6 +107,7 @@ const ConcreteIndex = ({
         {models.value.map((m) => (
           <Model model={m} onSelect={onSelect} />
         ))}
+        {extraChildren}
         {onAdd ? <Adder onAdd={onAdd} /> : null}
       </div>
     </div>
@@ -101,7 +138,7 @@ const Model = ({ model, onSelect }) => {
     </CardButton>
   );
   return (
-    <a href={makeLink(model)} onClick={onClick}>
+    <a href={makeModelLink(model)} onClick={onClick}>
       <Card
         title={model.title || "?"}
         buttons={[model.builtin ? null : button]}
@@ -167,7 +204,7 @@ export const ModelLoader = ({ model, viewer, children }) => {
   return viewer({ model: loadedModel });
 };
 
-export const ModelIndexPage = ({ title, store, viewer, noAdd, children }) => {
+export const ModelIndexPage = ({ title, store, viewer, noAdd, extraOptions, children }) => {
   const u = new URL(location.href).searchParams;
   if (u.get("name") || u.get("id")) {
     let model;
@@ -185,19 +222,19 @@ export const ModelIndexPage = ({ title, store, viewer, noAdd, children }) => {
   async function onAdd() {
     const model = await store.create();
     await model.saveToDb();
-    window.location = makeLink(model);
+    window.location = makeModelLink(model);
   }
   return (
     <PageContainer>
       <Header title={title} />
-      <ModelIndex store={store} onAdd={noAdd ? null : onAdd}>
+      <ModelIndex store={store} extraOptions={extraOptions} onAdd={noAdd ? null : onAdd}>
         {children}
       </ModelIndex>
     </PageContainer>
   );
 };
 
-function makeLink(model) {
+export function makeModelLink(model) {
   const u = new URL(location.href);
   let base = u.pathname;
   if (!base.endsWith("/")) {

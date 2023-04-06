@@ -81,6 +81,12 @@ Based on specific schemas that guide the authoring process, such as world buildi
 `.trim(),
     logo: "/assets/icons/layercraft-logo.png",
   },
+  "City Player": {
+    link: "/cityplayer/",
+    status: "alpha",
+    description: `
+Play LayerCraft cities`.trim(),
+  },
   "Key Management": {
     link: "/key-management/",
     logo: "/assets/icons/key-management-logo.png",

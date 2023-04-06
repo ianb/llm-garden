@@ -407,7 +407,13 @@ export class ModelTypeStore {
     models = await models.sortBy("dateUpdated");
     models = models.concat(this.builtins);
     // FIXME: technically this doesn't just get the summaries, but the entire objects
-    return models.map((m) => new Model(m));
+    return models.map((m) => new Model(Object.assign(
+      { type: this.type, domainClass: this.cls }, m
+    )));
+  }
+
+  async getAll(includeArchived = false) {
+    return this.getSummaries(includeArchived);
   }
 
   async getBySlug(slug) {
