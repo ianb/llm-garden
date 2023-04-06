@@ -262,7 +262,7 @@ export const cityMakerSchema = {
       $factionMember: $factionMember.description
       $factionMember is $factionMember.age years old.
 
-      Give a description of the person in the form of a picture. Do not assume any context. Make note of their age and features. Focus on the visual details. Use 3-4 sentences.
+      Give a description of the person in the form of a picture. Give their race. Make note of their age, features, and body type (picking from a variety of body types). Focus on the visual details and use keywords. Describe them situated some location they might work in or frequent. Describe them Use 3-4 sentences.
       `,
       display: "$characterImagePrompt.name $name",
       choiceType: "auto",
@@ -470,48 +470,48 @@ export const cityMakerSchema = {
       attachImage: true,
       showImage: false,
     },
-    {
-      name: "visitors",
-      title: "Visitors",
-      parent: "building",
-      prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
+    // {
+    //   name: "visitors",
+    //   title: "Visitors",
+    //   parent: "building",
+    //   prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
 
-      A list of $building.visitorTypes who might visit $building ($building.description). Give each an interesting and culturally appropriate name and colorful background and personality. Include negative attributes.
+    //   A list of $building.visitorTypes who might visit $building ($building.description). Give each an interesting and culturally appropriate name and colorful background and personality. Include negative attributes.
 
-      Respond with a JSON list like:
+    //   Respond with a JSON list like:
 
-      [
-        {
-          type: $building.visitorTypes|first|repr|json, // or $building.visitorTypes|rest|jsonExamples
-          name: "FirstName LastName",
-          description: "FirstName comes by to buy bread from the bakery every morning",
-          age: 30, // age in years, 5-100
-          arrives: "7am",
-          leaves: "8am",
-        }
-      ]
-      `,
-      coercePrompt: `In city $cityName is a $cityType, $cityPeriod. $cityBackstory
-      
-      A person is a $building.visitorTypes visiting $building ($building.description). Give the person an interesting and culturally appropriate name. Include negative attributes.
+    //   [
+    //     {
+    //       type: $building.visitorTypes|first|repr|json, // or $building.visitorTypes|rest|jsonExamples
+    //       name: "FirstName LastName",
+    //       description: "FirstName comes by to buy bread from the bakery every morning",
+    //       age: 30, // age in years, 5-100
+    //       arrives: "7am",
+    //       leaves: "8am",
+    //     }
+    //   ]
+    //   `,
+    //   coercePrompt: `In city $cityName is a $cityType, $cityPeriod. $cityBackstory
 
-      Example JSON response:
+    //   A person is a $building.visitorTypes visiting $building ($building.description). Give the person an interesting and culturally appropriate name. Include negative attributes.
 
-      {
-        type: $building.visitorTypes|first|repr|json, // or $building.visitorTypes|rest|jsonExamples
-        name: "FirstName LastName",
-        description: "FirstName comes by to buy bread from the bakery every morning",
-        age: 30, // age in years, 5-100
-        arrives: "7am",
-        leaves: "8am",
-      }
-      
-      Respond with a JSON description of another visitor described as "$prompt"
-      `,
-      display: `**$name** ($type): $description. Present **$arrives-$leaves**<br />\nAge: $age`,
-      choiceType: "multi-choice",
-      unpack: "json",
-    },
+    //   Example JSON response:
+
+    //   {
+    //     type: $building.visitorTypes|first|repr|json, // or $building.visitorTypes|rest|jsonExamples
+    //     name: "FirstName LastName",
+    //     description: "FirstName comes by to buy bread from the bakery every morning",
+    //     age: 30, // age in years, 5-100
+    //     arrives: "7am",
+    //     leaves: "8am",
+    //   }
+
+    //   Respond with a JSON description of another visitor described as "$prompt"
+    //   `,
+    //   display: `**$name** ($type): $description. Present **$arrives-$leaves**<br />\nAge: $age`,
+    //   choiceType: "multi-choice",
+    //   unpack: "json",
+    // },
     {
       name: "buildingImagePrompt",
       title: "Image prompt",
