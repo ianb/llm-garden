@@ -8,10 +8,6 @@ export function fillTemplate(template, getVariable, getVariablePath, reprFunctio
     const path = parts[0].split(".");
     const filters = parts.slice(1);
     let punctuation = match[3];
-    if (path.length > 2) {
-      console.warn("Bad path is:", expr, path);
-      throw new Error(`Invalid variable: ${expr}`);
-    }
     const variable = path[0];
     const field = path[1];
     let value = getVariable(variable);

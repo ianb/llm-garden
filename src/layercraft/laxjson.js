@@ -1,6 +1,6 @@
 import JSON5 from "json5";
 
-export function parseJSON(text) {
+export function parseJSON(text, putTrailingInKey = null) {
   // Remove trailing semicolons
   text = text.trim().replace(/;+$/, "").trim();
   // Sometimes the JSON will start with "this is a blah:\n\n[json]"; catch that here:
@@ -44,6 +44,26 @@ export function parseJSON(text) {
     console.info("Also parsing newline fixed JSON");
     baseTexts.push(textwithFixedNewlines);
   }
+  let extra;
+  if (putTrailingInKey) {
+    const leading = baseTexts[0][0];
+    let end;
+    if (leading === "[") {
+      end = "]";
+    } else if (leading === "{") {
+      end = "}";
+    } else {
+      console.info(`JSON starts with unexpected character "${JSON.stringify(leading)}"`);
+    }
+    if (end) {
+      const parts = baseTexts[0].split(end);
+      const last = parts.pop();
+      if (last.trim()) {
+        extra = last.trim();
+        baseTexts.push(baseTexts[0].slice(0, -last.length));
+      }
+    }
+  }
   for (const baseText of baseTexts) {
     for (const option of extraTail) {
       try {
@@ -54,6 +74,9 @@ export function parseJSON(text) {
             JSON.stringify(option),
             result
           );
+        }
+        if (extra) {
+          result[putTrailingInKey] = extra;
         }
         return result;
       } catch (e) {
