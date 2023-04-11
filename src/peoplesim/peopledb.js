@@ -257,7 +257,7 @@ class Action {
 }
 
 class DoNothing extends Action {
-  apply(status) {}
+  apply(status) { }
   markdown() {
     return null;
   }
@@ -795,6 +795,12 @@ const builtins = [
       "A dynamic struggle for survival between an intimidating orc and a helpless hobbit unfolds in a harrowing pit, as the audience cheers for the violence that ensues.",
     fromExport: "/assets/builtin-models/peoplesim/orc-vs-hobbit.json",
     logo: "/assets/builtin-models/peoplesim/orc-vs-hobbit.png",
+  },
+  {
+    title: "Camping Fiasco",
+    description: "A humorous simulation of three inexperienced friends attempting to set up a campground, with hilarious and disastrous results as they struggle to piece together a tent without the necessary components.",
+    fromExport: "/assets/builtin-models/peoplesim/camping-fiasco.json",
+    logo: "/assets/builtin-models/peoplesim/camping-fiasco.png",
   },
 ];
 

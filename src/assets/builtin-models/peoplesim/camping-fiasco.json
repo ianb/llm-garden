@@ -1,0 +1,273 @@
+{
+  "exportType": "peoplesim",
+  "exportDate": 1681183866604,
+  "model": {
+    "id": "67558a24-85d0-438f-9daf-6bdaebdac73c",
+    "type": "peoplesim",
+    "slug": "camping-fiasco",
+    "title": "Camping Fiasco",
+    "archived": false,
+    "description": "A humorous simulation of three inexperienced friends attempting to set up a campground, with hilarious and disastrous results as they struggle to piece together a tent without the necessary components.",
+    "logoPrompt": "Camping Fiasco: A humorous simulation of three inexperienced friends attempting to set up a campground, with hilarious and disastrous results as they struggle to piece together a tent without the necessary components.",
+    "dateCreated": 1681180424314,
+    "dateUpdated": 1681183865308,
+    "domain": {
+      "scenarioDescription": "Three friends are setting up campground. They are inexperienced and have forgotten important parts of the tent. They don't know what they are doing. Hilarity and failure will ensue. There is no way for them to successfully put up the tent",
+      "roomDescription": "The three friends are at a campground as the sun is about to dip below the horizon. The tent they brought is lying on the ground unpacked as the friends ponder what to do next. The instructions lay open on a picnic table. A storm appears to be brewing.",
+      "frames": [
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Ashley",
+              "value": "Okay, this isn't going well. I guess we should just figure out the best way to make do with what we have."
+            },
+            {
+              "actionType": "ChangeGoalAction",
+              "personName": "Ashley",
+              "value": "Make sure the tent is set up safely and doesn't get destroyed in the storm.",
+              "originalGoal": "Have a fun time"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Ashley",
+              "value": "Start looking around to see if there is anything else that can be used to help secure the tent.",
+              "oldRoomDescription": "The three friends are at a campground as the sun is about to dip below the horizon. The tent they brought is lying on the ground unpacked as the friends ponder what to do next. The instructions lay open on a picnic table. A storm appears to be brewing.",
+              "newRoomDescription": "The three friends were at a campground as the sun slowly sank below the horizon. The tent they brought was laying, unpacked, on the ground and the instructions were open on a picnic table. A storm appeared to be brewing in the distance as Ashley started looking around to see if there was anything else that could be used to help secure the tent."
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Ashley",
+              "value": "Worried",
+              "originalMood": "Excited"
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "5 minutes",
+              "originalRoomDescription": "The three friends were at a campground as the sun slowly sank below the horizon. The tent they brought was laying, unpacked, on the ground and the instructions were open on a picnic table. A storm appeared to be brewing in the distance as Ashley started looking around to see if there was anything else that could be used to help secure the tent.",
+              "newRoomDescription": "The three friends were still at the campground as the sky grew darker and the storm approached. Ashley had successfully found some rocks to secure the tent, while the instructions were now strewn about the picnic table. The tent was up and all three friends were busy gathering materials and securing the stakes and poles against the wind. With the storm looming in the distance, they worked quickly to make sure their shelter was safe and secure.",
+              "event": "The sky had darkened and a storm approached as the three friends raced to secure their tent; the rocks Ashley had found helping to hold it in place against the wind."
+            }
+          ]
+        },
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Melissa",
+              "value": "Well, at least we got the tent up! We can finish the rest later."
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Melissa",
+              "value": "Melissa's mood shifts to one of determination",
+              "originalMood": "Anxious"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Melissa",
+              "value": "Melissa helps Ashley finish securing the tent by adding more of the rocks she found to hold down the edges.",
+              "oldRoomDescription": "The three friends were still at the campground as the sky grew darker and the storm approached. Ashley had successfully found some rocks to secure the tent, while the instructions were now strewn about the picnic table. The tent was up and all three friends were busy gathering materials and securing the stakes and poles against the wind. With the storm looming in the distance, they worked quickly to make sure their shelter was safe and secure.",
+              "newRoomDescription": "The three friends worked feverishly to secure the tent against the imminent storm, with Ashley and Melissa placing rocks around the edges to keep it in place. The sky was growing darker, and the thunder could be heard in the distance. They worked quickly to make sure their shelter was safe and sound before the storm hit. With the tent finally secured, they all breathed a collective sigh of relief."
+            },
+            {
+              "actionType": "ChangeGoalAction",
+              "personName": "Melissa",
+              "value": "Melissa's goal shifts to making sure the shelter is secure and safe before the storm arrives.",
+              "originalGoal": "Have everyone think she's lighthearted and fun"
+            },
+            {
+              "actionType": "ChangeRelationshipAction",
+              "personName": "Melissa",
+              "value": {
+                "personName": "Adam",
+                "relationship": "Melissa looks to Adam for help and support in making sure the shelter is secure."
+              },
+              "originalRelationship": "Melissa doesn't know Adam and is nervous about what he will think of her."
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "5 minutes",
+              "originalRoomDescription": "The three friends worked feverishly to secure the tent against the imminent storm, with Ashley and Melissa placing rocks around the edges to keep it in place. The sky was growing darker, and the thunder could be heard in the distance. They worked quickly to make sure their shelter was safe and sound before the storm hit. With the tent finally secured, they all breathed a collective sigh of relief.",
+              "newRoomDescription": "The storm had arrived in full force, but the three friends were secure from its fury thanks to their hard work. Rain pelted down on the tent, but the rocks around the edges held it firmly in place. The thunder and lightning illuminated the night sky, but the friends stayed safe and warm in the shelter, content that their work had paid off.",
+              "event": "The atmosphere had shifted from one of anticipation to one of relief, as the three friends watched the storm batter their tent while they stayed safe and secure in its shelter."
+            }
+          ]
+        },
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Adam",
+              "value": "That was quite a team effort! We worked together and were able to make something out of nothing!"
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Adam",
+              "value": "Happy",
+              "originalMood": "Confident and assertive"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Adam",
+              "value": "Give Ashley and Melissa a high five in congratulations for their efforts.",
+              "oldRoomDescription": "The storm had arrived in full force, but the three friends were secure from its fury thanks to their hard work. Rain pelted down on the tent, but the rocks around the edges held it firmly in place. The thunder and lightning illuminated the night sky, but the friends stayed safe and warm in the shelter, content that their work had paid off.",
+              "newRoomDescription": "The storm raged on outside, but inside the tent the three friends stayed dry and comfortable. Lightning lit up the night sky, but the tent remained secure from the wind and rain thanks to the hard work they'd put in. Adam gave Ashley and Melissa a high five in congratulations, grateful that their work had proven so successful."
+            },
+            {
+              "actionType": "ChangeGoalAction",
+              "personName": "Adam",
+              "value": "To impress Ashley and Melissa with his resourcefulness and charm.",
+              "originalGoal": "Show off to Ashley and Melissa"
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "5 minutes",
+              "originalRoomDescription": "The storm raged on outside, but inside the tent the three friends stayed dry and comfortable. Lightning lit up the night sky, but the tent remained secure from the wind and rain thanks to the hard work they'd put in. Adam gave Ashley and Melissa a high five in congratulations, grateful that their work had proven so successful.",
+              "newRoomDescription": "The storm continued to rage outside, but the tent kept Ashley, Melissa, and Adam safe and sound. Inside the tent, they had made themselves comfortable, with sleeping bags and snacks. The thunder and lightning had grown so loud they had to raise their voices to be heard. But despite that, the trio felt content knowing that their hard work had paid off and their shelter had held up against the storm. Adam smiled and gave his friends a high five, feeling thankful that they had been so successful.",
+              "event": "The thunderous claps of lightning and sheets of rain outside were no match for the trio's hard work and determination, shielding them from the elements in a cozy and secure tent."
+            }
+          ]
+        },
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Ashley",
+              "value": "That was quite an adventure, wasn't it? I'm so glad we made it through in one piece!"
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Ashley",
+              "value": "Happy",
+              "originalMood": "Worried"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Ashley",
+              "value": "Reach out and give Melissa and Adam a hug in celebration of their success.",
+              "oldRoomDescription": "The storm continued to rage outside, but the tent kept Ashley, Melissa, and Adam safe and sound. Inside the tent, they had made themselves comfortable, with sleeping bags and snacks. The thunder and lightning had grown so loud they had to raise their voices to be heard. But despite that, the trio felt content knowing that their hard work had paid off and their shelter had held up against the storm. Adam smiled and gave his friends a high five, feeling thankful that they had been so successful.",
+              "newRoomDescription": "The storm continued to rage outside, but the tent kept Ashley, Melissa, and Adam safe and sound. Inside the tent, they had made themselves comfortable, with sleeping bags and snacks. The thunder and lightning had grown so loud they had to raise their voices to be heard. But despite that, the trio felt content knowing that their hard work had paid off and their shelter had held up against the storm. Adam smiled and gave his friends a high five, feeling thankful that they had been so successful. He was then met with a hug from Ashley, who pulled Melissa and Adam in to embrace them in celebration of their success."
+            },
+            {
+              "actionType": "ChangeGoalAction",
+              "personName": "Ashley",
+              "value": "Celebrate their successful camping trip.",
+              "originalGoal": "Make sure the tent is set up safely and doesn't get destroyed in the storm."
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "5 minutes",
+              "originalRoomDescription": "The storm continued to rage outside, but the tent kept Ashley, Melissa, and Adam safe and sound. Inside the tent, they had made themselves comfortable, with sleeping bags and snacks. The thunder and lightning had grown so loud they had to raise their voices to be heard. But despite that, the trio felt content knowing that their hard work had paid off and their shelter had held up against the storm. Adam smiled and gave his friends a high five, feeling thankful that they had been so successful. He was then met with a hug from Ashley, who pulled Melissa and Adam in to embrace them in celebration of their success.",
+              "newRoomDescription": "The storm outside had finally settled, leaving the tent in a comfortable silence. Inside the tent, Adam, Ashley, and Melissa were content with the results of their hard work. They had been able to make a shelter that had kept them safe and sound, despite the intense thunder and lightning. Adam and his friends had even found the time to snack and relax in their sleeping bags.\n\nTo commemorate their success, Ashley had given both Adam and Melissa a hug. She had pulled them close and held them tight in celebration of their efforts. Now, the trio sat in a comfortable silence, feeling thankful for the success of their shelter. Adam smiled, giving his friends a high five, and the three of them enjoyed the moment of peace.",
+              "event": "The storm had left the cozy tent behind, leaving the trio in a peaceful silence that was punctuated by the happy embrace of Ashley as she thanked them for their hard work."
+            }
+          ]
+        },
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Melissa",
+              "value": "That was definitely an adventure!"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Melissa",
+              "value": "Stretch and yawn, taking in a deep breath before standing up.",
+              "oldRoomDescription": "The storm outside had finally settled, leaving the tent in a comfortable silence. Inside the tent, Adam, Ashley, and Melissa were content with the results of their hard work. They had been able to make a shelter that had kept them safe and sound, despite the intense thunder and lightning. Adam and his friends had even found the time to snack and relax in their sleeping bags.\n\nTo commemorate their success, Ashley had given both Adam and Melissa a hug. She had pulled them close and held them tight in celebration of their efforts. Now, the trio sat in a comfortable silence, feeling thankful for the success of their shelter. Adam smiled, giving his friends a high five, and the three of them enjoyed the moment of peace.",
+              "newRoomDescription": "The storm outside had finally settled, leaving the tent in a comfortable silence. Inside the tent, Adam and his friends were content with the results of their hard work. They had been able to make a shelter that had kept them safe and sound, despite the intense thunder and lightning. Adam and Ashley had given each other a high five in celebration of their success, and Melissa had just finished stretching and yawning before standing. The trio enjoyed the moment of peace, feeling thankful for the success of their shelter."
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Melissa",
+              "value": "Melissa's mood shifts to one of contentment.",
+              "originalMood": "Melissa's mood shifts to one of determination"
+            },
+            {
+              "actionType": "ChangeGoalAction",
+              "personName": "Melissa",
+              "value": "Melissa's goal shifts to making sure the campground is kept neat and tidy after the storm.",
+              "originalGoal": "Melissa's goal shifts to making sure the shelter is secure and safe before the storm arrives."
+            },
+            {
+              "actionType": "ChangeRelationshipAction",
+              "personName": "Melissa",
+              "value": {
+                "personName": "Ashley",
+                "relationship": "Melissa looks to Ashley for reassurance and guidance."
+              },
+              "originalRelationship": "Melissa thinks Ashley is fun and wishes she was more like her."
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "5 minutes",
+              "originalRoomDescription": "The storm outside had finally settled, leaving the tent in a comfortable silence. Inside the tent, Adam and his friends were content with the results of their hard work. They had been able to make a shelter that had kept them safe and sound, despite the intense thunder and lightning. Adam and Ashley had given each other a high five in celebration of their success, and Melissa had just finished stretching and yawning before standing. The trio enjoyed the moment of peace, feeling thankful for the success of their shelter.",
+              "newRoomDescription": "The calm after the storm was a welcome sight. Inside the tent, Adam and his friends were basking in the success of their shelter. The high five they exchanged in celebration and Melissa's stretch and yawn had been a sign that it was time to move on. The trio began packing up, feeling thankful to have been able to make it through the storm safely, and prepared to move out.",
+              "event": "After the storm had subsided, Adam and his friends celebrated their successful shelter, reveling in the peace before packing up and preparing to move on."
+            }
+          ]
+        },
+        {
+          "actions": [
+            {
+              "actionType": "SayAction",
+              "personName": "Adam",
+              "value": "Let's get this tent packed up and get out of here while the storm passes!"
+            },
+            {
+              "actionType": "DoAction",
+              "personName": "Adam",
+              "value": "Begin helping Ashley and Melissa pack up the tent.",
+              "oldRoomDescription": "The calm after the storm was a welcome sight. Inside the tent, Adam and his friends were basking in the success of their shelter. The high five they exchanged in celebration and Melissa's stretch and yawn had been a sign that it was time to move on. The trio began packing up, feeling thankful to have been able to make it through the storm safely, and prepared to move out.",
+              "newRoomDescription": "Adam, Ashley and Melissa are busy packing up the tent, after having made it through the storm safely. They are all feeling a sense of relief and accomplishment, as they prepare to move on."
+            },
+            {
+              "actionType": "MoodAction",
+              "personName": "Adam",
+              "value": "Determined",
+              "originalMood": "Happy"
+            },
+            {
+              "actionType": "SimulateTimeStepAction",
+              "value": "5 minutes",
+              "originalRoomDescription": "Adam, Ashley and Melissa are busy packing up the tent, after having made it through the storm safely. They are all feeling a sense of relief and accomplishment, as they prepare to move on.",
+              "newRoomDescription": "Adam, Ashley, and Melissa are all feeling a sense of accomplishment and relief as they finish up packing the tent. After a successful night in the storm, they are now ready to move on to their next destination. With the tent taken down and packed away, they set off on their journey with a newfound sense of confidence.",
+              "event": "The stormy night now behind them, Adam, Ashley, and Melissa feel a sense of triumph as they take down the tent and head off to the next adventure with an emboldened sense of courage."
+            }
+          ]
+        }
+      ],
+      "people": [
+        {
+          "name": "Ashley",
+          "description": "Ashley is always up for adventure, but often a look-before-you-leap kind of adventure that ends up poorly. She convinced her friends to come on this camping trip this morning and quickly got everything together.",
+          "goal": "Have a fun time",
+          "mood": "Excited",
+          "collapsed": true,
+          "relationshipString": "Melissa: Ashley can tell Melissa thinks too much and worries about stuff, and sometimes it reminds Ashley that deep down she worries too. She tries to be even more bubbly to cover up those feelings.\nAdam: Ashley wasn't expecting to invite Adam but other people she tried couldn't come. She's hoping it works out."
+        },
+        {
+          "name": "Melissa",
+          "description": "Melissa is Ashley's roommate. She's naturally pessimistic but is trying to act differently and be more hopeful. Inside she still feels pessimistic even though she tries to hide it.",
+          "goal": "Have everyone think she's lighthearted and fun",
+          "mood": "Anxious",
+          "collapsed": true,
+          "relationshipString": "Ashley: Melissa thinks Ashley is fun and wishes she was more like her.\nAdam: Melissa doesn't know Adam and is nervous about what he will think of her."
+        },
+        {
+          "name": "Adam",
+          "description": "Adam is an old friend of Ashley from college. He hasn't heard from Ashley for a while and is hoping to impress her during this surprise trip. He has a tendency to act overconfident.",
+          "goal": "Show off to Ashley and Melissa",
+          "mood": "Confident and assertive",
+          "collapsed": true,
+          "relationshipString": "Ashley: Adam thinks Ashley is fun and maybe even hopes to be more than friends\nMelissa: Adam doesn't know Melissa. He can talk over people when he doesn't know them but is trying to impress them."
+        }
+      ],
+      "peopleOrderString": "",
+      "simulationStepLength": "5 minutes",
+      "simulateBetweenEachPerson": true
+    },
+    "typeSlug": "peoplesim_camping-fiasco"
+  }
+}

@@ -85,7 +85,7 @@ Based on specific schemas that guide the authoring process, such as world buildi
     link: "/cityplayer/",
     status: "alpha",
     description: `
-Play LayerCraft cities`.trim(),
+Play LayerCraft cities (not very complete)`.trim(),
   },
   "Key Management": {
     link: "/key-management/",
