@@ -15,7 +15,8 @@ import { QueryLog } from "../components/querylog";
 import * as icons from "../components/icons";
 import { ImportExportMenu } from "../components/modelmenu";
 import { Markdown } from "../markdown";
-import { Page, TextBox } from "./citycomponents";
+import { Page, TextBox, SiteImage } from "./citycomponents";
+import { linkMarkdownObjects } from "./linkmarkdown";
 
 const hashSignal = signal(window.location.hash);
 window.addEventListener("hashchange", () => {
@@ -285,6 +286,9 @@ const PlayLoop = ({ model }) => {
     <Page title={title} background={imageUrl} saturated={saturated}>
       <Sidebar>
         <Inventory model={model} />
+        <div>
+          <Button onClick={() => model.domain.ensurePlayerLocation(true)}>Jump to another location</Button>
+        </div>
         <QueryLog gptcache={model.domain.gpt} />
       </Sidebar>
       <div class="p-2">
@@ -295,18 +299,108 @@ const PlayLoop = ({ model }) => {
 };
 
 const ChattingWith = ({ model, person }) => {
+  const chatRef = useRef();
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  });
+  function onSubmit(el) {
+    const text = el.value.trim();
+    el.value = "";
+    if (text.toLowerCase() === "undo") {
+      model.domain.undoPlayerChat();
+    } else if (text.toLowerCase() === "redo" || text.toLowerCase() === "reroll") {
+      model.domain.rerollPlayerChat();
+    } else if (text.toLowerCase() === "restart" || text.toLowerCase() === "clear") {
+      model.domain.clearPlayerChat();
+    } else if (text.toLowerCase() === "bye" || text.toLowerCase() === "goodbye") {
+      model.domain.player.chattingName = null;
+      model.domain.player.updated();
+    } else {
+      model.domain.playerChat(text);
+    }
+  }
+  let imageUrl;
+  const imagePrompt = model.domain.childrenByType(person, "ownerOccupantsImagePrompt");
+  if (imagePrompt && imagePrompt.length) {
+    imageUrl = imagePrompt[0].imageUrl;
+  }
+  return (
+    <>
+      <TextBox ref={chatRef} class="w-full lg:w-full max-h-64 overflow-y-scroll">
+        <ChatLog model={model} person={person} />
+      </TextBox>
+      <TextBox class="w-full lg:w-full">
+        <TextInput autoFocus="1" onSubmit={onSubmit} />
+      </TextBox>
+      {imageUrl ?
+        <SiteImage src={imageUrl} class="float-right" /> : null}
+      <TextBox>
+        <Markdown text={person.attributes.description} />
+      </TextBox>
+    </>
+  );
 }
+
+const ChatLog = ({ model, person }) => {
+  const chat = person.chatHistory || [];
+  const ref = useRef();
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.scrollIntoView({
+        block: "end",
+        inline: "nearest",
+        behavior: "smooth"
+      });
+    }
+  }, [ref.current]);
+  if (!chat.length) {
+    return <div class="bg-gray-100 px-4 py-2 rounded-lg mb-2 shadow-xl">...</div>;
+  }
+  return <>
+    {chat.map((item, i) => {
+      let c = (item.role === "user"
+        ? "bg-blue-500 text-white px-4 py-2 rounded-lg mb-2 mr-10 shadow-xl"
+        : "bg-gray-100 px-4 py-2 rounded-lg ml-10 mb-2 shadow-xl");
+      let aRef = i === chat.length - 1 ? ref : null;
+      return <div ref={aRef} class={c}>{item.content}</div>
+    })}
+  </>;
+};
 
 const Location = ({ model, location, people }) => {
   const descText = model.domain.player.locationScene;
   function onDo(element) {
-    const text = element.value;
+    const text = element.value.trim();
     element.value = "";
-    model.domain.playerDoes(text);
+    if (text.toLowerCase() === "undo") {
+      model.domain.undoPlayerAction();
+    } else if (text.toLowerCase() === "redo" || text.toLowerCase() === "reroll") {
+      model.domain.rerollPlayerAction();
+    } else if (text.toLowerCase() === "restart" || text.toLowerCase() === "clear") {
+      model.domain.clearPlayerAction();
+    } else {
+      model.domain.playerDoes(text);
+    }
   }
   const actions = (model.domain.player.location.actions || []).slice(-3);
   actions.reverse();
-  console.log("actions", actions);
+  const markdownText = linkMarkdownObjects(
+    descText,
+    people,
+    "chat"
+  );
+  function onClickPerson(event) {
+    if (event.target.tagName === "A") {
+      event.preventDefault();
+      event.stopPropagation();
+      const u = new URL(event.target.href);
+      const name = u.pathname.split("/").pop();
+      model.domain.player.chattingName = decodeURIComponent(name);
+      model.domain.player.updated();
+    }
+  }
   return (
     <div>
       <TextBox class="w-full lg:w-full">
@@ -321,7 +415,7 @@ const Location = ({ model, location, people }) => {
         </TextBox>
         : null}
       <TextBox class="w-2/3 lg:w-2/3">
-        <Markdown text={descText} />
+        <Markdown text={markdownText} onClick={onClickPerson} />
       </TextBox>
     </div>
   )
@@ -357,7 +451,6 @@ const LocationAction = ({ model, action }) => {
     }
     inventory = <div>{inventory}</div>;
   }
-  console.log("inventory is", inventory);
   const attitudes = []
   for (const name in action.result.attitudeChanges) {
     const change = action.result.attitudeChanges[name];

@@ -56,8 +56,8 @@ class CityPlayer {
     this.playerOptions = [];
     this.updated();
     const request = this.fillTemplate(`
-    Create a numbered list of possible characters for the player to play. 
-    
+    Create a numbered list of possible characters for the player to play.
+
     Follow the pattern:
 
     1. [Name]: [Description], [Details and history]
@@ -172,8 +172,8 @@ class CityPlayer {
     this.updated();
   }
 
-  async ensurePlayerLocation() {
-    if (this.player.locationName) {
+  async ensurePlayerLocation(reroll = false) {
+    if (!reroll && this.player.locationName) {
       return;
     }
     const locations = this.findAll("building");
@@ -183,7 +183,7 @@ class CityPlayer {
     this.updated();
   }
 
-  async playerDoes(action) {
+  async playerDoes(action, reroll = false) {
     if (!this.player.location.actions) {
       this.player.location.actions = [];
     }
@@ -198,7 +198,7 @@ class CityPlayer {
 
     I (as $player.name) want to do: "$action".
 
-    Respond in the form:
+    Respond with the JSON:
 
     {
       necessaryInventory: ["[Item name]"], // Which items fron my inventory do I need to do this?
@@ -218,6 +218,7 @@ class CityPlayer {
         { role: "system", content: this.systemPlayerPrompt() },
         { role: "user", content: request },
       ],
+      noCache: reroll,
     });
     try {
       const json = parseJSON(resp.text, "gptNotes");
@@ -230,9 +231,83 @@ class CityPlayer {
     this.updated();
   }
 
+  async undoPlayerAction() {
+    this.player.location.actions.pop();
+    this.updated();
+  }
+
+  async rerollPlayerAction() {
+    const last = this.player.location.actions.pop();
+    this.playerDoes(last.action, true);
+  }
+
+  async clearPlayerAction() {
+    delete this.player.location.actions;
+    this.updated();
+  }
+
+  async playerChat(text, reroll = false) {
+    const person = this.player.chattingPerson;
+    if (!person) {
+      throw new Error("No person to talk to!");
+    }
+    if (!person.chatHistory) {
+      person.chatHistory = [];
+    }
+    person.chatHistory.push({ role: "user", content: text });
+    this.updated();
+    let chatDescription;
+    let children = this.childrenByType(person, "factionMemberChat");
+    if (children.length) {
+      chatDescription = children[0].name;
+    } else {
+      children = this.childrenByType(person, "ownerOccupantsChat");
+      if (children.length) {
+        chatDescription = children[0].name;
+      }
+    }
+    const request = this.fillTemplate(`
+    I am speaking with $person.name, they are described as $person.description.
+
+    $chatDescription
+
+    I ($player.name) say "$text"
+
+    Respond in the present tense like:
+
+    $person.name says "[response]"
+    `, person, { text, chatDescription });
+    const history = person.chatHistory.map((item) => {
+      if (item.role === "user") {
+        return { role: "user", content: `I (${this.player.name}) say "${item.content}` };
+      } else {
+        return { role: "assistant", content: item.content };
+      }
+    });
+    const resp = await this.gpt.getChat({
+      messages: [
+        { role: "system", content: this.systemPlayerPrompt() },
+        ...history,
+        { role: "user", content: request },
+      ],
+      noCache: reroll,
+    });
+    person.chatHistory.push({ role: "assistant", content: resp.text });
+    this.updated();
+  }
+
+  async clearPlayerChat() {
+    const person = this.player.chattingPerson;
+    if (!person) {
+      throw new Error("No person to talk to!");
+    }
+    delete person.chatHistory;
+    this.updated();
+  }
+
   systemPrompt(additions) {
     let template = dedent(`
-    You are playing the part of a gamemaster and the user is a player. As a gamemaster you allow the player to attempt whatever they want, but you don't shield the player from the consequences of their actions.
+    You are playing the part of a gamemaster and the user is a player.As a gamemaster you allow the player to attempt whatever they want, but you don't shield the player from the consequences of their actions.
 
     The game is situated in the city $cityName that is $cityType, $cityPeriod.
     `.trim());
@@ -244,19 +319,19 @@ class CityPlayer {
 
   systemPlayerPrompt() {
     return this.fillTemplate(`
-    You are playing the part of a gamemaster and the user is a player. As a gamemaster you allow the player to attempt whatever they want, but you don't shield the player from the consequences of their actions.
+    You are playing the part of a gamemaster and the user is a player.As a gamemaster you allow the player to attempt whatever they want, but you don't shield the player from the consequences of their actions.
 
     The game is situated in the city $cityName that is $cityType, $cityPeriod.
 
     The player is a $player.socialStatus named $player.name.
 
-    $player.appearance. $player.history.
+      $player.appearance. $player.history.
 
-    I ($player.name) have these in my inventory:
-    $player.shortInventory|markdownList
+      I ($player.name) have these in my inventory:
+      $player.shortInventory|markdownList
 
     I have the skills:
-    $player.skillDescription
+      $player.skillDescription
 
     The player is in the location $player.location.name ($player.location.description).
     `, this.city);
@@ -445,7 +520,7 @@ class Player {
     const possible = this.model.domain.findAll(this.locationType);
     const actual = possible.find((item) => item.name === this.locationName);
     if (!actual) {
-      throw new Error(`No location type ${this.locationType} found with name ${JSON.stringify(this.locationName)}`);
+      throw new Error(`No location type ${this.locationType} found with name ${JSON.stringify(this.locationName)} `);
     }
     return actual;
   }
@@ -460,13 +535,26 @@ class Player {
     return text;
   }
 
+  get chattingPerson() {
+    if (!this.chattingName) {
+      return null;
+    }
+    const place = this.location;
+    const people = this.model.domain.childrenByType(place, "factionMember").concat(this.model.domain.childrenByType(place, "ownerOccupants"));
+    const person = people.find((person) => person.name === this.chattingName);
+    if (!person) {
+      throw new Error(`No person found with name ${JSON.stringify(this.chattingName)} found in ${JSON.stringify(place)} `);
+    }
+    return person;
+  }
+
   get shortInventory() {
     return this.inventory.map((item) => item.split(":")[0]);
   }
 
   get skillDescription() {
     console.log("skills", this.skills);
-    return Object.entries(this.skills).map(([skill, level]) => `${level} at ${skill}`);
+    return Object.entries(this.skills).map(([skill, level]) => `${level} at ${skill} `);
   }
 
   toJSON() {

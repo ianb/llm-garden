@@ -25,6 +25,8 @@ class LayerCraft {
     this._schemaName = props.schemaName || null;
     this._pendingTypeChoices = new Map();
     this._images = props.images || [];
+    this.overlappingNames = props.overlappingNames || undefined;
+    this._ignoreOverlaps = props.ignoreOverlaps || undefined;
   }
 
   get document() {
@@ -63,13 +65,6 @@ class LayerCraft {
 
   get schema() {
     return schemas[this.schemaName];
-  }
-
-  getParent(parent) {
-    if (!parent) {
-      return this.document;
-    }
-    return parent;
   }
 
   getField(name) {
@@ -231,7 +226,10 @@ class LayerCraft {
       let template = dedent(field.prompt);
       const instructions = this.getInstructions(parent, type);
       if (instructions && !("instructions" in templateVariables(template))) {
-        template += `\n\nMake note of these instructions: \"${instructions}\"`;
+        const instructionIntroduction = field.instructionIntroduction || (
+          !["auto", "plain"].includes(field.choiceType) ? "Apply these instructions to each item:"
+            : "Make note of these instructions:");
+        template += `\n\n${instructionIntroduction} \"${instructions}\"`;
       }
       const prompt = fillTemplate(
         template,
@@ -467,6 +465,46 @@ class LayerCraft {
     return findIn(this.document);
   }
 
+  getObjectPath(obj) {
+    function findIn(parent, path) {
+      for (const child of parent.children || []) {
+        if (child === obj) {
+          return path.concat([obj.name]);
+        }
+        if (child.children) {
+          const subPath = path.concat([child.name]);
+          const result = findIn(child, subPath);
+          if (result) {
+            return result;
+          }
+        }
+      }
+      return null;
+    }
+    return findIn(this.document, []);
+  }
+
+  findObjectByPath(path) {
+    const searchPath = [...path];
+    let parent = this.document;
+    while (searchPath.length) {
+      const name = searchPath.shift();
+      let found = false;
+      for (const child of parent.children || []) {
+        if (child.name === name) {
+          parent = child;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        console.warn("Could not find path", path, "in", parent, searchPath);
+        return null;
+      }
+    }
+    return parent;
+  }
+
   parseResponse(text, unpack) {
     if (unpack === "json") {
       try {
@@ -483,7 +521,7 @@ class LayerCraft {
     const el = markdownToElement(text);
     const result = [];
     for (const child of el.querySelectorAll("li")) {
-      const text = child.innerText;
+      const text = child.innerText.trim();
       if (unpack === "$name:$description") {
         const [name, description] = text.split(":");
         result.push({ name, description });
@@ -711,11 +749,15 @@ class LayerCraft {
       return object.name.trim();
     }
     if (Object.keys(object.attributes).length === 1 && object.attributes.description) {
-      return `${object.name} – ${object.attributes.description}`;
+      return `${object.name}: ${object.attributes.description}`;
     }
     const lines = [`name: ${object.name}`];
     for (const key in object.attributes) {
-      lines.push(`${key}: ${object.attributes[key]}`);
+      let value = object.attributes[key];
+      if (Array.isArray(value)) {
+        value = `[${value.join(", ")}]`;
+      }
+      lines.push(`${key}: ${value}`);
     }
     return lines.join("\n");
   }
@@ -741,7 +783,10 @@ class LayerCraft {
         }
         const parts = line.split(/:/);
         const n = parts[0].trim();
-        const v = parts[1].trim();
+        let v = parts[1].trim();
+        if (v.startsWith("[") && v.endsWith("]")) {
+          v = v.slice(1, -1).split(",").map((s) => s.trim());
+        }
         if (n === "name") {
           object.name = v;
         } else {
@@ -770,6 +815,8 @@ class LayerCraft {
       schemaName: this.schemaName,
       document: this.document,
       images: this.images,
+      overlappingNames: this.overlappingNames,
+      ignoreOverlaps: this._ignoreOverlaps,
     };
   }
 
@@ -812,17 +859,128 @@ class LayerCraft {
     if (object.imageUrl) {
       return object.imageUrl;
     }
+    let fallback = null;
     for (const child of object.children || []) {
       if (child.imageUrl) {
-        return child.imageUrl;
+        if (!this.getField(child.type).showImage) {
+          return child.imageUrl;
+        } else {
+          fallback = child.imageUrl;
+        }
       }
     }
-    return null;
+    return fallback;
+  }
+
+  regenerateDuplicateNames() {
+    this.overlappingNames = null;
+    this.updated();
+    const objs = this.getAllObjects();
+    const overlaps = {};
+    for (const ob of objs) {
+      const name = ob.name;
+      const parts = name.split(/\s+/g);
+      if (parts.length > 3) {
+        continue;
+      }
+      for (let subname of parts) {
+        subname = normalizeName(subname);
+        if (!(subname in overlaps)) {
+          overlaps[subname] = [];
+        }
+        overlaps[subname].push(ob);
+      }
+    }
+    const allNames = Array.from(Object.keys(overlaps));
+    allNames.sort();
+    for (const subname of allNames) {
+      if (/^(the|a|an|or)$/i.test(subname)) {
+        delete overlaps[subname];
+        continue;
+      }
+      if (overlaps[subname].length < 2) {
+        delete overlaps[subname];
+        continue;
+      }
+      const objectNames = overlaps[subname].map((ob) => ob.name).join(",");
+      const key = `${subname}:${objectNames}`;
+      if (this._ignoreOverlaps && this._ignoreOverlaps.includes(key)) {
+        delete overlaps[subname];
+      }
+    }
+    const overlapsWithPaths = {};
+    for (const subname in overlaps) {
+      const objects = overlaps[subname];
+      const paths = objects.map((ob) => this.getObjectPath(ob));
+      overlapsWithPaths[subname] = paths;
+    }
+    this.overlappingNames = overlapsWithPaths;
+    this.updated();
+  }
+
+  async generateAlternateNames(obj, problemName, noCache = false) {
+    let desc = obj.name;
+    if (obj.attributes && obj.attributes.description) {
+      desc += `: ${obj.attributes.description}`;
+    }
+    const messages = [
+      { role: "system", content: this.schema.systemPrompt },
+      {
+        role: "user", content: dedent(`
+      ${desc}
+
+      Create a numbered list of alternate names for "${obj.name}". Include 3 imaginative or exotic names, 3 normal names, 3 weird names, and 3 names that only replace "${problemName}".
+      `)
+      },
+    ];
+    const response = await this.gpt.getChat({ messages, noCache });
+    const names = this.parseResponse(response.text, "");
+    return names;
+  }
+
+  async renameObject(obj, newName) {
+    const oldName = obj.name;
+    const input = Object.assign({ name: obj.name }, obj.attributes);
+    const messages = [
+      { role: "system", content: this.schema.systemPrompt },
+      {
+        role: "user", content: dedent(`\
+        Rename "${oldName}" to "${newName}" in this JSON:
+
+        ${JSON.stringify(input, null, 2)}
+
+        Respond with the new JSON
+        `),
+      },
+    ];
+    const response = await this.gpt.getChat({ messages });
+    const newAttributes = this.parseResponse(response.text, "json");
+    obj.name = newName;
+    delete newAttributes.name;
+    console.log("rename", obj.attributes, newAttributes);
+    // Object.assign(obj.attributes, newAttributes);
+    this.updated();
+  }
+
+  ignoreNameOverlap(overlapName, overlapObjects) {
+    console.log("ignoring", overlapName, overlapObjects);
+    const objectNames = overlapObjects.map((ob) => ob.name).join(",");
+    const key = `${overlapName}:${objectNames}`;
+    if (!this._ignoreOverlaps) {
+      this._ignoreOverlaps = [];
+    }
+    this._ignoreOverlaps.push(key);
+    delete this.overlappingNames[overlapName];
+    this.updated();
   }
 }
 
 export const schemas = {
   "citymaker": cityMakerSchema,
+}
+
+function normalizeName(name) {
+  return name.toLowerCase().replace(/[^a-z]/g, "");
 }
 
 const builtins = [

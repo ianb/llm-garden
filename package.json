@@ -38,6 +38,7 @@
     "cytoscape-cose-bilkent": "^4.1.0",
     "dexie": "^3.2.2",
     "eslint-plugin-html": "^7.1.0",
+    "fastest-levenshtein": "^1.0.16",
     "json5": "^2.2.3",
     "jszm": "github:DLehenbauer/jszm",
     "local-cors-proxy": "^1.1.0",

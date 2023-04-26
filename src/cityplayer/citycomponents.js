@@ -1,4 +1,4 @@
-import { useEffect } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { A } from "../components/common";
 import Sidebar from "../components/sidebar";
 import { twMerge } from "tailwind-merge";

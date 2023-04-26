@@ -262,7 +262,7 @@ export const cityMakerSchema = {
       $factionMember: $factionMember.description
       $factionMember is $factionMember.age years old.
 
-      Give a description of the person in the form of a picture. Give their race. Make note of their age, features, and body type (picking from a variety of body types). Focus on the visual details and use keywords. Describe them situated some location they might work in or frequent. Describe them Use 3-4 sentences.
+      Give a description of the person in the form of a picture. Give their race. Make note of their age, features, and body type (picking from a variety of body types). Focus on the visual details and be brief using many keywords. Describe them situated some location they might work in or frequent. Describe them Use 3-4 sentences.
       `,
       display: "$characterImagePrompt.name $name",
       choiceType: "auto",
@@ -525,7 +525,7 @@ export const cityMakerSchema = {
 
       Give a description of the exterior of the building in the form of a picture. Do not assume any context. Focus on the visual details. Use 3-4 sentences.
       `,
-      display: "$buildingImagePromptPrefix.name $name --no text",
+      display: "$buildingImagePromptPrefix.name $name",
       choiceType: "auto",
       unpack: "plain",
       attachImage: true,
@@ -544,7 +544,7 @@ export const cityMakerSchema = {
 
       Give a description of the interior of the building focusing on rooms and feel. Do not assume any context. Focus on the visual details. Use 3-4 sentences.
       `,
-      display: "$buildingInteriorImagePromptPrefix.name $name --no text",
+      display: "$buildingInteriorImagePromptPrefix.name $name",
       choiceType: "auto",
       unpack: "plain",
       attachImage: true,

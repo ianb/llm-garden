@@ -1,6 +1,6 @@
 import { signal } from "@preact/signals";
 
-const hashSignal = signal(window.hash);
+const hashSignal = signal(location.hash);
 
 window.addEventListener("hashchange", () => {
   hashSignal.value = window.location.hash;

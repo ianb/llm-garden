@@ -1,17 +1,17 @@
 export function linkMarkdownObjects(text, objects, linkPrefix) {
   const leftover = [];
   let result = text;
-  for (const faction of objects) {
-    let name = faction.name;
+  for (const object of objects) {
+    let name = object.name;
     name = name.replace(/^the\s+/i, "");
     const re = new RegExp(`\\b${name}\\b`, "g");
     let found = false;
     result = result.replace(re, (match) => {
       found = true;
-      return `[${match}](${linkPrefix}/${encodeURIComponent(faction.name)})`;
+      return `[${match}](${linkPrefix}/${encodeURIComponent(object.name)})`;
     });
     if (!found) {
-      leftover.push(faction);
+      leftover.push(object);
     }
   }
   if (leftover.length) {
