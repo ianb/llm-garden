@@ -84,6 +84,7 @@ Based on specific schemas that guide the authoring process, such as world buildi
   },
   "City Player": {
     link: "/cityplayer/",
+    logo: "/assets/icons/cityplayer-logo.png",
     status: "alpha",
     description: `
 Play LayerCraft cities (not very complete)`.trim(),
