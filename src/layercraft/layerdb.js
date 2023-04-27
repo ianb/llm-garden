@@ -987,14 +987,14 @@ const builtins = [
   {
     title: "Veilvale",
     description: "A fantastical city powered by esoteric magic and a populace where everyone wears a mask as their identity",
-    logo: "/assets/builtin-models/layerdb/veilvale.png",
-    fromExport: "/assets/builtin-models/layerdb/veilvale.json",
+    logo: "/assets/builtin-models/layercraft/veilvale.png",
+    fromExport: "/assets/builtin-models/layercraft/veilvale.json",
   },
   {
     title: "Pearl Cove",
     description: "An underwater city populated by merfolk and their sea life companions.\n\nBy Lucia",
-    logo: "/assets/builtin-models/layerdb/pearl-cove.png",
-    fromExport: "/assets/builtin-models/layerdb/pearl-cove.json",
+    logo: "/assets/builtin-models/layercraft/pearl-cove.png",
+    fromExport: "/assets/builtin-models/layercraft/pearl-cove.json",
   },
 ];
 
