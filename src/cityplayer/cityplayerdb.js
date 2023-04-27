@@ -180,6 +180,7 @@ class CityPlayer {
     const location = locations[Math.floor(Math.random() * locations.length)];
     this.player.locationName = location.name;
     this.player.locationType = location.type;
+    this.player.chattingName = null;
     this.updated();
   }
 

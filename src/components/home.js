@@ -17,6 +17,7 @@ passages; you can pick and choose, or revise and author.
   "City Maker": {
     link: "/citymaker/",
     logo: "/assets/icons/citymaker-logo.png",
+    status: "deprecated",
     description: `
 A tool for generating a city, top-down: starting with the city description,
 neighborhoods, buildings, objects, and so on.
@@ -125,7 +126,7 @@ export const Home = () => {
         </InfoHeader>
         <div class="w-2/3 grid grid-cols-2 divide-y">
           {Object.entries(options)
-            .filter((x) => x[1].status !== "alpha")
+            .filter((x) => !x[1].status)
             .map(([title, { link, description, logo }]) => (
               <LinkCard
                 title={title}
@@ -135,7 +136,7 @@ export const Home = () => {
               />
             ))}
           {Object.entries(options)
-            .filter((x) => x[1].status === "alpha")
+            .filter((x) => x[1].status)
             .map(([title, { link, status, description, logo }]) => (
               <LinkCard
                 status={status}
