@@ -4,6 +4,10 @@ import { cityMakerSchema } from "./citymakerschema";
 import { fillTemplate, templateVariables, dedent, joinNaturalStrings } from "./template";
 import { parseJSON } from "./laxjson";
 import { markdownToElement } from "../markdown";
+import shuffle from "just-shuffle";
+import deepMapValues from "just-deep-map-values";
+
+
 
 class LayerCraft {
   constructor(props) {
@@ -585,11 +589,14 @@ class LayerCraft {
     return false;
   }
 
-  commitChoices(parent, type) {
+  async commitChoices(parent, type) {
     if (!parent.uncommittedChildren) {
       return;
     }
-    const children = parent.uncommittedChildren.filter((child) => child.type === type);
+    const childrenNotUnique = parent.uncommittedChildren.filter((child) => child.type === type);
+    console.log("xxx fixing");
+    const children = await this.fixUniqueNames(type, childrenNotUnique);
+    console.log("xxx fixed", children);
     if (!children.length) {
       return;
     }
@@ -599,6 +606,112 @@ class LayerCraft {
     parent.children.push(...children);
     parent.uncommittedChildren = parent.uncommittedChildren.filter((child) => child.type !== type);
     this.updated();
+  }
+
+  async fixUniqueNames(type, children) {
+    const field = this.getField(type);
+    if (!field.uniqueName) {
+      return children;
+    }
+    const goodChildren = [];
+    const fixingPromises = [];
+    for (const child of children) {
+      const overlapName = this.nameOverlaps(type, child)
+      if (overlapName) {
+        console.log("name problem", child.name);
+        fixingPromises.push((async () => {
+          const newChild = await this.fixUniqueName(type, child, overlapName);
+          goodChildren.push(newChild);
+        })());
+      } else {
+        goodChildren.push(child);
+      }
+    }
+    await Promise.all(fixingPromises);
+    return goodChildren;
+  }
+
+  nameOverlaps(type, object) {
+    const field = this.getField(type);
+    let thisNames = [object.name];
+    if (field.uniqueName.split) {
+      thisNames = splitName(thisNames[0]);
+    }
+    thisNames = thisNames.map(x => normalizeName(x));
+    console.log("check", thisNames, "against", field.uniqueName.fields);
+    for (const otherChild of this.getAllObjects()) {
+      if (!field.uniqueName.fields.includes(otherChild.type)) {
+        continue;
+      }
+      if (otherChild === object) {
+        continue;
+      }
+      let names = [otherChild.name];
+      if (field.uniqueName.split) {
+        names = splitName(otherChild.name);
+      }
+      names = names.map(x => normalizeName(x));
+      console.log("check", thisNames, "against", names);
+      for (const thisExactName of thisNames) {
+        if (names.includes(thisExactName)) {
+          return thisExactName;
+        }
+      }
+    }
+    return false;
+  }
+
+  async fixUniqueName(type, object, overlapName) {
+    const oldName = object.name;
+    const newName = await this.findUniqueName(type, object, overlapName);
+    const newObject = Object.assign({}, object, { name: newName });
+    const repls = [
+      [oldName, newName],
+    ];
+    const oldParts = oldName.split(/\s+/g);
+    const newParts = newName.split(/\s+/g);
+    for (let i = 0; i < oldParts.length; i++) {
+      if (newParts[i]) {
+        repls.push([oldParts[i], newParts[i]]);
+      }
+    }
+    const deepNewObject = deepMapValues(newObject, (value) => {
+      if (typeof value === "string") {
+        for (const [oldValue, newValue] of repls) {
+          value = value.replace(oldValue, () => newValue);
+        }
+      }
+      return value;
+    });
+    return deepNewObject;
+  }
+
+  async findUniqueName(type, object, overlapName) {
+    for (let i = 0; i < 3; i++) {
+      // Try this up to three times
+      let description = object.name;
+      if (object.attributes.description) {
+        description = `${description}: ${object.attributes.description}`;
+      }
+      if (i === 1) {
+        overlapName = `all parts of the name ${object.name}`;
+      }
+      const resp = await this.gpt.getChat({
+        messages: [
+          { role: "system", content: "You are a naming helper." },
+          { role: "user", content: `Create a numbered list of 10 alternative first/last name combinations for this person, specifically replacing ${overlapName}:\n${description}` },
+        ],
+        noCache: i > 0,
+      });
+      const el = markdownToElement(resp.text);
+      const names = shuffle(Array.from(el.querySelectorAll("li")).map(li => li.innerText.trim()));
+      for (const name of names) {
+        if (!this.nameOverlaps(type, { name })) {
+          return name;
+        }
+      }
+    }
+    throw new Error(`Could not find a unique name for ${object.name}`);
   }
 
   renderFieldDisplay(ob) {
@@ -975,12 +1088,26 @@ class LayerCraft {
   }
 }
 
-export const schemas = {
-  "citymaker": cityMakerSchema,
-}
-
 function normalizeName(name) {
   return name.toLowerCase().replace(/[^a-z]/g, "");
+}
+
+const titleRegex = /^(Mr\.?|Mrs\.?|Miss|Ms\.?|Dr\.?|Doctor|Prof\.?|Professor|Rev\.?|Reverend|Sgt\.?|Sergeant|Captain|Col\.?|Colonel|Mayor|Judge|Sir|Dame|Lady|(?:High )?Priest(?:ess)?)\b/i;
+
+function splitName(name) {
+  const match = titleRegex.exec(name);
+  let prefix = "";
+  if (match) {
+    prefix = match[0] + " ";
+    name = name.slice(match[0].length).trim();
+  }
+  const parts = name.split(/\s+/);
+  const first = parts[0];
+  return [prefix + first, ...parts.slice(1)];
+}
+
+export const schemas = {
+  "citymaker": cityMakerSchema,
 }
 
 const builtins = [

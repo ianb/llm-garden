@@ -41,6 +41,8 @@
     "fastest-levenshtein": "^1.0.16",
     "json5": "^2.2.3",
     "jszm": "github:DLehenbauer/jszm",
+    "just-deep-map-values": "^1.2.0",
+    "just-shuffle": "^4.2.0",
     "local-cors-proxy": "^1.1.0",
     "marked": "^4.2.4",
     "onnxruntime-web": "^1.13.1",

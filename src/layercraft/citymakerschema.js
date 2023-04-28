@@ -154,7 +154,7 @@ export const cityMakerSchema = {
       parent: "faction",
       prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
 
-      A list of leaders and notable members of the faction $faction ($faction.description). Give each person an interesting and culturally appropriate name. Include negative attributes.
+      A list of 5-10 leaders and notable members of the faction $faction ($faction.description). Give each person an interesting and culturally appropriate name. Include negative attributes.
 
       Response with a JSON list like this:
 
@@ -186,6 +186,10 @@ export const cityMakerSchema = {
       choiceType: "multi-choice",
       unpack: "json",
       showImage: true,
+      uniqueName: {
+        split: true,
+        fields: ["factionMember", "ownerOccupants"],
+      },
     },
     {
       name: "factionMemberChat",
@@ -260,9 +264,9 @@ export const cityMakerSchema = {
       In the the faction $faction ($faction.description) there is a person described as:
 
       $factionMember: $factionMember.description
-      $factionMember is $factionMember.age years old.
+      $factionMember is $factionMember.age years old and is a $factionMember.type
 
-      Give a description of the person in the form of a picture. Give their race. Make note of their age, features, and body type (picking from a variety of body types). Focus on the visual details and be brief using many keywords. Describe them situated some location they might work in or frequent. Use 3-4 sentences.
+      Give a description of the person in the form of a picture. Give their race (such as black, mixed, Asian, white, Arab, Indian). Make note of their age and body type (such as stout, lanky, brawny, portly, sinewy, curvy). Do not mention their eyes. Focus on the visual details. Use keywords. Describe them situated some location they might work in or frequent, appropriate for a $factionMember.type. Use 3-4 sentences.
       `,
       display: "$characterImagePrompt.name $name",
       choiceType: "auto",
@@ -377,6 +381,10 @@ export const cityMakerSchema = {
       choiceType: "multi-choice",
       unpack: "json",
       showImage: true,
+      uniqueName: {
+        split: false,
+        fields: ["building", "landmark"],
+      },
     },
     {
       name: "ownerOccupants",
@@ -384,7 +392,7 @@ export const cityMakerSchema = {
       parent: "building",
       prompt: `The city $cityName that is $cityType, $cityPeriod. $cityBackstory
 
-      A list of $building.jobTypes and other inhabitants for $building ($building.description). Give each person an interesting and culturally appropriate name and a colorful background and personality. Include negative attributes.
+      A list of 5-10 $building.jobTypes and other inhabitants for $building ($building.description). Give each person an interesting and culturally appropriate name and a colorful background and personality. Include negative attributes.
 
       Respond with a JSON list like:
 
@@ -418,6 +426,10 @@ export const cityMakerSchema = {
       showImage: true,
       choiceType: "multi-choice",
       unpack: "json",
+      uniqueName: {
+        split: true,
+        fields: ["ownerOccupants", "factionMember"],
+      },
     },
     {
       name: "ownerOccupantsChat",
@@ -460,7 +472,7 @@ export const cityMakerSchema = {
       $ownerOccupants: $ownerOccupants.description
       $ownerOccupants is $ownerOccupants.age years old.
 
-      Give a description of the person in the form of a picture. Give their race. Make note of their age, features, and body type (picking from a variety of body types). Focus on the visual details and be brief using many keywords. Describe them situated some location they might work in or frequent. Use 3-4 sentences.
+      Give a description of the person in the form of a picture. Give their race (such as black, mixed, Asian, white, Arab, Indian). Make note of their age and body type (such as stout, lanky, brawny, portly, sinewy, curvy). Do not mention their eyes. Focus on the visual details use keywords. Describe them situated in $building doing their job $ownerOccupant.jobType. Use 3-4 sentences.
       `,
       display: "$characterImagePrompt.name $name",
       choiceType: "auto",
@@ -582,6 +594,10 @@ export const cityMakerSchema = {
       choiceType: "multi-choice",
       unpack: "$name:$description",
       showImage: true,
+      uniqueName: {
+        split: false,
+        fields: ["building", "landmark"],
+      },
     },
     {
       name: "landmarkImagePrompt",
@@ -989,7 +1005,7 @@ $murderRelationships
           - Location: [a location such as \${building:anywhere|rest|first}]
           - Event: [a description of the event, 2 - 3 sentences]
           - Time: 9pm / yesterday / etc
-          - Witnesses: [a list of people such as \${ allPeople.name | first }]
+          - Witnesses: [a list of people such as \${allPeople.name|first}]
 
       Describe an exciting and mysterious muder.
 
