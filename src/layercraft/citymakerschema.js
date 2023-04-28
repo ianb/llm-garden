@@ -70,7 +70,7 @@ export const cityMakerSchema = {
       * A high fantasy city with a magical university
       * An underwater city with a submarine port
       * The ancient city of Troy
-      
+
       Include a wide variety of types. You may include emoji in the types:
       `,
       display: "Theme: $name",
@@ -100,7 +100,7 @@ export const cityMakerSchema = {
       name: "cityBackstory",
       title: "City Backstory",
       prompt: `Brainstorm a numbered list of ideas for one-sentence descriptions of the city $cityName that is $cityType, $cityPeriod. $cityBackstory|optional
-      
+
       Include one or more examples describing:
 
       * The climate, including some extreme weather
@@ -131,7 +131,7 @@ export const cityMakerSchema = {
       * Schools, academies, or universities
       * Criminal gangs
       * Artistic or cultural groups, media
-      
+
       Response with a JSON list like:
 
       [
@@ -168,7 +168,7 @@ export const cityMakerSchema = {
       ]
       `,
       coercePrompt: `In city $cityName is a $cityType, $cityPeriod. $cityBackstory
-      
+
       A leaders or notable member of the faction $faction ($faction.description). Give the person an interesting and culturally appropriate name. Include negative attributes.
 
       Example JSON:
@@ -179,7 +179,7 @@ export const cityMakerSchema = {
         description: "FirstName is [description]",
         age: 30, // age in years, 16-100
       }
-    
+
       Respond with a JSON description of another leader or member described as "$prompt"
       `,
       display: "**$name** ($type): $description<br />\nAge: $age",
@@ -194,12 +194,12 @@ export const cityMakerSchema = {
       prompt: `I'm making a game set in: the city $cityName is a $cityType, theme $cityPeriod. $cityBackstory
 
       In the city is $faction: $faction.description
-      
+
       I want to create a chatbot based on this character:
-      
+
       $factionMember: $factionMember.description
-      
-      In 1-2 paragraphs describe how $factionMember to someone with no other context. Emphasize how they would behave in conversation. 
+
+      In 1-2 paragraphs describe how $factionMember to someone with no other context. Emphasize how they would behave in conversation.
       `,
       display: "**Chat prompt:** $name",
       choiceType: "auto",
@@ -208,7 +208,7 @@ export const cityMakerSchema = {
       chatSystemPrompt: `You are playing the part of the character $factionMember in a city $cityName with the theme $cityPeriod
 
       The user is also playing a character in this world.
-      
+
       $factionMember is a member of $faction ($faction.description)
 
       $name
@@ -222,7 +222,7 @@ export const cityMakerSchema = {
       title: "Faction Logo Image Prompt",
       parent: "faction",
       prompt: `The city $cityName is a $cityType, $cityPeriod.
-      
+
       Describe a numbered list of logos for the faction $faction: $faction.description
 
       For each logo describe the it visually in 2-3 sentences. Include the colors, shapes, and symbols. Describe the logo in a way that would be easy to draw. Use keywords. Do not put text in the logo.
@@ -240,7 +240,7 @@ export const cityMakerSchema = {
       title: "Faction Background Image Prompt",
       parent: "faction",
       prompt: `The city $cityName is a $cityType, $cityPeriod.
-      
+
       Describe a backdrop for the faction $faction: $faction.description
 
       Describe the backdrop based on the interior of a likely headquarters for the faction. Use visual keywords, describing details, colors, and tones. Use 3-4 sentences.
@@ -262,7 +262,7 @@ export const cityMakerSchema = {
       $factionMember: $factionMember.description
       $factionMember is $factionMember.age years old.
 
-      Give a description of the person in the form of a picture. Give their race. Make note of their age, features, and body type (picking from a variety of body types). Focus on the visual details and be brief using many keywords. Describe them situated some location they might work in or frequent. Describe them Use 3-4 sentences.
+      Give a description of the person in the form of a picture. Give their race. Make note of their age, features, and body type (picking from a variety of body types). Focus on the visual details and be brief using many keywords. Describe them situated some location they might work in or frequent. Use 3-4 sentences.
       `,
       display: "$characterImagePrompt.name $name",
       choiceType: "auto",
@@ -270,52 +270,52 @@ export const cityMakerSchema = {
       attachImage: true,
       showImage: false,
     },
-    {
-      name: "factionRelationships",
-      title: "Faction Relationships",
-      prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
-      
-      The following factions are in the city:
-      $faction|nameDescription|markdownList
-      
-      Give a list of relationships between the factions. Imagine new facts and events that would cause the factions to have these relationships. Create interesting conflict.
-      
-      Respond with a JSON list like:
+    // {
+    //   name: "factionRelationships",
+    //   title: "Faction Relationships",
+    //   prompt: `The city $cityName is a $cityType, $cityPeriod. $cityBackstory
 
-      [
-        {
-          faction: $faction|first|repr|json, // or $faction|rest|jsonExamples
-          otherFaction: $faction|rest|first|repr|json, // or $faction|jsonExamples,
-          relationship: "friendly", // or "hostile", "neutral", "war", "ally"
-          description: "The factions are [description]",
-        }
-      ]
-      `,
-      coercePrompt: `
-      The city $cityName is a $cityType, $cityPeriod. $cityBackstory
-      
-      The following factions are in the city:
-      $faction|markdownList
-      
-      Give a relationships between two factions. Include positive and negative relationships.
+    //   The following factions are in the city:
+    //   $faction|nameDescription|markdownList
 
-      Example JSON list:
+    //   Give a list of relationships between the factions. Imagine new facts and events that would cause the factions to have these relationships. Create interesting conflict.
 
-      {
-        faction: $faction|first|repr|json, // or $faction|rest|jsonExamples
-        otherFaction: $faction|rest|first|repr|json, // or $faction|jsonExamples,
-        relationship: "friendly", // or "hostile", "neutral", "war", "ally"
-        description: "The factions are [description]",
-      }
+    //   Respond with a JSON list like:
 
-      Respond with a JSON description of a relationship described as "$prompt"
-      `,
-      display: `**$faction** ⇔ **$otherFaction**: $relationship<br />\n$description`,
-      style: "bg-amber-200",
-      createName: "$faction<->$otherFaction",
-      choiceType: "multi-choice",
-      unpack: "json",
-    },
+    //   [
+    //     {
+    //       faction: $faction|first|repr|json, // or $faction|rest|jsonExamples
+    //       otherFaction: $faction|rest|first|repr|json, // or $faction|jsonExamples,
+    //       relationship: "friendly", // or "hostile", "neutral", "war", "ally"
+    //       description: "The factions are [description]",
+    //     }
+    //   ]
+    //   `,
+    //   coercePrompt: `
+    //   The city $cityName is a $cityType, $cityPeriod. $cityBackstory
+
+    //   The following factions are in the city:
+    //   $faction|markdownList
+
+    //   Give a relationships between two factions. Include positive and negative relationships.
+
+    //   Example JSON list:
+
+    //   {
+    //     faction: $faction|first|repr|json, // or $faction|rest|jsonExamples
+    //     otherFaction: $faction|rest|first|repr|json, // or $faction|jsonExamples,
+    //     relationship: "friendly", // or "hostile", "neutral", "war", "ally"
+    //     description: "The factions are [description]",
+    //   }
+
+    //   Respond with a JSON description of a relationship described as "$prompt"
+    //   `,
+    //   display: `**$faction** ⇔ **$otherFaction**: $relationship<br />\n$description`,
+    //   style: "bg-amber-200",
+    //   createName: "$faction<->$otherFaction",
+    //   choiceType: "multi-choice",
+    //   unpack: "json",
+    // },
     {
       name: "neighborhood",
       title: "Neighborhood",
@@ -335,7 +335,7 @@ export const cityMakerSchema = {
       prompt: `In the city $cityName that is a $cityType, $cityPeriod. $cityBackstory
 
       Create a list of buildings in $neighborhood: $neighborhood.description
-      
+
       Including at least a few residences.Use colorful descriptions for the buildings, giving each building a distinct personality.
 
       Respond with a JSON list like:
@@ -347,15 +347,14 @@ export const cityMakerSchema = {
           floors: 1,
           widthInMeters: 1,
           depthInMeters: 1,
-          jobTypes: ["janitor"], // anyone who works or owns this building
-          visitorTypes: ["homeless", "criminal", "tourist"], // anyone who visits this building
+          jobTypes: ["janitor"], // anyone who works or owns this building, or who lives in this building
         }
       ]
       `,
       coercePrompt: `In the city $cityName that is $cityType, $cityPeriod. $cityBackstory
 
       Describe a building in $neighborhood: $neighborhood.description
-      
+
       Example JSON response:
 
       {
@@ -364,10 +363,9 @@ export const cityMakerSchema = {
         floors: 1,
         widthInMeters: 1,
         depthInMeters: 1,
-        jobTypes: ["janitor"], // anyone who works or owns this building
-        visitorTypes: ["homeless", "criminal", "tourist"], // anyone who visits this building
+        jobTypes: ["janitor"], // anyone who works or owns this building, or who lives in this building
       }
-          
+
       Respond with a JSON description of another building described as "$prompt"
       `,
       display: `**$name**: $description<br />
@@ -413,7 +411,7 @@ export const cityMakerSchema = {
         arrives: "8am",
         leaves: "6pm",
       }
-      
+
       Respond with a JSON description of another person described as "$prompt"
       `,
       display: `**$name** ($type): $description. Present **$arrives-$leaves**<br />\nAge: $age`,
@@ -428,12 +426,12 @@ export const cityMakerSchema = {
       prompt: `I'm making a game set in: the city $cityName is a $cityType, theme $cityPeriod. $cityBackstory
 
       In the city is a building $building: $building.description. Inside this building is $ownerOccupants, a $ownerOccupants.jobType
-      
+
       I want to create a chatbot based on this character:
-      
+
       $ownerOccupants: $ownerOccupants.description
-      
-      In 1-2 paragraphs describe how would act $ownerOccupants to someone with no other context. Emphasize how they would behave in conversation. 
+
+      In 1-2 paragraphs describe how would act $ownerOccupants to someone with no other context. Emphasize how they would behave in conversation.
       `,
       display: "**Chat prompt:** $name",
       choiceType: "auto",
@@ -444,7 +442,7 @@ export const cityMakerSchema = {
       The user is also playing a character in this world.
 
       $ownerOccupants is a $ownerOccupants.type in $building ($building.description) in the neighborhood $neighborhood ($neighborhood.description)
-      
+
       $name
 
       Stay in the character of $ownerOccupants. Usually respond with 1-2 sentences.
@@ -462,7 +460,7 @@ export const cityMakerSchema = {
       $ownerOccupants: $ownerOccupants.description
       $ownerOccupants is $ownerOccupants.age years old.
 
-      Give a description of the person in the form of a picture. Do not assume any context. Focus on the visual details. Use 3-4 sentences.
+      Give a description of the person in the form of a picture. Give their race. Make note of their age, features, and body type (picking from a variety of body types). Focus on the visual details and be brief using many keywords. Describe them situated some location they might work in or frequent. Use 3-4 sentences.
       `,
       display: "$characterImagePrompt.name $name",
       choiceType: "auto",
@@ -624,7 +622,7 @@ export const cityMakerSchema = {
       title: "Protagonist / Main Characters",
       prompt: `The city $cityName that is $cityType, $cityPeriod. $cityBackstory
 
-      A list of protagonists who could be the main character of a story set in the city.Each protagonist be described in 3-4 sentences. 
+      A list of protagonists who could be the main character of a story set in the city.Each protagonist be described in 3-4 sentences.
 
       Respond with a JSON list like:
 
@@ -640,7 +638,7 @@ export const cityMakerSchema = {
           }
         ]`,
       display: `### $name ($type)
-      
+
       $description<br />
       **Goal:** $goal <br />
       **The Call to Adventure:** $theCallToAdventure <br />
@@ -752,7 +750,7 @@ export const cityMakerSchema = {
 
       These characters are involved:
       \${plotCharacters|pack:name:plotRelation|markdownList}
-      
+
       These locations are involved:
       \${plotLocations|pack:name:plotElement|markdownList}
 
@@ -1000,7 +998,7 @@ $murderRelationships
     `,
       max_tokens: 2000,
       display: `# Mystery Plot
-      
+
       $name
       `,
       choiceType: "single-choice",
@@ -1014,7 +1012,7 @@ $murderRelationships
       There is a murder mystery. It is described like this:
 
       $mysteryPlot
-      
+
       Create a description of the plot formatted as JSON:
 
       [
@@ -1075,8 +1073,8 @@ $murderRelationships
       It contains these neighborhoods:
       $neighborhood|nameDescription|markdownList
 
-      Make a list of map descriptions, one for each neighborhood and then 3 for the entire city of $cityName. 
-      
+      Make a list of map descriptions, one for each neighborhood and then 3 for the entire city of $cityName.
+
       Each should describe a top-down view of a map that includes the boundaries of the city and what lies immediately outside. Describe an appropriate style of the map. Use only concrete and specific descriptions. Use 3-4 sentences each.
       `,
       display: "`/imagine prompt:`<br />\ntop-down game map of: $name",
@@ -1173,7 +1171,7 @@ $murderRelationships
       `,
       unpack: "$name:$description",
       display: `## $name
-      
+
       $description`,
       choiceType: "multi-choice",
     },

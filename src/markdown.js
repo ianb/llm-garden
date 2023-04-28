@@ -1,5 +1,12 @@
 import { h } from "preact";
-import { parse } from "marked";
+import { parse, marked } from "marked";
+
+marked.setOptions({
+  renderer: new marked.Renderer(),
+  gfm: true,
+  breaks: true, // Makes line breaks into <br />
+});
+
 
 export function parseHtml(html, wrap = true) {
   const p = new DOMParser();

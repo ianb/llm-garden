@@ -107,7 +107,7 @@ class CityPlayer {
           mission: "[The character's mission that begins the game]",
         },
       ],
-      // Skills that would be appropriate and useful for the character:
+      // At least 7 skills that would be appropriate and useful for the character:
       skillOptions: {
         "[Skill name]": "novice", // or "skilled", "expert", "master", "legendary"
       },
@@ -133,7 +133,6 @@ class CityPlayer {
     if (skills) {
       base.skills = skills;
     }
-    console.log("creating player with", base, skills);
     this.player = new Player(this.envelope, base);
     this.updated();
   }
@@ -303,6 +302,22 @@ class CityPlayer {
       throw new Error("No person to talk to!");
     }
     delete person.chatHistory;
+    this.updated();
+  }
+
+  async undoPlayerChat() {
+    const person = this.player.chattingPerson;
+    if (!person) {
+      throw new Error("No person to talk to!");
+    }
+    if (!person.chatHistory || !person.chatHistory.length) {
+      console.warn("No chat history to undo");
+      return;
+    }
+    person.chatHistory.pop();
+    while (person.chatHistory.length && person.chatHistory[person.chatHistory.length - 1].role === "user") {
+      person.chatHistory.pop();
+    }
     this.updated();
   }
 
@@ -510,6 +525,7 @@ class Player {
     this.locationType = props.locationType || null;
     this.locationName = props.locationName || null;
     this.chattingName = props.chattingName || null;
+    this.socialStatus = props.socialStatus || null;
   }
 
   addInventory(item) {

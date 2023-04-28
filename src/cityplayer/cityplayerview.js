@@ -1,11 +1,7 @@
 /* eslint-disable no-unused-vars */
-import { Header, HeaderButton } from "../components/header";
 import {
-  PageContainer,
-  Card,
   Button,
   TextInput,
-  Field,
   TextArea,
 } from "../components/common";
 import Sidebar from "../components/sidebar";
@@ -13,7 +9,6 @@ import { useState, useEffect, useRef } from "preact/hooks";
 import { signal } from "@preact/signals";
 import { QueryLog } from "../components/querylog";
 import * as icons from "../components/icons";
-import { ImportExportMenu } from "../components/modelmenu";
 import { Markdown } from "../markdown";
 import { Page, TextBox, SiteImage } from "./citycomponents";
 import { linkMarkdownObjects } from "./linkmarkdown";
@@ -364,7 +359,7 @@ const ChatLog = ({ model, person }) => {
         ? "bg-blue-500 text-white px-4 py-2 rounded-lg mb-2 mr-10 shadow-xl"
         : "bg-gray-100 px-4 py-2 rounded-lg ml-10 mb-2 shadow-xl");
       let aRef = i === chat.length - 1 ? ref : null;
-      return <div ref={aRef} class={c}>{item.content}</div>
+      return <div ref={aRef} class={c}><Markdown text={item.content} /></div>
     })}
   </>;
 };
