@@ -601,7 +601,9 @@ class Player {
 export async function getAllCities() {
   const cities = await layerDb.getAll();
   console.log("getting all cities", cities);
-  return cities.filter((city) => city.domain.schemaName === "citymaker");
+  // getAll doesn't return schemaName, so we should filter on it but don't...
+  // return cities.filter((city) => city.domain.schemaName === "citymaker");
+  return cities;
 }
 
 const builtins = [

@@ -405,8 +405,6 @@ export class ModelTypeStore {
       models = models.and((m) => !m.archive);
     }
     models = await models.sortBy("dateUpdated");
-    console.log("models", models);
-    console.log("got models with type", this.type, models.length, models.map(x => x.title));
     models = models.concat(this.builtins);
     // FIXME: technically this doesn't just get the summaries, but the entire objects
     return models.map((m) => new Model(Object.assign(
